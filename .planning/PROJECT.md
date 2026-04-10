@@ -35,25 +35,25 @@ Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Lebe
   - `bin/tom-wiki`, `bin/tom-compile`, `bin/tom-lint` Wrapper
   - Multi-Projekt-`wiki_path`-Konvention (Gemma/ als erstes Sub-Projekt)
 
-## Current Milestone: v1.2 — Karpathy Wiki + claude-memory-compiler
+**Active:** v1.3 — Compile-Automation + Quality-Pass (siehe unten)
 
-**Goal:** Hybrid Wissens-System: Karpathy Index-first Retrieval für `90_Wiki/` (external), neues privates `95_Gehirn/` (internal) mit automatischem Capture aus Claude-Code-Konversationen via `claude-memory-compiler`, RAG bleibt als Fallback und wächst um dritte Collection.
+## Current Milestone: v1.3 — Compile-Automation + Quality-Pass
+
+**Goal:** Den in v1.2 gebauten Brain- und Wiki-Flow in den Dauerbetrieb bringen — launchd-Automation für `tom-compile`, Quality-Pass für `tom-wiki`, erweitertes Eval-Framework, dokumentierte Karpathy-Schwelle (1500) und Anthropic-SDK-Clarification. Kleine, pragmatische Verbesserungen, keine Architektur-Änderungen.
 
 **Target features:**
-- `claude-memory-compiler` Tool-Install + Config-Patch auf `$TOM_VAULT/95_Gehirn/`
-- `95_Gehirn/` Vault-Struktur (privat, NIE publiziert) mit Privacy-Regeln
-- Projekt-lokale Claude-Code Hooks (SessionStart/SessionEnd/PreCompact) für Auto-Capture
-- `90_Wiki/index.md` neu im Karpathy-Retrieval-Stil (statt Changelog)
-- Gemma-RAG um dritte Collection `gehirn` erweitern
-- Neue CLI-Wrapper: `tom-wiki` (Index-first), `tom-compile`, `tom-lint`
-- Multi-Projekt-Konvention via `wiki_path` in fremden CLAUDE.md
+- Compile-Automation via launchd Daily-Job (18:00 Europe/Berlin) mit fehlertolerantem Wrapper `tom-compile-safe`
+- `tom-wiki` Quality-Pass: stärkerer System-Prompt, Context-Filter, bessere Quellen-Zitation
+- `Gemma/eval/` erweitert um Brain-Artikel + quantitativer Vergleich `tom-wiki` vs. `tom-ask`
+- Karpathy-Schwelle 1500 in `CLAUDE.md` dokumentiert inkl. Umstiegspfad RAG-Primary
+- Anthropic-SDK-Clarification in `claude-memory-compiler/TOM-PATCHES.md` + CEO-Briefing
 - Abschluss-Doku + Milestone-Close
 
 ### Active
 
-<!-- Milestone v1.2 scope. -->
+<!-- Milestone v1.3 scope. -->
 
-Siehe `.planning/REQUIREMENTS.md` (Milestone v1.2).
+Siehe `.planning/REQUIREMENTS.md` (Milestone v1.3).
 
 ### Out of Scope
 
@@ -91,4 +91,4 @@ Siehe `.planning/REQUIREMENTS.md` (Milestone v1.2).
 | 00_Inbox → 99_Vorlagen Nummerierungsschema | Ordnet sich auto-sortiert, Trennung persönlich/wiki bleibt visuell | — Pending |
 
 ---
-*Last updated: 2026-04-10 after Tom v1.2 milestone start*
+*Last updated: 2026-04-10 after Tom v1.3 milestone start*

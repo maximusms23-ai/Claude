@@ -11,8 +11,8 @@ Requirements für Compile-Automation, `tom-wiki` Quality-Pass, Eval-Framework-Er
 ### Compile-Automation (CRON)
 
 - [ ] **CRON-01**: `~/Library/LaunchAgents/com.maxim.tom-compile.plist` existiert und startet `tom-compile-safe` täglich um 18:00 Europe/Berlin
-- [ ] **CRON-02**: `bin/tom-compile-safe` prüft vor Ausführung, ob `ollama serve` läuft und `$TOM_VAULT` erreichbar ist — exitet sauber mit Log-Eintrag wenn nicht
-- [ ] **CRON-03**: `tom-compile-safe` schreibt Run-Log nach `~/Library/Logs/tom-compile.log` (Timestamp, Exit-Code, Duration)
+- [x] **CRON-02**: `bin/tom-compile-safe` prüft vor Ausführung, ob `ollama serve` läuft und `$TOM_VAULT` erreichbar ist — exitet sauber mit Log-Eintrag wenn nicht
+- [x] **CRON-03**: `tom-compile-safe` schreibt Run-Log nach `~/Library/Logs/tom-compile.log` (Timestamp, Exit-Code, Duration)
 - [ ] **CRON-04**: `launchctl load` des Plists registriert den Job; `launchctl list | grep tom-compile` zeigt aktiven Eintrag
 - [ ] **CRON-05**: Manueller Trigger via `launchctl start com.maxim.tom-compile` erzeugt erfolgreichen Compile-Lauf ohne Fehler
 - [ ] **CRON-06**: Maximus_OS-Issue an CTO dokumentiert launchd-Job + Plist-Pfad + Log-Location
@@ -213,8 +213,8 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | DOC12-06 | Phase 21 | Complete |
 
 | CRON-01 | Phase 22 | Pending |
-| CRON-02 | Phase 22 | Pending |
-| CRON-03 | Phase 22 | Pending |
+| CRON-02 | Phase 22 | Complete |
+| CRON-03 | Phase 22 | Complete |
 | CRON-04 | Phase 22 | Pending |
 | CRON-05 | Phase 22 | Pending |
 | CRON-06 | Phase 22 | Pending |

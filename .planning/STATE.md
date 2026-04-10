@@ -1,3 +1,16 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: Complete
+status: unknown
+last_updated: "2026-04-10T12:22:10.405Z"
+progress:
+  total_phases: 9
+  completed_phases: 0
+  total_plans: 3
+  completed_plans: 1
+---
+
 # State: Tom v1.3
 
 ## Project Reference
@@ -5,15 +18,17 @@
 See: `.planning/PROJECT.md` (updated 2026-04-10)
 
 **Core value:** Maxim hat eine einzige, vertrauenswürdige Ablage für alles — Tom weiß, wo was liegt.
-**Current focus:** v1.3 — Compile-Automation + Quality-Pass (Phase 22 bereit)
+**Current focus:** Phase 22 — compile-automation
 
 ## Current Position
 
-- **Milestone:** v1.3 — Compile-Automation + Quality-Pass
-- **Phase:** Phase 22 — Compile-Automation (Not started)
-- **Plan:** —
-- **Status:** Roadmap erstellt, bereit für Phase 22
-- **Last activity:** 2026-04-10 — v1.3 Roadmap (Phasen 22–26) erstellt
+Phase: 22 (compile-automation) — EXECUTING
+Plan: 2 of 2
+
+## Decisions
+
+- **22-01:** `set -uo pipefail` statt `set -euo pipefail` in tom-compile-safe damit Exit-Code nach Lauf captured wird
+- **22-01:** SKIP+exit 0 fuer transiente Fehler (ollama down, iCloud unmounted), FAIL+exit 1 nur fuer Setup-Fehler (Konfigurationsproblem)
 
 ## Progress
 
@@ -42,6 +57,7 @@ v1.3: [ ] Phase 22  [ ] Phase 23  [ ] Phase 24  [ ] Phase 25  [ ] Phase 26
 Phasen 22–26 in `.planning/ROADMAP.md` vollständig beschrieben.
 
 **Fokus:**
+
 1. Phase 22: Compile-Automation via launchd + fehlertoleranter Wrapper `tom-compile-safe`
 2. Phase 23: `tom-wiki` Quality-Pass (Prompt + Context-Filter + Quellen-Zitation)
 3. Phase 24: Eval-Framework erweitert um Brain-Artikel + Side-by-Side-Vergleich

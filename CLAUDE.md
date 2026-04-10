@@ -173,8 +173,12 @@ Bei jeder Wissensfrage nutze Tom **in dieser Reihenfolge**:
    - Fallback wenn aus Obsidian heraus keine CLI verfügbar ist
 
 Weitere Brain-Tools:
-- `tom-compile` — Kompiliert daily-logs → knowledge-Artikel (täglich oder manuell)
-- `tom-lint [--structural-only]` — Health-Check für Brain-Struktur
+- `tom-compile` — Kompiliert daily-logs → knowledge-Artikel (täglich via launchd oder manuell)
+  - Default: `claude_agent_sdk` via Subscription (erprobt, shipped)
+  - Seit v1.4: `tom-compile --local` läuft alternativ über `gemme` ohne Subscription (Eval: `Gemma/eval/results/v1.4-compile-local-vs-claude.md`). Default bleibt claude-sdk bis empirisch belegt dass local besser ist.
+- `tom-lint` — Health-Check für Brain-Struktur
+  - **launchd-tauglich / token-sparend**: `tom-lint --structural-only` ist der empfohlene Modus für automatisierte Läufe. Macht Broken-Wikilinks-Check, Orphans, Sparse-Articles, Stale-Content — ohne LLM-Calls, ohne Subscription-Kosten.
+  - Default (ohne Flag): läuft zusätzlich Contradiction-Check via `claude_agent_sdk`. Nur für manuelle tiefe Checks, nicht in launchd.
 
 ### Skalierungs-Stufen (v1.3-Entscheidung: Schwelle bleibt 500)
 

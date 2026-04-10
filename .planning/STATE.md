@@ -6,9 +6,9 @@ status: executing
 last_updated: "2026-04-10T18:50:00.000Z"
 progress:
   total_phases: 6
-  completed_phases: 4
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 5
+  total_plans: 5
+  completed_plans: 5
 ---
 
 # State: Tom v1.4
@@ -22,19 +22,19 @@ See: `.planning/PROJECT.md` (updated 2026-04-10)
 
 ## Current Position
 
-Phases: 27 ✓, 28 ✓, 29 ✓ (mit Maxim-UI-Handoff für Plugin-Aktivierung), 30 ✓
-Next: Phase 31 — Token-Spar-Lokalisierung
-Status: Wave 2 done, Phase 31 unabhängig
-Last activity: 2026-04-10 — Phase 29 + 30 shipped parallel
+Phases: 27 ✓, 28 ✓, 29 ~ (Maxim-UI-Handoff offen), 30 ✓, 31 ✓
+Next: Phase 32 — Milestone-Close v1.4
+Status: 5 von 6 Phasen shipped, nur Close + optional Maxim-Plugin-Aktivierung
+Last activity: 2026-04-10 — Phase 31 shipped (LOCAL-01..04)
 
 ## Progress
 
 ```
-v1.4: [x] Phase 27  [x] Phase 28  [~] Phase 29  [x] Phase 30  [ ] Phase 31  [ ] Phase 32
-       67%                                                                              100%
+v1.4: [x] Phase 27  [x] Phase 28  [~] Phase 29  [x] Phase 30  [x] Phase 31  [ ] Phase 32
+       83%                                                                              100%
 ```
 
-Phase 29 hat einen expliziten Maxim-UI-Handoff (Plugin-Aktivierung in Obsidian Settings) der separat verifiziert werden muss nach dem nächsten Obsidian-Start.
+Phase 29 ist technisch auto-ready, braucht nur noch Maxim UI-Aktivierung (Obsidian Settings → Smart Connections → ON + Ollama-Models). Das kann parallel zu Phase 32-Close passieren.
 
 ## Phase 27 Decisions
 

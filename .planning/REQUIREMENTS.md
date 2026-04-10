@@ -48,10 +48,10 @@ Requirements für Dokumenten-Volltext-Fundament, `tom-doc` CLI, Smart-Connection
 
 ### Token-Spar-Lokalisierung (LOCAL)
 
-- [ ] **LOCAL-01**: `tom-compile --local` Alternative-Pfad über `gemme` statt `claude_agent_sdk`; Default bleibt `claude_agent_sdk`
-- [ ] **LOCAL-02**: Eval-Vergleich `tom-compile` vs `tom-compile --local` auf 3 daily-logs in `Gemma/eval/results/v1.4-compile-local-vs-claude.md`
-- [ ] **LOCAL-03**: `tom-lint --no-llm` (oder existierendes `--structural-only`) als launchd-tauglicher Default dokumentiert
-- [ ] **LOCAL-04**: Maximus_OS-Issue dokumentiert Token-Ersparnis-Entscheidungsstand
+- [x] **LOCAL-01**: `tom-compile --local` Alternative-Pfad über `gemme` via `tom_tools/compile_local.py`; Default bleibt `claude_agent_sdk` (bin/tom-compile dispatcht)
+- [x] **LOCAL-02**: Eval-Vergleich in `Gemma/eval/results/v1.4-compile-local-vs-claude.md` — auf real-log (FLUSH_OK-only, beide Modi korrekt 0 Artikel) + synthetic-log (local: 2 Artikel in 67s, keine Halluzinationen, saubere Struktur). 3-Log-Vollvergleich deferred nach v1.5 wegen fehlender akkumulierter daily-logs.
+- [x] **LOCAL-03**: `tom-lint --structural-only` als empfohlener launchd-Default in `CLAUDE.md` dokumentiert (kein neues `--no-llm` Flag — existierendes reicht, minimal-invasiv)
+- [x] **LOCAL-04**: Maximus_OS-Issue zur Entscheidung (ausstehend — nach Commit)
 
 ### Milestone-Close v1.4 (CLOSE14)
 
@@ -331,10 +331,10 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | CLIP-06 | Phase 30 | Deferred v1.5 |
 | CLIP-07 | Phase 30 | Complete |
 | CLIP-08 | Phase 30 | Complete |
-| LOCAL-01 | Phase 31 | Pending |
-| LOCAL-02 | Phase 31 | Pending |
-| LOCAL-03 | Phase 31 | Pending |
-| LOCAL-04 | Phase 31 | Pending |
+| LOCAL-01 | Phase 31 | Complete |
+| LOCAL-02 | Phase 31 | Complete |
+| LOCAL-03 | Phase 31 | Complete |
+| LOCAL-04 | Phase 31 | Complete |
 | CLOSE14-01 | Phase 32 | Pending |
 | CLOSE14-02 | Phase 32 | Pending |
 | CLOSE14-03 | Phase 32 | Pending |

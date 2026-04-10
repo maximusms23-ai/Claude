@@ -48,4 +48,25 @@
 
 **Neue Tools:** `tom-wiki`, `tom-compile`, `tom-lint` (zusätzlich zu v1.1 `tom-issue`, `tom-ask`)
 
+## v1.3 — Compile-Automation + Quality-Pass (Complete)
+
+**Started:** 2026-04-10
+**Completed:** 2026-04-10
+**Goal:** Den in v1.2 gebauten Brain- und Wiki-Flow in den Dauerbetrieb bringen — launchd-Automation, `tom-wiki` Quality-Pass, Eval-Baseline, Schwellen-Doku, SDK-Clarification. Keine Architektur-Änderungen.
+**Phases:** 22–26 (5 Phasen, 30 Requirements)
+**Status:** ✓ Shipped
+
+**Commits:**
+- Phase 22 — `330cc7a`..`146759d` Compile-Automation (launchd + `tom-compile-safe`)
+- Phase 23 — `d47e2a9`..`1a6b47f` tom-wiki Quality-Pass (Keyword-Filter, TOP_K=5, harter System-Prompt)
+- Phase 24 — `c3431b3`..`08d9c63` Eval-Framework-Erweiterung (v1.3-Baseline: tom-wiki 60%/80% vs tom-ask 33%)
+- Phase 25 — `7a77699`..`1b48915` Schwellen-Doku (Karpathy-Schwelle bleibt 500 — bewusste Entscheidung gegen 1500)
+- Phase 26 — `6fc9644`..<close> SDK-Clarification + Milestone-Close
+
+**Maximus_OS Audit-Trail:** FAM-128, FAM-129, FAM-133, FAM-135 (+ CEO-Close-Issue aus Phase 26)
+
+**Neue Werkzeuge:** `bin/tom-compile-safe` (Preflight-Wrapper für launchd-Job)
+
+**Eval-Baseline (v1.3):** `tom-wiki` 60% Avg (80% auf Wiki-Queries) vs `tom-ask` 33% — dokumentiert unter `Gemma/eval/results/v1.3-baseline.md`. Karpathy Index-first empirisch bestätigt.
+
 Siehe `.planning/ROADMAP.md` für Phasen-Details.

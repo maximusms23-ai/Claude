@@ -238,6 +238,53 @@ Nach Schritt 4 hat Maxim per Screenshot demonstriert, dass der Web-Clipper-Popup
 
 **Rollback**, falls `interpreterAutoRun: false` unerwartete UX bricht: zweiter Patch zurück auf `true`.
 
+### Hotfix Schritt 5-Repair — LevelDB-Patch wirkungslos, Fix via Settings-UI
+
+**Problem (2026-04-10):** Nach Commit `f5c8f29` (Schritt 5) meldete Maxim per Sicht-Check, dass der **interpret**-Button im Clipper-Popup weiterhin nicht erscheint. Der LevelDB-Direktpatch hat keine sichtbare Wirkung erzeugt.
+
+**Diagnose (read-only):**
+
+1. Chrome via `osascript … quit` beendet
+2. `/tmp/cliplev/read-interpreter.mjs` gegen `Sync Extension Settings/cnjifjpddelmedmihgijeibhnjfabmlf` gefahren (reine classic-level-Leseroutine, kein Write)
+3. Ergebnis:
+   ```json
+   {
+     "interpreterModel": "",            ← zurück auf Pre-Schritt-5-Wert
+     "interpreterAutoRun": true,        ← zurück auf Pre-Schritt-5-Wert
+     "interpreterEnabled": true,
+     "models": [ { "id": "1775722457516", "name": "gemma4", … } ],   ← Schritt 3 intakt
+     "providers": [ { "baseUrl": "http://127.0.0.1:11434/api/chat", … } ]
+   }
+   ```
+4. Verdict: **Cloud-Overwrite (Ursache #1 aus dem Plan).**
+
+**Root-Cause:** Chrome Sync pullt `storage.sync` beim Browser-Start aus der Google-Cloud. Schritt 3 hat `template_list`, `vaults`, `models`, `providers` **als neue Keys bzw. Felder** angelegt → Cloud akzeptiert sie als ADD. Schritt 5 hat **bestehende Werte innerhalb eines existierenden Objekts** (`interpreterModel`, `interpreterAutoRun`) überschrieben → Cloud-Version gewinnt im Conflict-Resolution-Flow und restored sie beim nächsten Sync-Pull. LevelDB-Direktpatches für gecachte/sync-verwaltete Keys in einer Extension sind daher **nicht verlässlich**.
+
+**Fix-Pfad (UI-Settings durch Maxim):** Die Extension hat unter `chrome-extension://cnjifjpddelmedmihgijeibhnjfabmlf/settings.html` einen Interpreter-Tab. Writes dort laufen durch `saveSettings()` → `chrome.storage.sync.set({...})` → korrekte Sync-Propagation + Cache-Invalidation via `chrome.storage.onChanged`-Event.
+
+Maxim-Klick-Sequenz:
+
+1. Clipper-Icon in Chrome-Toolbar → Zahnrad (Settings)
+2. Tab **Interpreter**
+3. **Default model** → `gemma4`
+4. **Auto-run on clip** → aus
+5. Settings-Tab schließen
+6. Test-Clip auf https://de.wikipedia.org/wiki/Mannheim → Popup muss jetzt Model-Dropdown + violetten **interpret**-Button zeigen
+
+**Warum Tom das nicht selbst klickt:**
+
+- Playwright startet eigene isolierte Chrome-Instanz → sieht Maxim's `Default/`-Profil + installierte Extension nicht
+- AppleScript kann keine Chrome-internen Extension-Popover-UIs bedienen
+- Zweiter LevelDB-Direktpatch würde am gleichen Cloud-Overwrite scheitern (deterministisch)
+
+**Lesson-Learned:** LevelDB-Direktmanipulation ist **nur für neue Keys** in `Sync Extension Settings/` verlässlich. Für bestehende, sync-verwaltete Keys, die die Extension über Module-Singletons cached, muss der Write durch den offiziellen Extension-Code-Pfad gehen (Settings-UI oder interne API). Dokumentiert in `$TOM_VAULT/30_Projekte/Tom/Entscheidungen.md`.
+
+**Artefakte:**
+
+- `/tmp/cliplev/read-interpreter.mjs` (read-only Diagnostic, reuse classic-level)
+- LevelDB unverändert nach Diagnose (kein zweiter Write)
+- Kein neuer FAM-Issue — bleibt im Hotfix-Kontext
+
 ### Was im Hotfix NICHT enthalten ist
 
 - mcp-tools-Integration (v1.5-Kandidat, ADR-004)

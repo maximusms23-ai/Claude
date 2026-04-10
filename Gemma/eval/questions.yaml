@@ -1,0 +1,49 @@
+# Testfragen fuer Side-by-Side-Eval: tom-wiki vs tom-ask
+# Jede Frage hat erwartete Schluesselwoerter, die in der Antwort vorkommen sollten.
+# category: wiki  -> Themen, die im 90_Wiki/ vorhanden sein sollten
+# category: brain -> Themen, die im 95_Gehirn/ erwartet werden (Konversations-Wissen)
+
+questions:
+  # === WIKI-THEMEN (5) ===
+  - question: "Was ist GGUF?"
+    keywords: ["quantisierung", "format", "llama"]
+    category: wiki
+
+  - question: "Welche Quantisierungsmethoden gibt es?"
+    keywords: ["Q4", "Q8", "GGUF"]
+    category: wiki
+
+  - question: "Was ist Ollama?"
+    keywords: ["lokal", "modell", "inferenz"]
+    category: wiki
+
+  - question: "Was ist RAG?"
+    keywords: ["retrieval", "augmented", "generation", "kontext"]
+    category: wiki
+
+  - question: "Was ist TurboQuant?"
+    keywords: ["quant", "trading", "strategie"]
+    category: wiki
+
+  # === BRAIN-THEMEN (5) ===
+  # Hinweis: 95_Gehirn/knowledge/ ist Stand 2026-04-10 leer.
+  # Niedrige Scores sind erwartet und Teil des Baseline-Werts fuer Phase 24.
+  - question: "Was haben wir ueber die Karpathy-Wiki-Methode besprochen?"
+    keywords: ["index", "retrieval", "artikel"]
+    category: brain
+
+  - question: "Welches Pattern haben wir fuer Claude-Code-Hooks gewaehlt?"
+    keywords: ["session", "hook", "compile"]
+    category: brain
+
+  - question: "Wie funktioniert tom-compile?"
+    keywords: ["daily", "knowledge", "compile"]
+    category: brain
+
+  - question: "Was ist die Karpathy-Schwelle fuer Index-first vs RAG?"
+    keywords: ["1500", "wiki", "rag"]
+    category: brain
+
+  - question: "Welche Maximus_OS-Agenten gibt es?"
+    keywords: ["cto", "ceo", "wiki-kurator"]
+    category: brain

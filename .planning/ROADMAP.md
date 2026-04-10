@@ -430,7 +430,185 @@ Plans:
 
 ---
 
+## v1.4 — Aktive KI + Dokumenten-Fundament
+
+**Goal:** Tom bekommt ein Volltext-Dokumenten-Fundament (OCR + FTS5), eine Obsidian-native aktive-KI-Integration via Community-Plugin, automatisches Clipper-Enrichment und einen dokumentierten Token-Spar-Pfad für compile/lint. Die Document-Lifecycle-State-Machine wird bewusst nach v1.5 deferred.
+
+### Phases
+
+- [ ] **Phase 27: OCR-Toolkette + Archiv-Fundament** — tesseract + ocrmypdf + deu, archivum/ Ordner, SQLite FTS5 Schema, erstes echtes PDF indiziert
+- [ ] **Phase 28: tom-doc CLI** — index/search/list/show Wrapper + CLAUDE.md-Integration
+- [ ] **Phase 29: Gemma-in-Obsidian via Smart Connections** — Plugin installiert, Ollama-Backend, Privacy-Exclude, Smoke-Test
+- [ ] **Phase 30: Clipper Auto-Enrichment** — tom-clip-enrich mit Summary/Tags/Konzepte/Wiki-Kategorie
+- [ ] **Phase 31: Token-Spar-Lokalisierung** — tom-compile --local + Eval; tom-lint --structural-only als Default
+- [ ] **Phase 32: Milestone-Close v1.4** — 6 Doku-Kanäle nach v1.3-Close-Checklist
+
+### Wave-Dependencies
+
+- **Phase 27 → Phase 28** (tom-doc braucht das SQLite-Schema)
+- **Phase 29 || Phase 30** parallelisierbar (Obsidian-Plugin unabhängig von tom-clip-enrich)
+- **Phase 31** unabhängig von 27–30
+- **Phase 32** zuletzt (Close braucht alle Phasen shipped)
+
+### Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 27. OCR-Toolkette + Archiv-Fundament | 0/? | Not started | — |
+| 28. tom-doc CLI | 0/? | Not started | — |
+| 29. Gemma-in-Obsidian via Smart Connections | 0/? | Not started | — |
+| 30. Clipper Auto-Enrichment | 0/? | Not started | — |
+| 31. Token-Spar-Lokalisierung | 0/? | Not started | — |
+| 32. Milestone-Close v1.4 | 0/? | Not started | — |
+
+---
+
+## Phase Details (v1.4)
+
+### Phase 27: OCR-Toolkette + Archiv-Fundament
+
+**Goal**: OCR-Stack ist installiert, `archivum/` existiert mit SQLite-FTS5-Schema, `$TOM_VAULT/Archiv/` Symlink ist angelegt, und mindestens ein echtes Maxim-PDF ist per Volltext abfragbar.
+
+**Depends on**: Nothing (erste v1.4-Phase)
+
+**Requirements**: DOC14-01, DOC14-02, DOC14-03, DOC14-04, DOC14-05, DOC14-06
+
+**Success Criteria**:
+1. `which tesseract ocrmypdf` liefert Pfade; `tesseract --list-langs` enthält `deu`
+2. `test -L "$TOM_VAULT/Archiv"` → Symlink auf `~/Downloads/Archiv/` existiert
+3. `/Users/maxim/Claude/archivum/{db,ocr-cache,logs,README.md}` angelegt
+4. `sqlite3 archivum/db/archivum.db ".schema documents_fts"` zeigt FTS5-Schema
+5. `archivum/ocr_pipeline.py` verarbeitet mindestens 1 echtes PDF idempotent; zweiter Lauf skippt bereits verarbeitete Files
+6. Volltext-Query gegen FTS5 liefert den Inhalt dieses PDFs zurück
+
+**Vorbedingung (Maxim)**: Mindestens **1 echtes PDF** in einer Kategorie unter `~/Downloads/Archiv/` hinterlegen, damit Smoke-Test laufen kann.
+
+**Plans**: TBD
+
+---
+
+### Phase 28: tom-doc CLI
+
+**Goal**: `bin/tom-doc` bietet einen vollständigen CLI-Wrapper (`index`, `search`, `list`, `show`) über den FTS5-Dokumenten-Index und ist in der CLAUDE.md-Wissens-Kaskade verankert.
+
+**Depends on**: Phase 27 (SQLite-Schema + OCR-Pipeline müssen existieren)
+
+**Requirements**: TDOC-01, TDOC-02, TDOC-03, TDOC-04, TDOC-05, TDOC-06, TDOC-07
+
+**Success Criteria**:
+1. `bin/tom-doc` ausführbar mit 4 Subcommands, Symlink in `~/bin/`
+2. `tom-doc index 06` scant Kategorie 06_Arzt, triggert OCR neuer PDFs, aktualisiert FTS5
+3. `tom-doc search "..."` liefert Trefferliste mit Snippet + Kategorie/Dateiname
+4. `tom-doc show <pfad>` zeigt Metadaten + OCR-Text-Auszug
+5. `tom-doc list 06` listet alle indizierten Dokumente der Kategorie
+6. `CLAUDE.md` Wissens-Kaskade enthält neuen Punkt "Dokumenten-Fragen → `tom-doc search`"
+
+**Plans**: TBD
+
+---
+
+### Phase 29: Gemma-in-Obsidian via Smart Connections
+
+**Goal**: Smart Connections Community-Plugin läuft mit Ollama-Backend (`nomic-embed-text` Embeddings + `gemme` Chat), indexiert NUR `90_Wiki/` + `95_Gehirn/knowledge/` (Privacy-Exclude für persönliche Ordner), Semantic-Search funktioniert im Editor.
+
+**Depends on**: Nothing (parallel zu Phase 30)
+
+**Requirements**: OBPL-01, OBPL-02, OBPL-03, OBPL-04, OBPL-05
+
+**Success Criteria**:
+1. `ls "$TOM_VAULT/.obsidian/plugins/smart-connections/"` → Plugin-Dateien vorhanden
+2. Plugin-Settings zeigen auf lokales Ollama, Embedding-Modell `nomic-embed-text`, Chat-Modell `gemme`
+3. Privacy-Exclude (`.scignore` oder Plugin-Setting) schließt `10_Personen`, `20_Dokumente`, `40_Aufgaben`, `50_Gesundheit`, `60_Finanzen` aus
+4. Smoke-Test: Semantic-Search nach "TurboQuant" liefert `90_Wiki/konzepte/turboquant.md` im Smart-Connections-Panel
+5. `.planning/obsidian-plugin-config/smart-connections.json` enthält Config-Backup
+6. `CLAUDE.md` Wissens-Kaskade (6) dokumentiert die Editor-native Option
+
+**Fallback**: Falls Smart Connections unbrauchbar ist → Obsidian Copilot als dokumentierte Alternative. Time-Box: max 2h Debugging bevor Switch.
+
+**Plans**: TBD
+
+---
+
+### Phase 30: Clipper Auto-Enrichment
+
+**Goal**: `bin/tom-clip-enrich` reichert Clipping-Dateien idempotent an — Summary, Auto-Tags, Konzept-Vorschläge (in separater Review-Datei, nicht direkt Stub-Pages), Wiki-Kategorie-Vorschlag via `gemme`.
+
+**Depends on**: Nothing (parallel zu Phase 29; nutzt existierendes `gemme` + `ollama` aus v1.1)
+
+**Requirements**: CLIP-01, CLIP-02, CLIP-03, CLIP-04, CLIP-05, CLIP-06, CLIP-07, CLIP-08
+
+**Success Criteria**:
+1. `tom-clip-enrich <file>` schreibt `summary`, `tags` (appended+dedupliziert), `suggested_wiki_category`, `enriched: true` ins Frontmatter
+2. Konzept-Vorschläge landen als Zeilen in `$TOM_VAULT/90_Wiki/konzepte-vorschlaege.md` — keine neuen Stub-Pages ohne Review
+3. Zweiter Lauf über dieselbe Datei ist Noop (idempotent via `enriched: true`)
+4. Smoke-Test mit `Mannheim – Wikipedia.md` — alle 4 Felder plausibel gefüllt, manuell verifiziert
+5. CLIP-08: Entscheidung dokumentiert (Hook in `tom-compile-safe` ODER separater launchd-Job)
+
+**Wiederverwendung**: `claude-memory-compiler/tom_tools/wiki_query.py` als Template (gleicher `ollama.chat`-Stil); `bin/tom-wiki` als Bash-Template.
+
+**Plans**: TBD
+
+---
+
+### Phase 31: Token-Spar-Lokalisierung
+
+**Goal**: `tom-compile --local` nutzt `gemme` statt `claude_agent_sdk` (opt-in), ein Eval-Vergleich entscheidet ob Default-Switch sinnvoll wäre, und `tom-lint --structural-only` ist als launchd-tauglicher Default dokumentiert.
+
+**Depends on**: Nothing (unabhängig von 27–30)
+
+**Requirements**: LOCAL-01, LOCAL-02, LOCAL-03, LOCAL-04
+
+**Success Criteria**:
+1. `tom-compile --local` läuft mindestens 1x erfolgreich über 3 daily-logs und schreibt Brain-Artikel
+2. `Gemma/eval/results/v1.4-compile-local-vs-claude.md` enthält Score-Vergleich der beiden Modi
+3. `claude_agent_sdk` bleibt Default in `bin/tom-compile`; `--local` ist opt-in
+4. `tom-lint --structural-only` ist in CLAUDE.md als launchd-Default dokumentiert (oder neues `--no-llm` Flag existiert und ist dokumentiert)
+5. Maximus_OS-Issue dokumentiert Entscheidungsstand (Token-Ersparnis-Kontext: ca. $0.04/Monat — primär prinzipiell)
+
+**Plans**: TBD
+
+---
+
+### Phase 32: Milestone-Close v1.4
+
+**Goal**: v1.4 ist in allen 6 Doku-Kanälen nach v1.3-Close-Checklist geschlossen: MILESTONES.md, PROJECT.md, CEO-Briefing, vault-log.md, Tom-Projektseite, Maximus_OS Close-Issue.
+
+**Depends on**: Phases 27–31 (alles live bevor geschlossen)
+
+**Requirements**: CLOSE14-01, CLOSE14-02, CLOSE14-03, CLOSE14-04, CLOSE14-05, CLOSE14-06, CLOSE14-07
+
+**Success Criteria**:
+1. `.planning/MILESTONES.md` enthält v1.4-Eintrag nach v1.1/v1.2/v1.3-Schema (Start/Ende/Phasen/Commits/Status/FAMs)
+2. `.planning/PROJECT.md` Validated-Sektion enthält v1.4-Deliverables, `Active:` auf v1.5 oder `—`
+3. `.planning/briefings/v1.4-CEO-Briefing.md` existiert mit ≥150 Zeilen nach v1.3-Template (6 Teile + Anhänge A/B/C)
+4. `$TOM_VAULT/log.md` enthält datierten v1.4-Abschluss-Eintrag nach v1.3-Schema
+5. `$TOM_VAULT/30_Projekte/Tom.md` ist aktualisiert (Current Milestone, Werkzeug-Liste inkl. `tom-doc`, `tom-clip-enrich`, Milestones-Kurz-Historie)
+6. Maximus_OS Close-Issue an CEO (`priority=high`) mit Link auf CEO-Briefing und Phasen-Commits
+7. Alle v1.4-Requirements in REQUIREMENTS.md als `[x]` markiert
+
+**Plans**: TBD
+
+---
+
+## Coverage: v1.4
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| DOC14-01..06 | 27 | Pending |
+| TDOC-01..07 | 28 | Pending |
+| OBPL-01..05 | 29 | Pending |
+| CLIP-01..08 | 30 | Pending |
+| LOCAL-01..04 | 31 | Pending |
+| CLOSE14-01..07 | 32 | Pending |
+
+**v1.4 total: 37 — Mapped: 37 — Unmapped: 0 ✓**
+
+Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
+
+---
+
 *Roadmap v1.1 created: 2026-04-10*
 *Roadmap v1.2 appended: 2026-04-10*
 *Roadmap v1.3 appended: 2026-04-10*
-*Current milestone: v1.3 — Compile-Automation + Quality-Pass*
+*Roadmap v1.4 appended: 2026-04-10*
+*Current milestone: v1.4 — Aktive KI + Dokumenten-Fundament*

@@ -53,7 +53,7 @@ Um CLIP141-04 zu schließen, muss Maxim folgende Schritte manuell ausführen:
 ## Phase 35-Hotfix Addendum — Web-Clipper-Interpreter-Integration
 
 **Hotfix-Date:** 2026-04-10
-**Hotfix-Commit:** *(wird nach Commit hier eingetragen)*
+**Hotfix-Commit:** `f11b4d7` — fix(phase-35-hotfix): Web-Clipper-Interpreter-Integration (Ollama/gemme)
 **Trigger:** Maxim-Feststellung direkt nach Phase-35-Close: "Web Clipper wurde nicht angepasst, ich sehe keine Ollama-/Gemma4-Implementierung" — Phase 35 hatte das native Interpreter-Feature des Obsidian Web Clippers übersehen und nur den Post-hoc-Pfad über `tom-clip-enrich` gebaut.
 
 **Scope:** Korrektur einer unvollständigen Integration aus derselben Phase — analog Phase 29-Hotfix (Smart Connections Privacy-Leak). Kein neuer Milestone, kein neues Phasen-Verzeichnis.

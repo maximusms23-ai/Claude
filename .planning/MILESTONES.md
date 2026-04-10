@@ -115,7 +115,7 @@ Siehe `.planning/ROADMAP.md` für Phasen-Details, `.planning/briefings/v1.4-CEO-
 - Phase 33 — `29a734e` docs(phase-33): Obsidian-Doku-Backfill + Arbeits-Routine
 - Phase 34 — `4e08696` docs(phase-34): Plugin-Audit + ADR-003/004 + CLAUDE.md-Update
 - Phase 35 — `3a3cff8` feat(phase-35): Web-Clipper-Template-System
-- Phase 35-Hotfix — *(pending commit)* fix(phase-35-hotfix): Web-Clipper-Interpreter-Integration (Ollama/gemme)
+- Phase 35-Hotfix — `f11b4d7` fix(phase-35-hotfix): Web-Clipper-Interpreter-Integration (Ollama/gemme)
 
 **Maximus_OS Audit-Trail:** FAM-153 (CEO Mini-Close-Issue, priority=medium, 2026-04-10), FAM-154 (CTO Hotfix + Ollama-Models-Blocker, priority=medium, 2026-04-10)
 

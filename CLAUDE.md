@@ -148,12 +148,23 @@ Erst nach diesen 4 Schritten gilt die Phase als wirklich abgeschlossen. Die best
 
 ## Ingesting New Sources (Wiki-Workflow bleibt)
 
-1. Rohmaterial in `raw/` (oder `Clippings/`)
+1. Rohmaterial in `raw/` (oder `Clippings/<Typ>/` via Web-Clipper-Template — seit v1.4.1)
 2. Quelleintrag in `90_Wiki/quellen/`
 3. Konzepte extrahieren → `90_Wiki/konzepte/`
 4. Topic-Artikel in `90_Wiki/themen/`
 5. Personen → `90_Wiki/personen/` (fachliche/öffentliche Personen, NICHT Familie — die liegen in `10_Personen/`)
 6. Alle Indizes aktualisieren
+
+### Web-Clipper-Flow (seit v1.4.1 Phase 35)
+
+Für Browser-Clippings nutzt Maxim typ-spezifische Templates in `$TOM_VAULT/99_Vorlagen/web-clipper/` (7 Templates: Artikel, Paper, Video, Dokument, Social-Post, Rezept, Werkzeug). Jedes Template schreibt in seinen Ziel-Unterordner unter `Clippings/<Typ>/` mit Tom-konformem Frontmatter (`type`, `source`, `enriched: false`).
+
+Nach dem Clip (manuell, on-demand):
+```bash
+tom-clip-enrich "$TOM_VAULT/Clippings/Artikel/meine-datei.md"
+```
+
+Das liefert Summary + Tags + Konzept-Vorschläge + Wiki-Kategorie-Vorschlag. Idempotent via `enriched: true` Flag. Details: `$TOM_VAULT/99_Vorlagen/web-clipper/README.md`.
 
 ## Wissens-Kaskade (seit v1.2)
 

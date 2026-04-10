@@ -388,12 +388,12 @@ Kleine Bridge-Phase zwischen v1.4-Close und v1.5-Kickoff. Drei Themen: Obsidian-
 
 ### Web-Clipper-Template-System (CLIP141)
 
-- [ ] **CLIP141-01**: `$TOM_VAULT/99_Vorlagen/web-clipper/` mit 7 Templates (Artikel, Paper, Video, Dokument, Social-Post, Rezept, Werkzeug) + README.md
-- [ ] **CLIP141-02**: `$TOM_VAULT/Clippings/{Artikel,Paper,Videos,Dokumente,Social,Rezepte,Werkzeuge}/` Zielordner
-- [ ] **CLIP141-03**: Browser-Extension-Konfigurations-Doku in `web-clipper/README.md`
-- [ ] **CLIP141-04**: Smoke-Test (1 echter Clip + `tom-clip-enrich`-Lauf + Idempotenz-Check)
-- [ ] **CLIP141-05**: `CLAUDE.md` "Wissens-Kaskade" + "Ingesting New Sources" um Clipper-Flow ergänzt
-- [ ] **CLIP141-06**: `tom-clip-enrich`-Anleitung in `web-clipper/README.md` referenziert
+- [x] **CLIP141-01**: `$TOM_VAULT/99_Vorlagen/web-clipper/` mit 7 Templates (Artikel, Paper, Video, Dokument, Social-Post, Rezept, Werkzeug) + README.md
+- [x] **CLIP141-02**: `$TOM_VAULT/Clippings/{Artikel,Paper,Videos,Dokumente,Social,Rezepte,Werkzeuge}/` Zielordner (mit README-Stubs)
+- [x] **CLIP141-03**: Browser-Extension-Konfigurations-Doku in `web-clipper/README.md`
+- [~] **CLIP141-04**: Smoke-Test (1 echter Clip + `tom-clip-enrich`-Lauf + Idempotenz-Check) — **Maxim-Handoff, prepared-pending**
+- [x] **CLIP141-05**: `CLAUDE.md` "Ingesting New Sources" um Web-Clipper-Flow-Subsektion ergänzt
+- [x] **CLIP141-06**: `tom-clip-enrich`-Anleitung in `web-clipper/README.md` referenziert
 
 ---
 *Requirements defined: 2026-04-10*

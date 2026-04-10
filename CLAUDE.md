@@ -264,9 +264,9 @@ Trigger-Zeit auf 03:00 ändern: Im Plist `<key>Hour</key><integer>18</integer>` 
 
 Die konkreten Workflows für Dokumente, Arzttermine, Social Posts, Fristen und Hardware sind in `$TOM_VAULT/CLAUDE.md` dokumentiert (WF-01 bis WF-05).
 
-## Obsidian Plugin Landscape (seit v1.4)
+## Obsidian Plugin Landscape (seit v1.4, erweitert v1.4.1)
 
-Maxim hat im v1.4-Zeitraum 33 Community-Plugins in Obsidian installiert, zusätzlich zu den 2 pre-v1.4 Plugins (`obsidian-local-images-plus`, `smart-connections`). Die aktuellen **35 Plugins** liegen in `$TOM_VAULT/.obsidian/plugins/` und sind in drei Kategorien nach Tom-Relevanz gruppiert.
+Maxim hat im v1.4-Zeitraum 33 Community-Plugins installiert (+ 2 pre-v1.4), zwischen v1.4-Close und v1.4.1-Phase 34 kamen **17 weitere** dazu. Gesamt jetzt: **52 Plugins** in `$TOM_VAULT/.obsidian/plugins/`. Die v1.4.1-Neuzugänge sind im Audit-Dokument `.planning/obsidian-plugin-config/plugin-audit-v1.4.1.md` vollständig klassifiziert.
 
 ### Tom-relevant (muss ggf. in v1.5 integriert werden)
 
@@ -278,10 +278,26 @@ Maxim hat im v1.4-Zeitraum 33 Community-Plugins in Obsidian installiert, zusätz
 | `obsidian-git` | Git-Integration für Vault — **installed-but-unused** (siehe Warning unten + ADR-002) |
 | `quickadd` | Quick-Capture-Makros — könnte Inbox-Flow aus Obsidian heraus beschleunigen |
 | `smart-connections` | Semantic-Search Panel mit Ollama-Backend (Phase 29 + Hotfix) |
+| `eml-reader` (v1.4.1) | `.eml`-Preview für Ämterbriefe in `20_Dokumente/13_Betreuung/` — Setup-Kandidat Phase 34 |
+| `obsidian-apple-reminders-plugin` (v1.4.1) | Apple-Reminders ↔ Vault-Sync, Brücke zu `40_Aufgaben/TODOS.md` — Setup-Kandidat Phase 34 |
+| `mcp-tools` (v1.4.1) | Model Context Protocol — potenzielles Gateway für Tom-CLI-Tools im Editor. **v1.5-Kandidat, ADR-004** |
+| `marker-api` (v1.4.1) | Marker-basierte PDF→Markdown-OCR mit besseren Layouts als tesseract. **v1.5+-Upgrade-Kandidat für `tom-doc`-Backend** |
 
 ### Workflow-Ergänzung (orthogonal zu Tom, aber nützlich)
 
-`excalibrain`, `obsidian-excalidraw-plugin`, `pdf-plus`, `calendar`, `obsidian-full-calendar`, `obsidian-day-planner`, `obsidian-tracker`, `obsidian-annotator`, `obsidian-kanban`, `obsidian-advanced-slides`, `obsidian-mind-map`, `obsidian-pandoc`, `obsidian-enhancing-export`, `notebook-navigator`, `obsidian-icon-folder`
+`excalibrain`, `obsidian-excalidraw-plugin`, `pdf-plus`, `calendar`, `obsidian-full-calendar`, `obsidian-day-planner`, `obsidian-tracker`, `obsidian-annotator`, `obsidian-kanban`, `obsidian-advanced-slides`, `obsidian-mind-map`, `obsidian-pandoc`, `obsidian-enhancing-export`, `notebook-navigator`, `obsidian-icon-folder`, `apple-books-import-highlights` (v1.4.1), `email-block-plugin` (v1.4.1), `open-in-terminal` (v1.4.1), `shell-path-copy` (v1.4.1)
+
+### LLM-Alternativen (installed-but-unused, v1.4.1 neu)
+
+Diese Plugins überlappen mit Tom's `gemme` + Smart Connections und werden **nicht konfiguriert** (keine API-Keys). Entscheidung über LLM-Plugin-Konsolidierung kommt in v1.5:
+
+`cao` (Remote-Claude-Chat), `tars` (Multi-LLM-Text-Gen), `large-language-models` (OpenAI/Claude/Gemini-Hub), `llm-summary` (PDF/Note-Summary), `llm-test-gen` (Testfragen-Gen), `ai-latex-generator` (NL→LaTeX)
+
+### Email / Messaging (v1.4.1 — braucht Use-Case-Entscheidung)
+
+- **`messager`** — Nachrichten-Import via WeChat/HTTP-API/Email. **Privacy-kritisch** (öffnet Vault für POST-Input). Installed-but-unused bis Use-Case klar.
+- **`taskrobin`** — Email-Sync via externen TaskRobin-Service. **Privacy-kritisch** (externer Cloud-Service). Installed-but-unused bis Maxim-Entscheidung (siehe `plugin-audit-v1.4.1.md` Q3).
+- **`eml-reader`** — Nur lokale `.eml`-Preview, keine Connectivity → **ungefährlich**, Setup-Kandidat.
 
 ### Kosmetik / Input (neutral)
 
@@ -302,11 +318,26 @@ Der Vault ist seit v1.1 explizit **NICHT in git** (iCloud + Time Machine als Bac
 
 **Empfehlung** (wenn es doch sein muss): Nur als sekundäres Backup in ein dediziertes lokales Repo ohne Remote, Scope beschränkt auf `90_Wiki/` + `95_Gehirn/knowledge/`, persönliche Ordner via `.gitignore` konsequent ausgeschlossen. Siehe `.planning/obsidian-plugin-config/adr-002-obsidian-git-deferred.md`.
 
+### ⚠️ Warning: obsidian-ocr vs tom-doc (v1.4.1)
+
+`obsidian-ocr` überlappt mit Tom's OCR-Pipeline (`tom-doc`, Phase 27/28). **Koexistenz-Regel** in ADR-003:
+- `tom-doc` bleibt Primary für Batch + FTS5-Index
+- `obsidian-ocr` ist Ad-hoc-Tool im Editor
+- **Schreibgrenze**: `obsidian-ocr` darf NICHT `~/Downloads/Archiv/` oder `archivum/db/` beschreiben
+- Bei Verletzung: Plugin deaktivieren
+
+### 💡 Empfehlung: mcp-tools als v1.5-Integrationskandidat
+
+`mcp-tools` v0.2.27 implementiert Model Context Protocol in Obsidian. Potentielles Gateway, um Tom-CLI-Tools (`tom-doc`, `tom-wiki`, `tom-ask`) **direkt im Editor** aufrufbar zu machen. In v1.4.1 nur als ADR-004 dokumentiert, **keine Integration**. Echte Integration braucht eigene v1.5-Phase mit Privacy-Check, Server-Schema-Recherche und Config-Backup analog Smart Connections.
+
 ### Referenzen
 
 - `.planning/obsidian-plugin-config/smart-connections.json` — Plugin-Config-Backup (Phase 29 + Hotfix)
+- `.planning/obsidian-plugin-config/plugin-audit-v1.4.1.md` — 17-Plugin-Audit v1.4.1 (Phase 34)
 - `.planning/obsidian-plugin-config/adr-001-smart-connections-privacy.md` — `.scignore`-Incident + UI-Exclude-Decision
 - `.planning/obsidian-plugin-config/adr-002-obsidian-git-deferred.md` — Vault-in-git-Entscheidung deferred
+- `.planning/obsidian-plugin-config/adr-003-obsidian-ocr-coexistence.md` — obsidian-ocr vs tom-doc Koexistenz (v1.4.1)
+- `.planning/obsidian-plugin-config/adr-004-mcp-tools-v15-candidate.md` — MCP als v1.5-Integrationskandidat (v1.4.1)
 - `.planning/briefings/v1.4-CEO-Briefing.md` Teil 7 — Vault-Infrastructure-Expansion
 
 ## Maximus_OS-Kommunikation (Hybrid-Modell, seit v1.1)

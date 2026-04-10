@@ -380,11 +380,11 @@ Kleine Bridge-Phase zwischen v1.4-Close und v1.5-Kickoff. Drei Themen: Obsidian-
 
 ### Obsidian Plugin-Audit v1.4.1 (OBPL141)
 
-- [ ] **OBPL141-01**: `.planning/obsidian-plugin-config/plugin-audit-v1.4.1.md` mit allen 17 neuen Plugins (Klassifikation, URL, Empfehlung)
-- [ ] **OBPL141-02**: Config-Backups in `.planning/obsidian-plugin-config/<plugin-id>.json` für Tom-relevante Plugins (nach Maxim-Abnahme)
-- [ ] **OBPL141-03**: `CLAUDE.md` "Obsidian Plugin Landscape" auf 53 Plugins erweitert (Warnings + Empfehlungen)
-- [ ] **OBPL141-04**: ADR-003 `obsidian-ocr` vs `tom-doc` Koexistenz-Entscheidung
-- [ ] **OBPL141-05**: ADR-004 `mcp-tools` als v1.5-Kandidat (nur Dokumentation, keine Integration)
+- [x] **OBPL141-01**: `.planning/obsidian-plugin-config/plugin-audit-v1.4.1.md` mit allen 17 neuen Plugins (Klassifikation, URL, Empfehlung)
+- [x] **OBPL141-02**: Config-Backup-Stubs in `.planning/obsidian-plugin-config/<plugin-id>.json` für Setup-Kandidaten (`eml-reader`, `obsidian-apple-reminders-plugin`) — Status `prepared-pending-maxim-activation`
+- [x] **OBPL141-03**: `CLAUDE.md` "Obsidian Plugin Landscape" auf 52 Plugins erweitert (neue Kategorie LLM-Alternativen, Email/Messaging-Box, Warnings obsidian-ocr, Empfehlung mcp-tools)
+- [x] **OBPL141-04**: ADR-003 `obsidian-ocr` vs `tom-doc` Koexistenz-Entscheidung
+- [x] **OBPL141-05**: ADR-004 `mcp-tools` als v1.5-Kandidat (nur Dokumentation, keine Integration)
 
 ### Web-Clipper-Template-System (CLIP141)
 

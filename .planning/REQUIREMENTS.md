@@ -36,10 +36,10 @@ Requirements für Compile-Automation, `tom-wiki` Quality-Pass, Eval-Framework-Er
 
 ### Doku + Schwellen-Update (DOC13)
 
-- [ ] **DOC13-01**: `CLAUDE.md` Wissens-Kaskade bestätigt Karpathy-Schwelle **500** (unverändert) und dokumentiert den expliziten Umstiegspfad auf RAG-Primary bei Überschreitung
-- [ ] **DOC13-02**: `$TOM_VAULT/CLAUDE.md` (Vault-Regeln) ist konsistent auf 500 (falls die Schwelle dort erwähnt wird)
-- [ ] **DOC13-03**: Neue Sektion "Skalierungs-Stufen" in `CLAUDE.md` skizziert: <500 = Index-first, 500–2000 = Hybrid, >2000 = RAG-Primary
-- [ ] **DOC13-04**: Maximus_OS-Issue an wiki-kurator dokumentiert Doku-Update
+- [x] **DOC13-01**: `CLAUDE.md` Wissens-Kaskade bestätigt Karpathy-Schwelle **500** (unverändert) und dokumentiert den expliziten Umstiegspfad auf RAG-Primary bei Überschreitung
+- [x] **DOC13-02**: `$TOM_VAULT/CLAUDE.md` (Vault-Regeln) ist konsistent auf 500 (falls die Schwelle dort erwähnt wird) — auto-erfüllt, Vault-CLAUDE.md erwähnt die Schwelle nicht
+- [x] **DOC13-03**: Neue Sektion "Skalierungs-Stufen" in `CLAUDE.md` skizziert: <500 = Index-first, 500–2000 = Hybrid, >2000 = RAG-Primary
+- [x] **DOC13-04**: Maximus_OS-Issue an wiki-kurator dokumentiert Doku-Update (FAM-135)
 
 ### SDK-Clarification + Abschluss (CLOSE13)
 
@@ -229,10 +229,10 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | EVAL-03 | Phase 24 | Complete |
 | EVAL-04 | Phase 24 | Complete |
 | EVAL-05 | Phase 24 | Complete |
-| DOC13-01 | Phase 25 | Pending |
-| DOC13-02 | Phase 25 | Pending |
-| DOC13-03 | Phase 25 | Pending |
-| DOC13-04 | Phase 25 | Pending |
+| DOC13-01 | Phase 25 | Complete |
+| DOC13-02 | Phase 25 | Complete |
+| DOC13-03 | Phase 25 | Complete |
+| DOC13-04 | Phase 25 | Complete |
 | CLOSE13-01 | Phase 26 | Pending |
 | CLOSE13-02 | Phase 26 | Pending |
 | CLOSE13-03 | Phase 26 | Pending |

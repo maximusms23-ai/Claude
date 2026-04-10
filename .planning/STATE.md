@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Complete
 status: unknown
-last_updated: "2026-04-10T13:34:12.432Z"
+last_updated: "2026-04-10T13:39:04.925Z"
 progress:
-  total_phases: 11
+  total_phases: 12
   completed_phases: 3
   total_plans: 5
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # State: Tom v1.3
@@ -18,11 +18,11 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-10)
 
 **Core value:** Maxim hat eine einzige, vertrauenswürdige Ablage für alles — Tom weiß, wo was liegt.
-**Current focus:** Phase 24 — eval-framework
+**Current focus:** Phase 25 — doku-schwellen-update
 
 ## Current Position
 
-Phase: 24 (eval-framework) — EXECUTING
+Phase: 25 (doku-schwellen-update) — EXECUTING
 Plan: 1 of 1
 
 ## Decisions

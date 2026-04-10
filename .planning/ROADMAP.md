@@ -278,7 +278,7 @@ Commit-Trail siehe `MILESTONES.md`.
 - [x] **Phase 22: Compile-Automation** — launchd Daily-Job + fehlertoleranter `tom-compile-safe` Wrapper (completed 2026-04-10)
 - [x] **Phase 23: tom-wiki Quality-Pass** — stärkerer Prompt, Context-Filter, Quellen-Zitation (completed 2026-04-10)
 - [x] **Phase 24: Eval-Framework-Erweiterung** — Brain-Corpus + Side-by-Side-Vergleich tom-wiki vs tom-ask (completed 2026-04-10)
-- [ ] **Phase 25: Doku + Schwellen-Update** — Karpathy-Schwelle 1500 in CLAUDE.md dokumentiert
+- [x] **Phase 25: Doku + Schwellen-Update** — Karpathy-Schwelle 1500 in CLAUDE.md dokumentiert (completed 2026-04-10)
 - [ ] **Phase 26: SDK-Clarification + Milestone-Close** — Anthropic-SDK-Recherche + v1.3 formal abschließen
 
 ### Progress Table
@@ -288,7 +288,7 @@ Commit-Trail siehe `MILESTONES.md`.
 | 22. Compile-Automation | 2/2 | Complete    | 2026-04-10 |
 | 23. tom-wiki Quality-Pass | 1/1 | Complete    | 2026-04-10 |
 | 24. Eval-Framework-Erweiterung | 1/1 | Complete    | 2026-04-10 |
-| 25. Doku + Schwellen-Update | 0/? | Not started | — |
+| 25. Doku + Schwellen-Update | 0/? | Complete    | 2026-04-10 |
 | 26. SDK-Clarification + Milestone-Close | 0/? | Not started | — |
 
 ---

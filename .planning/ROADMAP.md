@@ -360,16 +360,16 @@ Plans:
 
 ### Phase 25: Doku + Schwellen-Update
 
-**Goal**: Die Karpathy-Schwelle ist auf 1500 aktualisiert und der Umstiegspfad auf RAG-Primary ist in `CLAUDE.md` (Repo) und `$TOM_VAULT/CLAUDE.md` (Vault) klar dokumentiert.
+**Goal**: Die Karpathy-Schwelle bleibt bei **500** und der Umstiegspfad auf RAG-Primary ist in `CLAUDE.md` (Repo) und `$TOM_VAULT/CLAUDE.md` (Vault) klar dokumentiert. v1.3-Entscheidung: **keine Anhebung** — 500 bleibt verbindlich.
 
 **Depends on**: Nothing (reine Dokumentationsphase, unabhängig)
 
 **Requirements**: DOC13-01, DOC13-02, DOC13-03, DOC13-04
 
 **Success Criteria** (what must be TRUE):
-1. `/Users/maxim/Claude/CLAUDE.md` Wissens-Kaskade-Sektion nennt die Schwelle 1500 (nicht 500) und den Umstiegspfad auf RAG-Primary
-2. Eine neue Sektion "Skalierungs-Stufen" beschreibt: <1500 = Index-first, 1500–5000 = Hybrid, >5000 = RAG-Primary
-3. `$TOM_VAULT/CLAUDE.md` ist konsistent auf 1500 aktualisiert (falls dort die Schwelle erwähnt wird)
+1. `/Users/maxim/Claude/CLAUDE.md` Wissens-Kaskade-Sektion bestätigt die Schwelle **500** (unverändert) und beschreibt den Umstiegspfad auf RAG-Primary
+2. Eine neue Sektion "Skalierungs-Stufen" beschreibt: <500 = Index-first, 500–2000 = Hybrid, >2000 = RAG-Primary
+3. `$TOM_VAULT/CLAUDE.md` ist konsistent auf 500 (falls dort die Schwelle erwähnt wird)
 4. Ein Maximus_OS-Issue an wiki-kurator dokumentiert das Doku-Update
 
 **Plans**: TBD

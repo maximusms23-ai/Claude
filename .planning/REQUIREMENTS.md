@@ -36,9 +36,9 @@ Requirements für Compile-Automation, `tom-wiki` Quality-Pass, Eval-Framework-Er
 
 ### Doku + Schwellen-Update (DOC13)
 
-- [ ] **DOC13-01**: `CLAUDE.md` Wissens-Kaskade aktualisiert: Karpathy-Schwelle 1500 (statt 500), expliziter Umstiegspfad auf RAG-Primary dokumentiert
-- [ ] **DOC13-02**: `$TOM_VAULT/CLAUDE.md` (Vault-Regeln) ebenfalls auf 1500 aktualisiert, falls dort erwähnt
-- [ ] **DOC13-03**: Neue Sektion "Skalierungs-Stufen" in `CLAUDE.md` skizziert: <1500 = Index-first, 1500–5000 = Hybrid, >5000 = RAG-Primary
+- [ ] **DOC13-01**: `CLAUDE.md` Wissens-Kaskade bestätigt Karpathy-Schwelle **500** (unverändert) und dokumentiert den expliziten Umstiegspfad auf RAG-Primary bei Überschreitung
+- [ ] **DOC13-02**: `$TOM_VAULT/CLAUDE.md` (Vault-Regeln) ist konsistent auf 500 (falls die Schwelle dort erwähnt wird)
+- [ ] **DOC13-03**: Neue Sektion "Skalierungs-Stufen" in `CLAUDE.md` skizziert: <500 = Index-first, 500–2000 = Hybrid, >2000 = RAG-Primary
 - [ ] **DOC13-04**: Maximus_OS-Issue an wiki-kurator dokumentiert Doku-Update
 
 ### SDK-Clarification + Abschluss (CLOSE13)

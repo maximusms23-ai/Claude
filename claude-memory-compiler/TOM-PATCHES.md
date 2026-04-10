@@ -50,6 +50,49 @@ Aufruf via `uv run python -m tom_tools.wiki_query "Frage"`. Wird von `bin/tom-wi
 
 **Warum:** Dependency für `tom_tools/wiki_query.py`.
 
+### 7. `tom_tools/wiki_query.py` — v1.3 Quality-Pass (Phase 23)
+
+**Eingefuehrt:** 2026-04-10, Phase 23.
+
+**Was geaendert:**
+
+1. **Verschaerfter System-Prompt** — Verlangt jetzt explizit:
+   - Mindestens eine Quelldatei zitieren (Dateiname oder `[[wikilink]]`)
+   - Keine generischen Floskeln, keine Wikipedia-Synthese
+   - Bei fehlender Info ehrlich sagen + tom-ask als Fallback empfehlen
+   - Format: 3-8 Saetze plus Quellenzeile
+
+2. **Keyword-Context-Filter** — Statt alle Artikel in den Prompt zu kippen:
+   - `extract_keywords(question)` tokenisiert die Frage (lowercased, Stopwords raus, min 3 Zeichen)
+   - `score_article(content, keywords)` bewertet jeden Artikel nach Treffern in Titel/Headern/erstem Absatz/Body
+   - `collect_wiki_content(root, question)` laedt nur Index + Top-K=5 Artikel mit Score > 0
+   - Fallback: Wenn nichts matched, bleibt nur der Index drin (mit Hinweis-Marker)
+
+3. **Neue Konstanten:** `TOP_K = 5`, `MIN_KEYWORD_LEN = 3`, `STOPWORDS` (deutsche + englische Basisliste).
+
+**Warum:** Karpathy Index-first wird bei wachsendem Wiki verduennt — wenn alle Artikel in den Prompt gehen, antwortet `gemme` generisch statt praezise. Schmaler Filter + harter Prompt = praezise Antworten ohne RAG-Umstieg. Schwelle fuer RAG-Primary bleibt bei 1500 Artikel (Phase 25 dokumentiert das).
+
+**Smoke-Test (Phase 23 Abnahme):**
+
+```bash
+tom-wiki "Was ist TurboQuant?"
+# Erwartet: Antwort enthaelt "turboquant.md" oder "[[turboquant]]"
+```
+
+Tatsaechliches Ergebnis (vor/nach):
+
+- **VORHER:** Generische Synthese ueber alle Artikel, keine Datei-Referenz, Antwort > 15 Saetze.
+- **NACHHER:** 3-8 Saetze, schliesst mit `Quelle: konzepte/turboquant.md` (explizit zitiert). Volltext siehe Maximus_OS-Issue Phase 23.
+
+Smoke-Test Auszug (NACHHER):
+
+> TurboQuant ist ein von Google Research entwickelter KV-Cache-Quantisierungsalgorithmus, der den Key-Value-Cache während der Inferenz auf bis zu 3 Bit komprimiert. [...] Die niedrigste Stufe, `turbo3`, erreicht eine Kompression von 4.9x des KV-Cache-Speichers.
+> Quelle: konzepte/turboquant.md
+
+**Backwards-compat:** `bin/tom-wiki` Wrapper unveraendert, CLI-Surface (`python -m tom_tools.wiki_query "Frage"`) unveraendert. Nur die interne Signatur `collect_wiki_content(root)` wurde zu `collect_wiki_content(root, question)` erweitert — wird nur aus `query()` aufgerufen.
+
+**Nicht gemerged:** Diese Aenderungen sind Tom-spezifisch und gehen NICHT upstream zu coleam00/claude-memory-compiler — `wiki_query.py` ist von vornherein ein Tom-only Modul (siehe Patch 5).
+
 ## Upstream-Updates mergen
 
 Wenn Cole Medin den Upstream updatet:

@@ -16,9 +16,13 @@ TOM_VAULT = Path(
     )
 )
 
-# Pfade (v1.1: iCloud-Vault canonical)
+# Pfade (v1.1: iCloud-Vault canonical; v1.2 Phase 18: + 95_Gehirn/knowledge/)
 WIKI_PATH = TOM_VAULT / "90_Wiki"
 CLIPPINGS_PATH = TOM_VAULT / "Clippings"
+# 95_Gehirn/knowledge/ enthält kompilierte Konzept-Artikel aus Claude-Code-
+# Konversationen (via claude-memory-compiler). NICHT die rohen daily-logs —
+# die sind zu verrauscht für RAG.
+GEHIRN_PATH = TOM_VAULT / "95_Gehirn" / "knowledge"
 CHROMA_PATH = Path(__file__).parent / "chroma_db"
 TRAINING_DATA_PATH = Path(__file__).parent / "../training/data"
 

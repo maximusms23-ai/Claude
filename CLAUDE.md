@@ -186,6 +186,25 @@ Diese Hooks **mergen** mit den globalen Hooks in `~/.claude/settings.json` (GSD 
 
 Compile-Phase (daily → knowledge) wird manuell via `tom-compile` getriggert (nicht bei jedem SessionEnd).
 
+## tom-compile Automation (seit v1.3 Phase 22)
+
+`tom-compile` läuft automatisch via launchd:
+
+- **Plist**: `~/Library/LaunchAgents/com.maxim.tom-compile.plist` (Label `com.maxim.tom-compile`)
+- **Wrapper**: `bin/tom-compile-safe` — prüft vor jedem Lauf, ob `ollama serve` läuft und `$TOM_VAULT` erreichbar ist; exitet sauber mit Log-Eintrag bei fehlenden Voraussetzungen
+- **Schedule**: Täglich 18:00 Europe/Berlin (`StartCalendarInterval` im Plist)
+- **Runtime-Log**: `~/Library/Logs/tom-compile.log` (Timestamp | Status | Exit | Duration | Message)
+- **launchd-Log**: `~/Library/Logs/tom-compile-launchd.log` (stdout+stderr des Wrappers)
+
+Verifikation:
+```bash
+launchctl list | grep tom-compile       # Job registriert?
+tail -5 ~/Library/Logs/tom-compile.log  # Letzte Läufe
+launchctl kickstart -p gui/$(id -u)/com.maxim.tom-compile  # Manuell triggern
+```
+
+Trigger-Zeit auf 03:00 ändern: Im Plist `<key>Hour</key><integer>18</integer>` → `<integer>3</integer>`, dann `launchctl bootout gui/$(id -u)/com.maxim.tom-compile` + `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.maxim.tom-compile.plist`.
+
 ## Workflows im Vault
 
 Die konkreten Workflows für Dokumente, Arzttermine, Social Posts, Fristen und Hardware sind in `$TOM_VAULT/CLAUDE.md` dokumentiert (WF-01 bis WF-05).

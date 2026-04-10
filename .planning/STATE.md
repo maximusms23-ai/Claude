@@ -1,48 +1,51 @@
-# State: Tom v1.0
+# State: Tom v1.1
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-04-10)
 
 **Core value:** Maxim hat eine einzige, vertrauenswürdige Ablage für alles — Tom weiß, wo was liegt.
-**Current focus:** Milestone v1.0 — Tom Bootstrap
+**Current focus:** Milestone v1.1 — Maximus_OS Integration + Ollama Gemma Revival
 
 ## Current Position
 
-- **Milestone:** v1.0 — Tom Bootstrap
-- **Phase:** Not started (Phase 1 ready to plan)
+- **Milestone:** v1.1 — Maximus_OS Integration + Ollama Gemma Revival
+- **Phase:** Not started (defining requirements)
 - **Plan:** —
-- **Status:** Requirements + Roadmap definiert, bereit für `/gsd:plan-phase 1`
-- **Last activity:** 2026-04-10 — Milestone v1.0 bootstrapped (PROJECT.md, REQUIREMENTS.md, ROADMAP.md)
+- **Status:** Defining requirements
+- **Last activity:** 2026-04-10 — Milestone v1.1 started
 
 ## Accumulated Context
 
-### Architektur-Entscheidungen (bestätigt)
+### Architektur-Entscheidungen v1.1 (user-confirmed)
 
-- Vault-Pfad: `/Users/maxim/Claude/Obsidian_Zentralw/` (lokal, später manuell nach iCloud migrieren)
-- Symlink: `Obsidian_Zentralw/Archiv → ~/Downloads/Archiv`
-- MkDocs: nur `90_Wiki/` wird publiziert, Rest privat
-- Bootstrap: Gerüst + Templates, keine Zwangs-Interviews — organisches Wachstum
-- Sprache: Deutsch für Inhalte, Englisch für Code
+- **Vault-Cleanup Option A**: iCloud-Vault (`/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw/`) wird Single Source of Truth, lokales Duplikat wird aus Git und Dateisystem entfernt. Backup via iCloud + Time Machine.
+- **Maximus_OS Hybrid-Modell**: Tom macht interaktive Arbeit direkt (< 5 Min), Maximus_OS bekommt Issues für Milestones, Audit-Trail, Background-Tasks, Handoffs an spezialisierte Agents. Company-ID `2ff8e79a-c0f8-4966-aaba-13b9ea06cc03`.
+- **Ollama Pfad**: `/Users/maxim/Ollama` via `OLLAMA_MODELS` Env-Var, persistent in `~/.zshrc`.
+- **Base-Model**: `gemma2:9b` (ca. 5.4 GB). Custom model `gemme` via `Gemma/modelfile/Modelfile`.
+- **Kein echtes Fine-Tuning in v1.1**: Self-Instruct-Datensammlung aus `90_Wiki/` → späteres externes FT (MLX-LM/Unsloth) in v1.2+.
+- **Dual-Nutzung**: Tom (Claude Code) + Maximus_OS-Agent "Tom" nutzen beide `ollama run gemme` mit derselben RAG-Quelle.
 
-### Personen in Maxims Leben
+### Personen in Maxims Leben (unverändert)
 
-- **Familie**: Maxim Schmidt (user), Olga Schmidt (Ehefrau), Karina Schmidt (Tochter), Elina Schmidt (Tochter)
-- **Eltern**: Waldemar Schmidt, Nina Schmidt (Maxim hat Betreuungsaufgaben)
+- **Familie**: Maxim, Olga, Karina, Elina Schmidt
+- **Eltern**: Waldemar, Nina Schmidt (Betreuung durch Maxim)
 
-### Archiv-Kategorien (15)
+### v1.0 Bestand (referenziert)
 
-01 Arbeitgeber_Arbeitsamt, 02 Bundeswehr, 03 Rechnungen, 04 Versicherungen, 05 Bildung, 06 Arzt, 07 Verträge, 08 Urkunden, 09 Rente_Steuer, 10 Auto, 11 Finanzen, 12 Uni, 13 Betreuung, 14 Wohnung, 15 Sonstiges
+- Vault-Gerüst 00–99 exists (Phase 2)
+- 6 Personen-Seiten + Archiv-Symlink + mkdocs-Scope (Phases 3–5)
+- Templates + Workflows WF-01..05 (Phases 5, 7)
+- Tom-Identität in CLAUDE.md / AGENTS.md (Phase 1)
+- Commit: `525c073`
 
-### Bestand vor Tom v1.0
+### Neue Tools v1.1
 
-- `Obsidian/wiki/` — Research-Wiki (Quelle für `90_Wiki/`-Migration)
-- `Obsidian/raw/`, `Obsidian/Clippings/` — Quellmaterial (read-only)
-- `Obsidian/TODOS.md`, `Obsidian/PROJEKTE.md` — persönliches Tracking (gitignored)
-- `Obsidian/mkdocs.yml` — MkDocs-Konfiguration
-- `Gemma/` — Local LLM + RAG-Pipeline (nicht Teil von v1.0)
-- `.planning/codebase/` — Codebase-Maps aus `/gsd:map-codebase`
+- `bin/tom-issue` — Wrapper um `paperclipai issue create` (Maximus_OS-Kommunikation)
+- `bin/tom-ask` — Wrapper um `Gemma/rag/query.py` (lokales RAG-Query)
 
 ## Open Questions
 
-Keine aktiven Blocker. Vault-iCloud-Migration wurde explizit auf v1.1 vertagt.
+Keine Blocker. Nicht-Blocker:
+- Ollama Server Management: manuell vs. `brew services` — Default manuell
+- Fine-Tuning explizit nicht in v1.1

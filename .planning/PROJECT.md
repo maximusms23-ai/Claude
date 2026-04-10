@@ -14,17 +14,30 @@ Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Lebe
 
 <!-- Shipped and confirmed valuable. -->
 
-- ✓ Obsidian-Wiki mit MkDocs-Deploy — bestehendes Research-Wiki (wird migriert nach `90_Wiki/`)
+- ✓ Obsidian-Wiki mit MkDocs-Deploy — bestehendes Research-Wiki
 - ✓ RTK Token-Optimierung für CLI-Operationen
 - ✓ Dokumentenarchiv unter `~/Downloads/Archiv/` mit 15 Kategorien (01–15)
 - ✓ Obsidian Web Clipper in Chrome eingerichtet
-- ✓ PaperclipAI Integration (localhost:3100)
+- ✓ PaperclipAI Integration (localhost:3100, Company `Maximus_OS`)
+- ✓ Tom v1.0 — Lebens-Vault Bootstrap (Phasen 1–7, Commit `525c073`)
+
+## Current Milestone: v1.1 — Maximus_OS Integration + Ollama Gemma Revival
+
+**Goal:** Vault-Single-Source auf iCloud bereinigen, Hybrid-Integration mit Maximus_OS aufsetzen, lokales Gemma-Model gegen den neuen Vault mit RAG-Pipeline reanimieren.
+
+**Target features:**
+- Vault-Cleanup: lokales Duplikat entfernen, iCloud als Single Source of Truth
+- Maximus_OS Hybrid-Integration: `tom-issue` Wrapper + Kommunikationsregeln
+- Ollama Re-Install unter `/Users/maxim/Ollama` + `gemma2:9b` Base-Model
+- Custom `gemme`-Model + RAG-Pipeline gegen neuen Vault
+- `tom-ask` Wrapper für lokale RAG-Queries
+- Dokumentation + Abschluss-Audit
 
 ### Active
 
-<!-- Milestone v1.0 scope. -->
+<!-- Milestone v1.1 scope. -->
 
-Siehe `.planning/REQUIREMENTS.md` (Milestone v1.0 — Tom Bootstrap).
+Siehe `.planning/REQUIREMENTS.md` (Milestone v1.1).
 
 ### Out of Scope
 
@@ -62,4 +75,4 @@ Siehe `.planning/REQUIREMENTS.md` (Milestone v1.0 — Tom Bootstrap).
 | 00_Inbox → 99_Vorlagen Nummerierungsschema | Ordnet sich auto-sortiert, Trennung persönlich/wiki bleibt visuell | — Pending |
 
 ---
-*Last updated: 2026-04-10 after Tom v1.0 bootstrap*
+*Last updated: 2026-04-10 after Tom v1.1 milestone start*

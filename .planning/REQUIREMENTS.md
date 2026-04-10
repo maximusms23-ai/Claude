@@ -1,10 +1,69 @@
 # Requirements: Tom — Persönlicher Lebens-Assistent
 
 **Defined:** 2026-04-10
-**Current Milestone:** v1.3 — Compile-Automation + Quality-Pass
+**Current Milestone:** v1.4 — Aktive KI + Dokumenten-Fundament
 **Core Value:** Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Leben wichtig ist — Tom weiß, wo was liegt, und unterstützt proaktiv.
 
-## v1.3 Requirements (Current)
+## v1.4 Requirements (Current)
+
+Requirements für Dokumenten-Volltext-Fundament, `tom-doc` CLI, Smart-Connections-Integration in Obsidian, Clipper-Auto-Enrichment, Token-Spar-Lokalisierung und Milestone-Close. Jeder Eintrag mappt auf genau eine Phase im Roadmap (Phasen 27–32).
+
+### OCR + Dokumenten-Fundament (DOC14)
+
+- [ ] **DOC14-01**: `tesseract` + `ocrmypdf` + `tesseract-lang-deu` via Homebrew installiert; `tesseract --list-langs` enthält `deu`
+- [ ] **DOC14-02**: `$TOM_VAULT/Archiv/` Symlink auf `~/Downloads/Archiv/` existiert
+- [ ] **DOC14-03**: `/Users/maxim/Claude/archivum/` mit `db/`, `ocr-cache/`, `logs/`, `README.md` angelegt
+- [ ] **DOC14-04**: SQLite FTS5 Schema in `archivum/db/archivum.db` — Tabellen `documents` + `documents_fts`
+- [ ] **DOC14-05**: OCR-Pipeline-Script `archivum/ocr_pipeline.py` — `ocrmypdf --language deu --sidecar` über alle PDFs, Cache nach `ocr-cache/<hash>.txt`, idempotent
+- [ ] **DOC14-06**: Smoke-Test mit mindestens einem echten Maxim-Dokument — Volltext ist in FTS5-Index abfragbar
+
+### tom-doc CLI (TDOC)
+
+- [ ] **TDOC-01**: `bin/tom-doc` Wrapper mit Subcommands `index`, `search`, `list`, `show`
+- [ ] **TDOC-02**: `tom-doc index [kategorie]` — scant Archiv-Kategorie, OCR'd neue PDFs, aktualisiert FTS5-Index
+- [ ] **TDOC-03**: `tom-doc search "query"` — FTS5-Query mit Trefferliste `kategorie/dateiname + Snippet`
+- [ ] **TDOC-04**: `tom-doc show <pfad>` — zeigt Metadaten + OCR-Text-Auszug
+- [ ] **TDOC-05**: `tom-doc list [kategorie]` — listet alle indizierten Dokumente einer Kategorie
+- [ ] **TDOC-06**: Symlink in `~/bin/tom-doc` angelegt
+- [ ] **TDOC-07**: `CLAUDE.md` Wissens-Kaskade um Dokumenten-Fragen (`tom-doc search`) erweitert
+
+### Gemma-in-Obsidian via Community-Plugin (OBPL)
+
+- [ ] **OBPL-01**: Smart Connections Plugin installiert + mit Ollama-Backend konfiguriert (Embedding: `nomic-embed-text`, Chat: `gemme`); Fallback-Option Obsidian Copilot dokumentiert
+- [ ] **OBPL-02**: Plugin-Settings als JSON-Backup in `.planning/obsidian-plugin-config/smart-connections.json`
+- [ ] **OBPL-03**: Smoke-Test: Semantic-Search findet `konzepte/turboquant.md` bei Query "TurboQuant"
+- [ ] **OBPL-04**: Smart Connections indexiert NUR `90_Wiki/` + `95_Gehirn/knowledge/` — NICHT `10_Personen/`, `20_Dokumente/`, `40_Aufgaben/`, `50_Gesundheit/`, `60_Finanzen/` (Privacy via `.scignore` oder Exclude-Liste)
+- [ ] **OBPL-05**: `CLAUDE.md` Wissens-Kaskade dokumentiert neue Option (6) "Ad-hoc im Editor → Smart Connections Panel"
+
+### Clipper Auto-Enrichment (CLIP)
+
+- [ ] **CLIP-01**: `bin/tom-clip-enrich` liest Clipping-Datei, ruft `gemme` lokal, schreibt angereicherte Version zurück; idempotent via `enriched: true` Frontmatter-Flag
+- [ ] **CLIP-02**: Enrichment — **Summary**: 3–5 Sätze in Frontmatter-Feld `summary`
+- [ ] **CLIP-03**: Enrichment — **Auto-Tags**: 3–5 gemme-Tags an existierende `tags` appended (dedupliziert)
+- [ ] **CLIP-04**: Enrichment — **Konzept-Extraktion**: 2–4 Begriffe als Zeilen in `$TOM_VAULT/90_Wiki/konzepte-vorschlaege.md` (Review-Schleife, NICHT direkt als Stub-Pages)
+- [ ] **CLIP-05**: Enrichment — **Wiki-Kategorie-Vorschlag**: `gemme` wählt eine `90_Wiki/`-Subkategorie (themen/konzepte/personen/projekte/quellen) → Frontmatter-Feld `suggested_wiki_category`
+- [ ] **CLIP-06**: `tom-clip-enrich --watch` optional (deferrable) — `fswatch` auf `$TOM_VAULT/Clippings/`
+- [ ] **CLIP-07**: Smoke-Test mit `Mannheim – Wikipedia.md` — alle 4 Enrichment-Felder gefüllt, keine Halluzinationen
+- [ ] **CLIP-08**: `tom-clip-enrich` als Hook in `tom-compile-safe` ODER separater launchd-Job (Entscheidung in Phase 30)
+
+### Token-Spar-Lokalisierung (LOCAL)
+
+- [ ] **LOCAL-01**: `tom-compile --local` Alternative-Pfad über `gemme` statt `claude_agent_sdk`; Default bleibt `claude_agent_sdk`
+- [ ] **LOCAL-02**: Eval-Vergleich `tom-compile` vs `tom-compile --local` auf 3 daily-logs in `Gemma/eval/results/v1.4-compile-local-vs-claude.md`
+- [ ] **LOCAL-03**: `tom-lint --no-llm` (oder existierendes `--structural-only`) als launchd-tauglicher Default dokumentiert
+- [ ] **LOCAL-04**: Maximus_OS-Issue dokumentiert Token-Ersparnis-Entscheidungsstand
+
+### Milestone-Close v1.4 (CLOSE14)
+
+- [ ] **CLOSE14-01**: `.planning/MILESTONES.md` v1.4-Eintrag nach v1.1/v1.2/v1.3-Schema
+- [ ] **CLOSE14-02**: `.planning/PROJECT.md` Validated-Sektion um v1.4-Deliverables erweitert
+- [ ] **CLOSE14-03**: `.planning/briefings/v1.4-CEO-Briefing.md` nach v1.3-Template (6 Teile + Anhänge)
+- [ ] **CLOSE14-04**: `$TOM_VAULT/log.md` v1.4-Eintrag nach v1.3-Schema
+- [ ] **CLOSE14-05**: `$TOM_VAULT/30_Projekte/Tom.md` Current-Milestone + Werkzeug-Liste um `tom-doc`, `tom-clip-enrich` ergänzt
+- [ ] **CLOSE14-06**: Maximus_OS-Issue an CEO (`priority=high`) schließt v1.4 offiziell ab
+- [ ] **CLOSE14-07**: Alle v1.4-Requirements in REQUIREMENTS.md als [x]
+
+## v1.3 Requirements (Shipped)
 
 Requirements für Compile-Automation, `tom-wiki` Quality-Pass, Eval-Framework-Erweiterung, Doku-Updates und Anthropic-SDK-Clarification. Jeder Eintrag mappt auf genau eine Phase im Roadmap (Phasen 22–26).
 
@@ -246,11 +305,49 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | CLOSE13-07 | Phase 26 | Complete |
 | CLOSE13-08 | Phase 26 | Complete |
 | CLOSE13-09 | Phase 26 | Complete |
+| DOC14-01 | Phase 27 | Pending |
+| DOC14-02 | Phase 27 | Pending |
+| DOC14-03 | Phase 27 | Pending |
+| DOC14-04 | Phase 27 | Pending |
+| DOC14-05 | Phase 27 | Pending |
+| DOC14-06 | Phase 27 | Pending |
+| TDOC-01 | Phase 28 | Pending |
+| TDOC-02 | Phase 28 | Pending |
+| TDOC-03 | Phase 28 | Pending |
+| TDOC-04 | Phase 28 | Pending |
+| TDOC-05 | Phase 28 | Pending |
+| TDOC-06 | Phase 28 | Pending |
+| TDOC-07 | Phase 28 | Pending |
+| OBPL-01 | Phase 29 | Pending |
+| OBPL-02 | Phase 29 | Pending |
+| OBPL-03 | Phase 29 | Pending |
+| OBPL-04 | Phase 29 | Pending |
+| OBPL-05 | Phase 29 | Pending |
+| CLIP-01 | Phase 30 | Pending |
+| CLIP-02 | Phase 30 | Pending |
+| CLIP-03 | Phase 30 | Pending |
+| CLIP-04 | Phase 30 | Pending |
+| CLIP-05 | Phase 30 | Pending |
+| CLIP-06 | Phase 30 | Pending |
+| CLIP-07 | Phase 30 | Pending |
+| CLIP-08 | Phase 30 | Pending |
+| LOCAL-01 | Phase 31 | Pending |
+| LOCAL-02 | Phase 31 | Pending |
+| LOCAL-03 | Phase 31 | Pending |
+| LOCAL-04 | Phase 31 | Pending |
+| CLOSE14-01 | Phase 32 | Pending |
+| CLOSE14-02 | Phase 32 | Pending |
+| CLOSE14-03 | Phase 32 | Pending |
+| CLOSE14-04 | Phase 32 | Pending |
+| CLOSE14-05 | Phase 32 | Pending |
+| CLOSE14-06 | Phase 32 | Pending |
+| CLOSE14-07 | Phase 32 | Pending |
 
 **Coverage:**
-- v1.3 requirements: 30 total (26 original + 4 Obsidian-Lücken-Fix aus Phase 26), mapped to phases: 30, unmapped: 0 ✓
+- v1.4 requirements: 37 total (6 DOC14 + 7 TDOC + 5 OBPL + 8 CLIP + 4 LOCAL + 7 CLOSE14), mapped to phases: 37, unmapped: 0 ✓
+- v1.3 requirements: 30 total (shipped)
 - v1.2 requirements: 43 total (shipped)
 
 ---
 *Requirements defined: 2026-04-10*
-*Last updated: 2026-04-10 after v1.3 milestone start*
+*Last updated: 2026-04-10 after v1.4 milestone start*

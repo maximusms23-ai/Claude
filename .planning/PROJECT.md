@@ -42,25 +42,26 @@ Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Lebe
   - Anthropic-SDK-Clarification in `claude-memory-compiler/TOM-PATCHES.md` (bundled-CLI-Pfad nutzt Max-Subscription)
   - Obsidian-Doku-Lücke geschlossen: `log.md`-Eintrag, `30_Projekte/Tom.md` als Meta-Einstieg, Milestone-Close-Checklist in `CLAUDE.md`
 
-**Active:** — (v1.4 in Planung: Dokumenten-Volltext hybrid)
+**Active:** Tom v1.4 — Aktive KI + Dokumenten-Fundament
 
-## Current Milestone: v1.3 — Compile-Automation + Quality-Pass
+## Current Milestone: v1.4 — Aktive KI + Dokumenten-Fundament
 
-**Goal:** Den in v1.2 gebauten Brain- und Wiki-Flow in den Dauerbetrieb bringen — launchd-Automation für `tom-compile`, Quality-Pass für `tom-wiki`, erweitertes Eval-Framework, dokumentierte Karpathy-Schwelle (1500) und Anthropic-SDK-Clarification. Kleine, pragmatische Verbesserungen, keine Architektur-Änderungen.
+**Goal:** Tom bekommt (1) ein Volltext-Dokumenten-Fundament für die 15 Archiv-Kategorien via OCR + SQLite-FTS5, (2) eine Obsidian-native aktive-KI-Integration via Smart-Connections-Plugin mit Ollama-Backend, (3) automatisches Clipper-Enrichment (Summary/Tags/Konzepte/Wiki-Kategorie-Vorschlag) und (4) einen dokumentierten Token-Spar-Pfad für `tom-compile`/`tom-lint`. Die Document-Lifecycle-State-Machine wird bewusst nach v1.5 deferred.
 
 **Target features:**
-- Compile-Automation via launchd Daily-Job (18:00 Europe/Berlin) mit fehlertolerantem Wrapper `tom-compile-safe`
-- `tom-wiki` Quality-Pass: stärkerer System-Prompt, Context-Filter, bessere Quellen-Zitation
-- `Gemma/eval/` erweitert um Brain-Artikel + quantitativer Vergleich `tom-wiki` vs. `tom-ask`
-- Karpathy-Schwelle 1500 in `CLAUDE.md` dokumentiert inkl. Umstiegspfad RAG-Primary
-- Anthropic-SDK-Clarification in `claude-memory-compiler/TOM-PATCHES.md` + CEO-Briefing
-- Abschluss-Doku + Milestone-Close
+- OCR-Toolkette (`tesseract`, `ocrmypdf` + `deu`) + `archivum/` mit SQLite FTS5 + OCR-Cache
+- `bin/tom-doc` CLI (index/search/list/show) gegen Volltext-Index
+- Smart Connections Obsidian-Plugin mit `gemme`/`nomic-embed-text` Backend, Privacy-Exclude für 10_–60_
+- `bin/tom-clip-enrich` — Summary + Auto-Tags + Konzept-Vorschläge + Wiki-Kategorie-Vorschlag, idempotent
+- `tom-compile --local` + Eval-Vergleich (`claude_agent_sdk` bleibt Default)
+- `tom-lint --structural-only` als launchd-tauglicher Default dokumentiert
+- Close-Checklist nach v1.3-Schema (6 Doku-Kanäle)
 
 ### Active
 
-<!-- Milestone v1.3 scope. -->
+<!-- Milestone v1.4 scope. -->
 
-Siehe `.planning/REQUIREMENTS.md` (Milestone v1.3).
+Siehe `.planning/REQUIREMENTS.md` (Milestone v1.4).
 
 ### Out of Scope
 
@@ -98,4 +99,4 @@ Siehe `.planning/REQUIREMENTS.md` (Milestone v1.3).
 | 00_Inbox → 99_Vorlagen Nummerierungsschema | Ordnet sich auto-sortiert, Trennung persönlich/wiki bleibt visuell | — Pending |
 
 ---
-*Last updated: 2026-04-10 after Tom v1.3 milestone start*
+*Last updated: 2026-04-10 after Tom v1.4 milestone start*

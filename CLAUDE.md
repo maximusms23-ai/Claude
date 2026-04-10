@@ -159,7 +159,7 @@ Erst nach diesen 4 Schritten gilt die Phase als wirklich abgeschlossen. Die best
 
 Für Browser-Clippings nutzt Maxim typ-spezifische Templates in `$TOM_VAULT/99_Vorlagen/web-clipper/` (7 Templates: Artikel, Paper, Video, Dokument, Social-Post, Rezept, Werkzeug). Jedes Template schreibt in seinen Ziel-Unterordner unter `Clippings/<Typ>/` mit Tom-konformem Frontmatter.
 
-**Interpreter ist Primary (Phase 35-Hotfix, ADR-005):** Der Obsidian Web Clipper ruft beim Clippen 3 lokale `gemme`-Interpreter-Prompts pro Template auf (`summary`, zusätzliche `tags`, `konzepte_vorschlaege`) und schreibt die Ergebnisse direkt ins Frontmatter. Das Clip-Ergebnis ist sofort angereichert — kein manueller Shell-Call mehr im Normalfall.
+**Interpreter ist Primary (Phase 35-Hotfix, ADR-005):** Der Obsidian Web Clipper ruft beim Clippen **einen** lokalen `gemme`-Batch-Call pro Template auf (mit `summary`, `tags`, `konzepte_vorschlaege` Prompts gebündelt) — **aber nur wenn Maxim im Clipper-Popup den „Interpret"-Button vor „Speichern in Obsidian" klickt.** Ohne Interpret-Klick landen die Roh-Prompt-Strings im Frontmatter. Siehe `$TOM_VAULT/99_Vorlagen/web-clipper/README.md` für den exakten Flow.
 
 **Einmal-Setup:** `launchctl setenv OLLAMA_ORIGINS "chrome-extension://*,moz-extension://*"` + Ollama-Restart, damit die Browser-Extension den lokalen Endpoint erreichen darf. Interpreter-Provider in der Extension: Endpoint `http://127.0.0.1:11434/api/chat`, Model `gemme`. Full-Setup-Dokumentation in `$TOM_VAULT/99_Vorlagen/web-clipper/README.md`.
 

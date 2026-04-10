@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Complete
 status: unknown
-last_updated: "2026-04-10T12:59:16.219Z"
+last_updated: "2026-04-10T13:29:57.419Z"
 progress:
-  total_phases: 10
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 3
+  total_phases: 11
+  completed_phases: 3
+  total_plans: 5
+  completed_plans: 4
 ---
 
 # State: Tom v1.3
@@ -18,11 +18,11 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-10)
 
 **Core value:** Maxim hat eine einzige, vertrauenswürdige Ablage für alles — Tom weiß, wo was liegt.
-**Current focus:** Phase 23 — tom-wiki-quality-pass
+**Current focus:** Phase 24 — eval-framework
 
 ## Current Position
 
-Phase: 23 (tom-wiki-quality-pass) — EXECUTING
+Phase: 24 (eval-framework) — EXECUTING
 Plan: 1 of 1
 
 ## Decisions
@@ -33,6 +33,7 @@ Plan: 1 of 1
 - [Phase 22]: RunAtLoad=false in Plist damit kein automatischer Lauf bei Bootstrap
 - [Phase 23]: STOPWORDS manuell um 'gibt' erweitert fuer korrekte extract_keywords() Filterung
 - [Phase 23]: Maximus_OS-Issue FAM-129 an cto abgesetzt mit Before/After Smoke-Test
+- [Phase 24-eval-framework]: tom-wiki schlaegt tom-ask bei Wiki-Themen klar (80% vs 27% avg) — Karpathy-Hypothese durch Baseline-Eval bestaetigt
 
 ## Progress
 

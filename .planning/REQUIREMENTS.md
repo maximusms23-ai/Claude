@@ -28,11 +28,11 @@ Requirements für Compile-Automation, `tom-wiki` Quality-Pass, Eval-Framework-Er
 
 ### Eval-Framework-Erweiterung (EVAL)
 
-- [ ] **EVAL-01**: `Gemma/eval/` hat neuen Test-Corpus-Eintrag mit Brain-Artikeln aus `95_Gehirn/knowledge/`
-- [ ] **EVAL-02**: `run_eval.py` erweitert um Side-by-Side-Vergleich `tom-wiki` vs `tom-ask` (gleiche Query, beide Antworten, manuelle oder LLM-Score)
-- [ ] **EVAL-03**: Eval produziert Report-File unter `Gemma/eval/results/v1.3-baseline.md` mit Score-Vergleich
-- [ ] **EVAL-04**: Mindestens 10 Test-Queries im Corpus decken Wiki-Themen und Brain-Themen ab
-- [ ] **EVAL-05**: Maximus_OS-Issue an CTO dokumentiert Eval-Ergebnisse + Interpretation
+- [x] **EVAL-01**: `Gemma/eval/` hat neuen Test-Corpus-Eintrag mit Brain-Artikeln aus `95_Gehirn/knowledge/`
+- [x] **EVAL-02**: `run_eval.py` erweitert um Side-by-Side-Vergleich `tom-wiki` vs `tom-ask` (gleiche Query, beide Antworten, manuelle oder LLM-Score)
+- [x] **EVAL-03**: Eval produziert Report-File unter `Gemma/eval/results/v1.3-baseline.md` mit Score-Vergleich
+- [x] **EVAL-04**: Mindestens 10 Test-Queries im Corpus decken Wiki-Themen und Brain-Themen ab
+- [x] **EVAL-05**: Maximus_OS-Issue an CTO dokumentiert Eval-Ergebnisse + Interpretation
 
 ### Doku + Schwellen-Update (DOC13)
 
@@ -224,11 +224,11 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | QUAL-04 | Phase 23 | Complete |
 | QUAL-05 | Phase 23 | Complete |
 | QUAL-06 | Phase 23 | Complete |
-| EVAL-01 | Phase 24 | Pending |
-| EVAL-02 | Phase 24 | Pending |
-| EVAL-03 | Phase 24 | Pending |
-| EVAL-04 | Phase 24 | Pending |
-| EVAL-05 | Phase 24 | Pending |
+| EVAL-01 | Phase 24 | Complete |
+| EVAL-02 | Phase 24 | Complete |
+| EVAL-03 | Phase 24 | Complete |
+| EVAL-04 | Phase 24 | Complete |
+| EVAL-05 | Phase 24 | Complete |
 | DOC13-01 | Phase 25 | Pending |
 | DOC13-02 | Phase 25 | Pending |
 | DOC13-03 | Phase 25 | Pending |

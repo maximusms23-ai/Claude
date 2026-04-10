@@ -5,15 +5,22 @@
 See: `.planning/PROJECT.md` (updated 2026-04-10)
 
 **Core value:** Maxim hat eine einzige, vertrauenswürdige Ablage für alles — Tom weiß, wo was liegt.
-**Current focus:** v1.3 — Compile-Automation + Quality-Pass (defining requirements)
+**Current focus:** v1.3 — Compile-Automation + Quality-Pass (Phase 22 bereit)
 
 ## Current Position
 
 - **Milestone:** v1.3 — Compile-Automation + Quality-Pass
-- **Phase:** Not started (defining requirements)
+- **Phase:** Phase 22 — Compile-Automation (Not started)
 - **Plan:** —
-- **Status:** Defining requirements
-- **Last activity:** 2026-04-10 — Milestone v1.3 started
+- **Status:** Roadmap erstellt, bereit für Phase 22
+- **Last activity:** 2026-04-10 — v1.3 Roadmap (Phasen 22–26) erstellt
+
+## Progress
+
+```
+v1.3: [ ] Phase 22  [ ] Phase 23  [ ] Phase 24  [ ] Phase 25  [ ] Phase 26
+       0%                                                              100%
+```
 
 ## Accumulated Context (von v1.2 übernommen)
 
@@ -32,15 +39,14 @@ See: `.planning/PROJECT.md` (updated 2026-04-10)
 
 ## Milestone v1.3 Scope
 
-Siehe `.planning/REQUIREMENTS.md` und `.planning/ROADMAP.md`.
+Phasen 22–26 in `.planning/ROADMAP.md` vollständig beschrieben.
 
 **Fokus:**
-1. Compile-Automation via launchd + fehlertoleranter Wrapper
-2. `tom-wiki` Quality-Pass (Prompt + Context-Filter)
-3. Eval-Framework erweitert um Brain-Artikel
-4. Doku: Karpathy-Schwelle 1500 + Umstiegspfad
-5. Anthropic-SDK-Clarification
-6. Abschluss + Close
+1. Phase 22: Compile-Automation via launchd + fehlertoleranter Wrapper `tom-compile-safe`
+2. Phase 23: `tom-wiki` Quality-Pass (Prompt + Context-Filter + Quellen-Zitation)
+3. Phase 24: Eval-Framework erweitert um Brain-Artikel + Side-by-Side-Vergleich
+4. Phase 25: Doku Karpathy-Schwelle 1500 + Umstiegspfad (reine Doku-Phase)
+5. Phase 26: Anthropic-SDK-Clarification + Milestone-Close
 
 ## Open Questions (deferred)
 

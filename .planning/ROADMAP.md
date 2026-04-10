@@ -269,6 +269,162 @@ Commit-Trail siehe `MILESTONES.md`.
 
 ---
 
+## v1.3 — Compile-Automation + Quality-Pass
+
+**Goal:** Den in v1.2 gebauten Brain- und Wiki-Flow in den Dauerbetrieb bringen — launchd-Automation für `tom-compile`, Quality-Pass für `tom-wiki`, erweitertes Eval-Framework, dokumentierte Karpathy-Schwelle (1500) und Anthropic-SDK-Clarification. Keine Architektur-Änderungen.
+
+### Phases
+
+- [ ] **Phase 22: Compile-Automation** — launchd Daily-Job + fehlertoleranter `tom-compile-safe` Wrapper
+- [ ] **Phase 23: tom-wiki Quality-Pass** — stärkerer Prompt, Context-Filter, Quellen-Zitation
+- [ ] **Phase 24: Eval-Framework-Erweiterung** — Brain-Corpus + Side-by-Side-Vergleich tom-wiki vs tom-ask
+- [ ] **Phase 25: Doku + Schwellen-Update** — Karpathy-Schwelle 1500 in CLAUDE.md dokumentiert
+- [ ] **Phase 26: SDK-Clarification + Milestone-Close** — Anthropic-SDK-Recherche + v1.3 formal abschließen
+
+### Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 22. Compile-Automation | 0/? | Not started | — |
+| 23. tom-wiki Quality-Pass | 0/? | Not started | — |
+| 24. Eval-Framework-Erweiterung | 0/? | Not started | — |
+| 25. Doku + Schwellen-Update | 0/? | Not started | — |
+| 26. SDK-Clarification + Milestone-Close | 0/? | Not started | — |
+
+---
+
+## Phase Details (v1.3)
+
+### Phase 22: Compile-Automation
+
+**Goal**: `tom-compile` läuft täglich automatisch via launchd — ein fehlertoleranter Wrapper prüft Voraussetzungen, loggt jeden Lauf, und der Job ist per `launchctl` verifizierbar aktiv.
+
+**Depends on**: Phase 19 (`bin/tom-compile` muss existieren)
+
+**Requirements**: CRON-01, CRON-02, CRON-03, CRON-04, CRON-05, CRON-06
+
+**Success Criteria** (what must be TRUE):
+1. `launchctl list | grep tom-compile` zeigt den aktiven Job-Eintrag
+2. `~/Library/Logs/tom-compile.log` enthält nach einem Lauf Timestamp, Exit-Code und Duration
+3. `bin/tom-compile-safe` exitet mit Log-Eintrag sauber, wenn `ollama serve` nicht läuft oder `$TOM_VAULT` nicht erreichbar ist
+4. Manueller Trigger via `launchctl start com.maxim.tom-compile` läuft ohne Fehler durch
+5. Ein Maximus_OS-Issue an CTO dokumentiert launchd-Job, Plist-Pfad und Log-Location
+
+**Plans**: TBD
+
+---
+
+### Phase 23: tom-wiki Quality-Pass
+
+**Goal**: `tom-wiki`-Antworten sind präziser und nachvollziehbarer — stärkerer System-Prompt, schmalerer Kontext-Filter und explizite Quellen-Zitation sind implementiert und verifiziert.
+
+**Depends on**: Phase 19 (`wiki_query.py` in `claude-memory-compiler/tom_tools/` muss existieren)
+
+**Requirements**: QUAL-01, QUAL-02, QUAL-03, QUAL-04, QUAL-05, QUAL-06
+
+**Success Criteria** (what must be TRUE):
+1. `tom-wiki "Was ist TurboQuant?"` verweist in der Antwort explizit auf `turboquant.md` (oder äquivalenten Dateinamen)
+2. Antworten enthalten mindestens eine Quell-Zitation als Wiki-Link oder Dateiname (nicht generisch)
+3. Context-Filter übergibt `gemme` nur Index + per Keyword selektierte Artikel, nicht den gesamten Wiki-Inhalt
+4. `claude-memory-compiler/TOM-PATCHES.md` dokumentiert den neuen System-Prompt + Filter-Logik
+5. Ein Maximus_OS-Issue an CTO dokumentiert Quality-Pass mit Before/After-Beispiel
+
+**Plans**: TBD
+
+---
+
+### Phase 24: Eval-Framework-Erweiterung
+
+**Goal**: `Gemma/eval/` kann `tom-wiki` und `tom-ask` gegeneinander vergleichen — ein Baseline-Report mit mindestens 10 Queries über Wiki- und Brain-Themen liegt unter `Gemma/eval/results/v1.3-baseline.md`.
+
+**Depends on**: Phase 23 (tom-wiki Quality-Pass sollte vorher abgeschlossen sein für aussagekräftige Baseline)
+
+**Requirements**: EVAL-01, EVAL-02, EVAL-03, EVAL-04, EVAL-05
+
+**Success Criteria** (what must be TRUE):
+1. `Gemma/eval/` enthält Test-Corpus-Einträge mit Brain-Artikeln aus `95_Gehirn/knowledge/`
+2. `run_eval.py` führt Side-by-Side-Vergleich durch: gleiche Query, Antwort von `tom-wiki` und `tom-ask`, Score
+3. `Gemma/eval/results/v1.3-baseline.md` existiert mit Score-Vergleich über mindestens 10 Queries
+4. Mindestens 5 Queries decken Wiki-Themen ab, mindestens 5 Brain-Themen
+5. Ein Maximus_OS-Issue an CTO dokumentiert Eval-Ergebnisse und Interpretation
+
+**Plans**: TBD
+
+---
+
+### Phase 25: Doku + Schwellen-Update
+
+**Goal**: Die Karpathy-Schwelle ist auf 1500 aktualisiert und der Umstiegspfad auf RAG-Primary ist in `CLAUDE.md` (Repo) und `$TOM_VAULT/CLAUDE.md` (Vault) klar dokumentiert.
+
+**Depends on**: Nothing (reine Dokumentationsphase, unabhängig)
+
+**Requirements**: DOC13-01, DOC13-02, DOC13-03, DOC13-04
+
+**Success Criteria** (what must be TRUE):
+1. `/Users/maxim/Claude/CLAUDE.md` Wissens-Kaskade-Sektion nennt die Schwelle 1500 (nicht 500) und den Umstiegspfad auf RAG-Primary
+2. Eine neue Sektion "Skalierungs-Stufen" beschreibt: <1500 = Index-first, 1500–5000 = Hybrid, >5000 = RAG-Primary
+3. `$TOM_VAULT/CLAUDE.md` ist konsistent auf 1500 aktualisiert (falls dort die Schwelle erwähnt wird)
+4. Ein Maximus_OS-Issue an wiki-kurator dokumentiert das Doku-Update
+
+**Plans**: TBD
+
+---
+
+### Phase 26: SDK-Clarification + Milestone-Close
+
+**Goal**: Die Anthropic-SDK-Frage (Subscription-Quota für `tom-compile`) ist recherchiert und dokumentiert; v1.3 ist in allen Planning-Artefakten und Maximus_OS formal geschlossen.
+
+**Depends on**: Phases 22–25 (alles live bevor abgeschlossen)
+
+**Requirements**: CLOSE13-01, CLOSE13-02, CLOSE13-03, CLOSE13-04, CLOSE13-05
+
+**Success Criteria** (what must be TRUE):
+1. `claude-memory-compiler/TOM-PATCHES.md` enthält einen datierten Abschnitt zur Anthropic-SDK-Clarification (Subscription-Quota-Frage beantwortet oder mit Quelle verlinkt)
+2. `Obsidian/Projekte/Paperclip-v1.3-CEO-Briefing.md` existiert mit allen Phasen 22–26, Commits und Outcomes
+3. `.planning/MILESTONES.md` enthält den v1.3-Eintrag mit Start, Ende, Phasen, Status und Commits
+4. `.planning/PROJECT.md` Validated-Sektion listet v1.3-Deliverables
+5. Ein Maximus_OS-Issue an CEO (`priority=high`) schließt Milestone v1.3 offiziell ab
+
+**Plans**: TBD
+
+---
+
+## Coverage: v1.3
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| CRON-01 | 22 | Pending |
+| CRON-02 | 22 | Pending |
+| CRON-03 | 22 | Pending |
+| CRON-04 | 22 | Pending |
+| CRON-05 | 22 | Pending |
+| CRON-06 | 22 | Pending |
+| QUAL-01 | 23 | Pending |
+| QUAL-02 | 23 | Pending |
+| QUAL-03 | 23 | Pending |
+| QUAL-04 | 23 | Pending |
+| QUAL-05 | 23 | Pending |
+| QUAL-06 | 23 | Pending |
+| EVAL-01 | 24 | Pending |
+| EVAL-02 | 24 | Pending |
+| EVAL-03 | 24 | Pending |
+| EVAL-04 | 24 | Pending |
+| EVAL-05 | 24 | Pending |
+| DOC13-01 | 25 | Pending |
+| DOC13-02 | 25 | Pending |
+| DOC13-03 | 25 | Pending |
+| DOC13-04 | 25 | Pending |
+| CLOSE13-01 | 26 | Pending |
+| CLOSE13-02 | 26 | Pending |
+| CLOSE13-03 | 26 | Pending |
+| CLOSE13-04 | 26 | Pending |
+| CLOSE13-05 | 26 | Pending |
+
+**v1.3 total: 26 — Mapped: 26 — Unmapped: 0 ✓**
+
+---
+
 *Roadmap v1.1 created: 2026-04-10*
 *Roadmap v1.2 appended: 2026-04-10*
-*Current milestone: v1.2 — Karpathy Wiki + claude-memory-compiler*
+*Roadmap v1.3 appended: 2026-04-10*
+*Current milestone: v1.3 — Compile-Automation + Quality-Pass*

@@ -20,6 +20,12 @@ Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Lebe
 - ✓ Obsidian Web Clipper in Chrome eingerichtet
 - ✓ PaperclipAI Integration (localhost:3100, Company `Maximus_OS`)
 - ✓ Tom v1.0 — Lebens-Vault Bootstrap (Phasen 1–7, Commit `525c073`)
+- ✓ Tom v1.1 — Maximus_OS + Ollama Gemma Revival (Phasen 8–13):
+  - iCloud-Vault als Single Source of Truth
+  - `bin/tom-issue` Maximus_OS Audit-Channel
+  - Ollama + `gemma4:e4b` + Custom-Model `gemme`
+  - RAG-Pipeline gegen iCloud-Vault
+  - `bin/tom-ask` für lokale Wiki-Queries
 
 ## Current Milestone: v1.1 — Maximus_OS Integration + Ollama Gemma Revival
 
@@ -75,4 +81,4 @@ Siehe `.planning/REQUIREMENTS.md` (Milestone v1.1).
 | 00_Inbox → 99_Vorlagen Nummerierungsschema | Ordnet sich auto-sortiert, Trennung persönlich/wiki bleibt visuell | — Pending |
 
 ---
-*Last updated: 2026-04-10 after Tom v1.1 milestone start*
+*Last updated: 2026-04-10 after Tom v1.1 milestone complete*

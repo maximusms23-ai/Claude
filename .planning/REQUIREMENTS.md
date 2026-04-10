@@ -10,56 +10,56 @@ Requirements für Single-Source-Vault, Maximus_OS Hybrid-Integration und Ollama 
 
 ### Vault-Cleanup (VCLEAN)
 
-- [ ] **VCLEAN-01**: iCloud-Vault wird als canonical bestätigt (md-Count + stichprobenhafter Content-Diff gegen lokales Duplikat)
-- [ ] **VCLEAN-02**: Lokaler `Obsidian_Zentralw/` ist aus Git entfernt (`git rm -r --cached`) und physisch gelöscht
-- [ ] **VCLEAN-03**: `.gitignore` verhindert Wiederaufnahme des lokalen Pfades mit Kommentar zur iCloud-Canonical-Entscheidung
-- [ ] **VCLEAN-04**: `CLAUDE.md` + `AGENTS.md` zeigen auf iCloud-Vault-Pfad (Variable `$TOM_VAULT` empfohlen)
-- [ ] **VCLEAN-05**: Maximus_OS-Issue dokumentiert Vault-Cleanup mit Commit-Hash
+- ✓ **VCLEAN-01**: iCloud-Vault wird als canonical bestätigt (md-Count + stichprobenhafter Content-Diff gegen lokales Duplikat)
+- ✓ **VCLEAN-02**: Lokaler `Obsidian_Zentralw/` ist aus Git entfernt (`git rm -r --cached`) und physisch gelöscht
+- ✓ **VCLEAN-03**: `.gitignore` verhindert Wiederaufnahme des lokalen Pfades mit Kommentar zur iCloud-Canonical-Entscheidung
+- ✓ **VCLEAN-04**: `CLAUDE.md` + `AGENTS.md` zeigen auf iCloud-Vault-Pfad (Variable `$TOM_VAULT` empfohlen)
+- ✓ **VCLEAN-05**: Maximus_OS-Issue dokumentiert Vault-Cleanup mit Commit-Hash
 
 ### Maximus_OS Integration (MOS)
 
-- [ ] **MOS-01**: `bin/tom-issue` Wrapper-Skript existiert, kapselt Company-ID, unterstützt `--title`/`--description`/`--priority`/`--agent` Flags
-- [ ] **MOS-02**: `tom-issue` kennt Agent-Aliase (tom, wiki-kurator, archivarius, cto) mit hinterlegten Agent-IDs
-- [ ] **MOS-03**: Smoke-Test: `tom-issue` erstellt erfolgreich ein Test-Issue im Maximus_OS-Dashboard
-- [ ] **MOS-04**: `CLAUDE.md` + `AGENTS.md` dokumentieren Kommunikationsregeln (Milestones/Architektur/Tools → Issue; Kleinkram → kein Issue)
-- [ ] **MOS-05**: `Obsidian_Zentralw/CLAUDE.md` Workflow WF-06 "Issue an Maximus_OS schreiben" ist dokumentiert
-- [ ] **MOS-06**: Abschluss-Issue für Maximus_OS Integration Layer mit Referenz auf `bin/tom-issue`
+- ✓ **MOS-01**: `bin/tom-issue` Wrapper-Skript existiert, kapselt Company-ID, unterstützt `--title`/`--description`/`--priority`/`--agent` Flags
+- ✓ **MOS-02**: `tom-issue` kennt Agent-Aliase (tom, wiki-kurator, archivarius, cto) mit hinterlegten Agent-IDs
+- ✓ **MOS-03**: Smoke-Test: `tom-issue` erstellt erfolgreich ein Test-Issue im Maximus_OS-Dashboard
+- ✓ **MOS-04**: `CLAUDE.md` + `AGENTS.md` dokumentieren Kommunikationsregeln (Milestones/Architektur/Tools → Issue; Kleinkram → kein Issue)
+- ✓ **MOS-05**: `Obsidian_Zentralw/CLAUDE.md` Workflow WF-06 "Issue an Maximus_OS schreiben" ist dokumentiert
+- ✓ **MOS-06**: Abschluss-Issue für Maximus_OS Integration Layer mit Referenz auf `bin/tom-issue`
 
 ### Ollama Installation (OLL)
 
-- [ ] **OLL-01**: `ollama` Binary ist installiert und verifiziert (`which ollama`, `ollama --version`)
-- [ ] **OLL-02**: `OLLAMA_MODELS=/Users/maxim/Ollama` ist persistent in `~/.zshrc` und Verzeichnis existiert
-- [ ] **OLL-03**: Ollama-Server läuft und `ollama list` funktioniert
-- [ ] **OLL-04**: `gemma4:e4b` ist geladen (via `ollama pull`) und physisch in `/Users/maxim/Ollama`
-- [ ] **OLL-05**: Smoke-Test: `ollama run gemma4:e4b "Hallo"` liefert plausible Antwort
-- [ ] **OLL-06**: Abschluss-Issue dokumentiert Ollama-Reinstall mit Pfad + Version
+- ✓ **OLL-01**: `ollama` Binary ist installiert und verifiziert (`which ollama`, `ollama --version`)
+- ✓ **OLL-02**: `OLLAMA_MODELS=/Users/maxim/Ollama` ist persistent in `~/.zshrc` und Verzeichnis existiert
+- ✓ **OLL-03**: Ollama-Server läuft und `ollama list` funktioniert
+- ✓ **OLL-04**: `gemma4:e4b` ist geladen (via `ollama pull`) und physisch in `/Users/maxim/Ollama`
+- ✓ **OLL-05**: Smoke-Test: `ollama run gemma4:e4b "Hallo"` liefert plausible Antwort
+- ✓ **OLL-06**: Abschluss-Issue dokumentiert Ollama-Reinstall mit Pfad + Version
 
 ### Gemma Custom Model + RAG (GEM)
 
-- [ ] **GEM-01**: `Gemma/modelfile/Modelfile` verweist auf `gemma4:e4b` (statt ungültigem `gemma4:latest`)
-- [ ] **GEM-02**: Custom-Model `gemme` ist via `ollama create` gebaut und in `ollama list` sichtbar
-- [ ] **GEM-03**: `Gemma/rag/config.py` zeigt auf iCloud-Vault-Pfade (`90_Wiki`, `Clippings`)
-- [ ] **GEM-04**: ChromaDB ist gegen neuen Vault reindiziert, Chunk-Count ist geloggt
-- [ ] **GEM-05**: `eval/run_eval.py` liefert dokumentierten Baseline-Score > 0
-- [ ] **GEM-06**: `query.py "Was ist in 90_Wiki/index.md dokumentiert?"` liefert plausible Antwort
-- [ ] **GEM-07**: `training/collector.py` hat ≥10 Q&A-Pairs in `training/data/qa_pairs.jsonl` gesammelt
-- [ ] **GEM-08**: Abschluss-Issue dokumentiert Gemma RAG mit Eval-Score
+- ✓ **GEM-01**: `Gemma/modelfile/Modelfile` verweist auf `gemma4:e4b` (statt ungültigem `gemma4:latest`)
+- ✓ **GEM-02**: Custom-Model `gemme` ist via `ollama create` gebaut und in `ollama list` sichtbar
+- ✓ **GEM-03**: `Gemma/rag/config.py` zeigt auf iCloud-Vault-Pfade (`90_Wiki`, `Clippings`)
+- ✓ **GEM-04**: ChromaDB ist gegen neuen Vault reindiziert, Chunk-Count ist geloggt
+- ✓ **GEM-05**: `eval/run_eval.py` liefert dokumentierten Baseline-Score > 0
+- ✓ **GEM-06**: `query.py "Was ist in 90_Wiki/index.md dokumentiert?"` liefert plausible Antwort
+- ✓ **GEM-07**: `training/collector.py` hat ≥10 Q&A-Pairs in `training/data/qa_pairs.jsonl` gesammelt
+- ✓ **GEM-08**: Abschluss-Issue dokumentiert Gemma RAG mit Eval-Score
 
 ### Tom ↔ Gemma Wiring (WIRE)
 
-- [ ] **WIRE-01**: `bin/tom-ask` Wrapper ruft `Gemma/rag/query.py` auf und gibt Antwort + Quellen zurück
-- [ ] **WIRE-02**: `tom-ask` ist im `PATH` verfügbar (Symlink oder PATH-Extension)
-- [ ] **WIRE-03**: `CLAUDE.md` Sektion "Lokale Wiki-Queries" dokumentiert wann Tom `tom-ask` statt Obsidian-Suche nutzt
-- [ ] **WIRE-04**: Maximus_OS Tom-Agent-Konfiguration ist geprüft (entweder kann Agent `ollama run gemme` nutzen → dokumentiert, oder Issue an CTO eröffnet)
-- [ ] **WIRE-05**: Abschluss-Issue dokumentiert `tom-ask` Live-Status
+- ✓ **WIRE-01**: `bin/tom-ask` Wrapper ruft `Gemma/rag/query.py` auf und gibt Antwort + Quellen zurück
+- ✓ **WIRE-02**: `tom-ask` ist im `PATH` verfügbar (Symlink oder PATH-Extension)
+- ✓ **WIRE-03**: `CLAUDE.md` Sektion "Lokale Wiki-Queries" dokumentiert wann Tom `tom-ask` statt Obsidian-Suche nutzt
+- ✓ **WIRE-04**: Maximus_OS Tom-Agent-Konfiguration ist geprüft (entweder kann Agent `ollama run gemme` nutzen → dokumentiert, oder Issue an CTO eröffnet)
+- ✓ **WIRE-05**: Abschluss-Issue dokumentiert `tom-ask` Live-Status
 
 ### Dokumentation (DOC11)
 
-- [ ] **DOC11-01**: `Obsidian_Zentralw/log.md` hat v1.1 Abschluss-Eintrag
-- [ ] **DOC11-02**: `Obsidian_Zentralw/70_Hardware/ollama-setup.md` dokumentiert Ollama-Setup via Hardware-Template
-- [ ] **DOC11-03**: `Obsidian_Zentralw/90_Wiki/projekte/paperclipai.md` ist mit v1.1 Integration-Layer aktualisiert
-- [ ] **DOC11-04**: `Gemma/README.md` enthält komplette Setup-Doku (Install, Modelfile, Config, RAG-Run, Training, Eval, Fine-Tuning-Roadmap)
-- [ ] **DOC11-05**: Finales Milestone-Abschluss-Issue in Maximus_OS mit Commit-Hashes und Roadmap-Link
+- ✓ **DOC11-01**: `Obsidian_Zentralw/log.md` hat v1.1 Abschluss-Eintrag
+- ✓ **DOC11-02**: `Obsidian_Zentralw/70_Hardware/ollama-setup.md` dokumentiert Ollama-Setup via Hardware-Template
+- ✓ **DOC11-03**: `Obsidian_Zentralw/90_Wiki/projekte/paperclipai.md` ist mit v1.1 Integration-Layer aktualisiert
+- ✓ **DOC11-04**: `Gemma/README.md` enthält komplette Setup-Doku (Install, Modelfile, Config, RAG-Run, Training, Eval, Fine-Tuning-Roadmap)
+- ✓ **DOC11-05**: Finales Milestone-Abschluss-Issue in Maximus_OS mit Commit-Hashes und Roadmap-Link
 
 ## v1.0 Requirements (Shipped — Commit `525c073`)
 
@@ -125,41 +125,41 @@ Requirements für das initiale Tom-Setup. Komplett shipped in Commit `525c073` (
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| VCLEAN-01 | Phase 8 | Pending |
-| VCLEAN-02 | Phase 8 | Pending |
-| VCLEAN-03 | Phase 8 | Pending |
-| VCLEAN-04 | Phase 8 | Pending |
-| VCLEAN-05 | Phase 8 | Pending |
-| MOS-01 | Phase 9 | Pending |
-| MOS-02 | Phase 9 | Pending |
-| MOS-03 | Phase 9 | Pending |
-| MOS-04 | Phase 9 | Pending |
-| MOS-05 | Phase 9 | Pending |
-| MOS-06 | Phase 9 | Pending |
-| OLL-01 | Phase 10 | Pending |
-| OLL-02 | Phase 10 | Pending |
-| OLL-03 | Phase 10 | Pending |
-| OLL-04 | Phase 10 | Pending |
-| OLL-05 | Phase 10 | Pending |
-| OLL-06 | Phase 10 | Pending |
-| GEM-01 | Phase 11 | Pending |
-| GEM-02 | Phase 11 | Pending |
-| GEM-03 | Phase 11 | Pending |
-| GEM-04 | Phase 11 | Pending |
-| GEM-05 | Phase 11 | Pending |
-| GEM-06 | Phase 11 | Pending |
-| GEM-07 | Phase 11 | Pending |
-| GEM-08 | Phase 11 | Pending |
-| WIRE-01 | Phase 12 | Pending |
-| WIRE-02 | Phase 12 | Pending |
-| WIRE-03 | Phase 12 | Pending |
-| WIRE-04 | Phase 12 | Pending |
-| WIRE-05 | Phase 12 | Pending |
-| DOC11-01 | Phase 13 | Pending |
-| DOC11-02 | Phase 13 | Pending |
-| DOC11-03 | Phase 13 | Pending |
-| DOC11-04 | Phase 13 | Pending |
-| DOC11-05 | Phase 13 | Pending |
+| VCLEAN-01 | Phase 8 | Complete |
+| VCLEAN-02 | Phase 8 | Complete |
+| VCLEAN-03 | Phase 8 | Complete |
+| VCLEAN-04 | Phase 8 | Complete |
+| VCLEAN-05 | Phase 8 | Complete |
+| MOS-01 | Phase 9 | Complete |
+| MOS-02 | Phase 9 | Complete |
+| MOS-03 | Phase 9 | Complete |
+| MOS-04 | Phase 9 | Complete |
+| MOS-05 | Phase 9 | Complete |
+| MOS-06 | Phase 9 | Complete |
+| OLL-01 | Phase 10 | Complete |
+| OLL-02 | Phase 10 | Complete |
+| OLL-03 | Phase 10 | Complete |
+| OLL-04 | Phase 10 | Complete |
+| OLL-05 | Phase 10 | Complete |
+| OLL-06 | Phase 10 | Complete |
+| GEM-01 | Phase 11 | Complete |
+| GEM-02 | Phase 11 | Complete |
+| GEM-03 | Phase 11 | Complete |
+| GEM-04 | Phase 11 | Complete |
+| GEM-05 | Phase 11 | Complete |
+| GEM-06 | Phase 11 | Complete |
+| GEM-07 | Phase 11 | Complete |
+| GEM-08 | Phase 11 | Complete |
+| WIRE-01 | Phase 12 | Complete |
+| WIRE-02 | Phase 12 | Complete |
+| WIRE-03 | Phase 12 | Complete |
+| WIRE-04 | Phase 12 | Complete |
+| WIRE-05 | Phase 12 | Complete |
+| DOC11-01 | Phase 13 | Complete |
+| DOC11-02 | Phase 13 | Complete |
+| DOC11-03 | Phase 13 | Complete |
+| DOC11-04 | Phase 13 | Complete |
+| DOC11-05 | Phase 13 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 35 total

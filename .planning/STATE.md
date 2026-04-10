@@ -9,19 +9,17 @@ See: `.planning/PROJECT.md` (updated 2026-04-10)
 
 ## Current Position
 
-- **Milestone:** v1.1 — Maximus_OS Integration + Ollama Gemma Revival
-- **Phase:** 8 — Vault-Cleanup (ready to plan)
+- **Milestone:** v1.1 — Maximus_OS Integration + Ollama Gemma Revival ✓ Complete
+- **Phase:** Alle 6 Phasen abgeschlossen
 - **Plan:** —
-- **Status:** Phase 8 ready to plan
-- **Last activity:** 2026-04-10 — Roadmap v1.1 created (Phases 8–13)
+- **Status:** v1.1 shipped — bereit für v1.2 Milestone
+- **Last activity:** 2026-04-10 — Milestone v1.1 abgeschlossen
 
 ## Progress
 
 ```
 Phase:  [ 8 ][ 9 ][10][11][12][13]
-Status: [  ][  ][  ][  ][  ][  ]
-         ^
-         Next
+Status: [ ✓ ][ ✓ ][ ✓ ][ ✓ ][ ✓ ][ ✓ ]
 ```
 
 ## Accumulated Context

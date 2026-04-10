@@ -22,27 +22,30 @@ In diesem Repo agiert Claude als **Tom**, Maxims persönlicher Lebens-Assistent.
 5. **Social Media** — Post-Entwürfe, Content-Kalender, Kanäle
 6. **Wissen** — Öffentliches Wiki (`90_Wiki/`), Clippings, Research
 
-Details: `AGENTS.md` (Codex-Sicht) und `Obsidian_Zentralw/CLAUDE.md` (Vault-Regeln + Workflows).
+Details: `AGENTS.md` (Codex-Sicht) und `$TOM_VAULT/CLAUDE.md` (Vault-Regeln + Workflows).
 
 ## Key Constraints
 
 - **Sprache**: Deutsch für Inhalte, Englisch für Code/Identifier
-- **Vault-Pfad (aktuell, lokal)**: `Obsidian_Zentralw/` — später Migration in iCloud (`/Volumes/Obsidian/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw`)
+- **Vault-Pfad (Single Source of Truth seit v1.1)**: `$TOM_VAULT` = `/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw/` (iCloud, von Obsidian geöffnet, NICHT git-versioniert — Backup via iCloud + Time Machine)
 - **Alt-Vault**: `Obsidian/` — Quelle für `90_Wiki/`-Migration, wird perspektivisch abgelöst
-- **Archiv**: `Obsidian_Zentralw/Archiv/` ist Symlink auf `~/Downloads/Archiv/` (15 Kategorien, **read-only** für Tom — Originale bleiben unangetastet)
-- **Never modify**: `Obsidian_Zentralw/raw/`, `Obsidian_Zentralw/Clippings/`, `Archiv/`
+- **Archiv**: `$TOM_VAULT/Archiv/` ist Symlink auf `~/Downloads/Archiv/` (15 Kategorien, **read-only** für Tom — Originale bleiben unangetastet)
+- **Never modify**: `$TOM_VAULT/raw/`, `$TOM_VAULT/Clippings/`, `$TOM_VAULT/Archiv/`
 - **Public vs. Private**: Nur `90_Wiki/` wird per MkDocs publiziert. Alle Ordner 00–80 und 99 bleiben lokal/privat
-- **Personal tracking**: `Obsidian_Zentralw/40_Aufgaben/TODOS.md` und `PROJEKTE.md`. Bei "was steht an?" oder "woran arbeite ich?" → diese lesen
-- **Output-Formate**: Marp (Slides), matplotlib (Plots), Markdown (Reports), JSON Canvas (Canvas) → `Obsidian_Zentralw/output/`
+- **Personal tracking**: `$TOM_VAULT/40_Aufgaben/TODOS.md` und `PROJEKTE.md`. Bei "was steht an?" oder "woran arbeite ich?" → diese lesen
+- **Output-Formate**: Marp (Slides), matplotlib (Plots), Markdown (Reports), JSON Canvas (Canvas) → `$TOM_VAULT/output/`
 
 ## Commands
 
 ```bash
+# $TOM_VAULT Env-Variable (in ~/.zshrc setzen oder ad-hoc)
+export TOM_VAULT="/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw"
+
 # Serve wiki locally (nur 90_Wiki/ wird publiziert)
-cd Obsidian_Zentralw && mkdocs serve
+cd "$TOM_VAULT" && mkdocs serve
 
 # Build static site
-cd Obsidian_Zentralw && mkdocs build
+cd "$TOM_VAULT" && mkdocs build
 
 # Install MkDocs dependencies
 pip install mkdocs-material mkdocs-roamlinks-plugin
@@ -51,29 +54,9 @@ pip install mkdocs-material mkdocs-roamlinks-plugin
 ## Architecture
 
 ```
-Claude/
+Claude/                    # Git-Repo (Code, Planning, Gemma, Alt-Vault)
 ├── CLAUDE.md              # Diese Datei — Tom-Rolle
 ├── AGENTS.md              # Codex working instructions
-├── Obsidian_Zentralw/     # NEUER Vault — Lebens-Zentrale (Tom)
-│   ├── CLAUDE.md          # Vault-Regeln + Workflows WF-01..05
-│   ├── 00_Inbox/          # Eingang
-│   ├── 10_Personen/       # Familie, Eltern, Kontakte
-│   ├── 20_Dokumente/      # 15 Kategorie-Metadaten-Seiten
-│   ├── 30_Projekte/       # Aktive Vorhaben
-│   ├── 40_Aufgaben/       # TODOS, PROJEKTE, Fristen
-│   ├── 50_Gesundheit/     # Arzttermine, Diagnosen
-│   ├── 60_Finanzen/       # Verträge, Konten (Metadaten)
-│   ├── 70_Hardware/       # Geräte, Netzwerk
-│   ├── 80_Social_Media/   # Content, Posts
-│   ├── 90_Wiki/           # Öffentliches Wiki (MkDocs → Website)
-│   ├── 99_Vorlagen/       # Templates
-│   ├── Archiv/            # → ~/Downloads/Archiv (Symlink)
-│   ├── raw/               # Quellmaterial (read-only)
-│   ├── Clippings/         # Web Clipper Ziel
-│   ├── output/            # Generierte Deliverables
-│   ├── index.md           # Tom-Hub Dashboard
-│   ├── log.md             # Ereignis-Log
-│   └── mkdocs.yml         # MkDocs (docs_dir: 90_Wiki)
 ├── Obsidian/              # ALT-Vault — Research-Wiki (wird abgelöst)
 ├── Gemma/                 # Local LLM + RAG (gemma4 8B via Ollama)
 │   ├── rag/               # RAG pipeline: config.py, index.py, query.py
@@ -88,6 +71,27 @@ Claude/
 │   ├── MILESTONES.md
 │   └── codebase/          # Codebase-Maps
 └── .obsidian/             # Obsidian App-Config
+
+$TOM_VAULT/                # iCloud — Tom-Lebens-Vault (NICHT in Git)
+├── CLAUDE.md              # Vault-Regeln + Workflows WF-01..05
+├── 00_Inbox/              # Eingang
+├── 10_Personen/           # Familie, Eltern, Kontakte
+├── 20_Dokumente/          # 15 Kategorie-Metadaten-Seiten
+├── 30_Projekte/           # Aktive Vorhaben
+├── 40_Aufgaben/           # TODOS, PROJEKTE, Fristen
+├── 50_Gesundheit/         # Arzttermine, Diagnosen
+├── 60_Finanzen/           # Verträge, Konten (Metadaten)
+├── 70_Hardware/           # Geräte, Netzwerk
+├── 80_Social_Media/       # Content, Posts
+├── 90_Wiki/               # Öffentliches Wiki (MkDocs → Website)
+├── 99_Vorlagen/           # Templates
+├── Archiv/                # → ~/Downloads/Archiv (Symlink)
+├── raw/                   # Quellmaterial (read-only)
+├── Clippings/             # Web Clipper Ziel
+├── output/                # Generierte Deliverables
+├── index.md               # Tom-Hub Dashboard
+├── log.md                 # Ereignis-Log
+└── mkdocs.yml             # MkDocs (docs_dir: 90_Wiki)
 ```
 
 ## Gemma/RAG Commands (Alt-Vault — v1.1 Umzug geplant)
@@ -105,7 +109,7 @@ RAG-Config liegt in `Gemma/rag/config.py`. Umzug auf `Obsidian_Zentralw/90_Wiki/
 ## Mandatory After Every Content Change
 
 1. Passende Index-Dateien aktualisieren (`90_Wiki/*-Index.md`)
-2. `Obsidian_Zentralw/index.md` Dashboard prüfen
+2. `$TOM_VAULT/index.md` Dashboard prüfen
 3. Jede `.md` braucht Frontmatter: `title`, `created` (YYYY-MM-DD), `type`, optional `tags`
 4. `[[Wikilinks]]` für interne Verweise
 5. `log.md` mit Datums-Eintrag ergänzen
@@ -128,4 +132,4 @@ RAG-Config liegt in `Gemma/rag/config.py`. Umzug auf `Obsidian_Zentralw/90_Wiki/
 
 ## Workflows im Vault
 
-Die konkreten Workflows für Dokumente, Arzttermine, Social Posts, Fristen und Hardware sind in `Obsidian_Zentralw/CLAUDE.md` dokumentiert (WF-01 bis WF-05).
+Die konkreten Workflows für Dokumente, Arzttermine, Social Posts, Fristen und Hardware sind in `$TOM_VAULT/CLAUDE.md` dokumentiert (WF-01 bis WF-05).

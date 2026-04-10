@@ -13,7 +13,7 @@ In diesem Repo agierst du als **Tom**, Maxims persönlicher Lebens-Assistent. To
 
 ## Zweck
 
-- Maxims Lebens-Vault unter `Obsidian_Zentralw/` pflegen, erweitern, verlinken
+- Maxims Lebens-Vault unter `$TOM_VAULT` (= `/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw/`) pflegen, erweitern, verlinken
 - Dokumente-Metadaten (Archiv `~/Downloads/Archiv/`) organisieren
 - Eltern-Betreuung unterstützen (Ämter, Vollmachten, Anträge, Arzttermine)
 - Hardware-Setups dokumentieren
@@ -22,10 +22,11 @@ In diesem Repo agierst du als **Tom**, Maxims persönlicher Lebens-Assistent. To
 
 ## Geltungsbereich
 
-- **Hauptarbeit**: `Obsidian_Zentralw/` (neuer Vault)
-- **Niemals bearbeiten**: `Archiv/` (Symlink auf `~/Downloads/Archiv/`), `raw/`, `Clippings/`
-- **Public deploy**: Nur `90_Wiki/` — alle anderen Ordner bleiben lokal/privat
+- **Hauptarbeit**: `$TOM_VAULT` (iCloud — Single Source of Truth seit v1.1)
+- **Niemals bearbeiten**: `$TOM_VAULT/Archiv/` (Symlink auf `~/Downloads/Archiv/`), `raw/`, `Clippings/`
+- **Public deploy**: Nur `$TOM_VAULT/90_Wiki/` — alle anderen Ordner bleiben lokal/privat
 - **Alt-Vault**: `Obsidian/` wird perspektivisch abgelöst, nicht mehr aktiv erweitern
+- **Kein lokaler Tom-Vault**: `/Users/maxim/Claude/Obsidian_Zentralw/` wurde in v1.1 entfernt — Tom-Inhalte sind NICHT git-versioniert, Backup via iCloud + Time Machine
 
 ## Inhaltsregeln
 
@@ -38,7 +39,7 @@ In diesem Repo agierst du als **Tom**, Maxims persönlicher Lebens-Assistent. To
 - Interne Verlinkung: `[[Wikilinks]]`
 - Keine Duplikate — bestehende Seiten erweitern
 
-## Ordnerstruktur `Obsidian_Zentralw/`
+## Ordnerstruktur `$TOM_VAULT/`
 
 ```
 00_Inbox/          10_Personen/       20_Dokumente/     30_Projekte/
@@ -55,7 +56,7 @@ raw/               Clippings/         output/           index.md  log.md
 - **Dashboard**: `index.md` prüfen, ob Sektionen aktuell sind
 - **Log**: `log.md` mit kurzem Eintrag (Datum — Aktion)
 
-## Workflows (Details in `Obsidian_Zentralw/CLAUDE.md`)
+## Workflows (Details in `$TOM_VAULT/CLAUDE.md`)
 
 - **WF-01** Neues Dokument ablegen
 - **WF-02** Arzttermin erfassen

@@ -285,7 +285,7 @@ Commit-Trail siehe `MILESTONES.md`.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 22. Compile-Automation | 2/2 | Complete   | 2026-04-10 |
+| 22. Compile-Automation | 2/2 | Complete    | 2026-04-10 |
 | 23. tom-wiki Quality-Pass | 0/? | Not started | — |
 | 24. Eval-Framework-Erweiterung | 0/? | Not started | — |
 | 25. Doku + Schwellen-Update | 0/? | Not started | — |

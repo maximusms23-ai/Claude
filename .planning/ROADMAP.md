@@ -287,7 +287,7 @@ Commit-Trail siehe `MILESTONES.md`.
 |-------|----------------|--------|-----------|
 | 22. Compile-Automation | 2/2 | Complete    | 2026-04-10 |
 | 23. tom-wiki Quality-Pass | 1/1 | Complete    | 2026-04-10 |
-| 24. Eval-Framework-Erweiterung | 1/1 | Complete   | 2026-04-10 |
+| 24. Eval-Framework-Erweiterung | 1/1 | Complete    | 2026-04-10 |
 | 25. Doku + Schwellen-Update | 0/? | Not started | — |
 | 26. SDK-Clarification + Milestone-Close | 0/? | Not started | — |
 

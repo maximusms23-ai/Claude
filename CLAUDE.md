@@ -114,6 +114,20 @@ RAG-Config liegt in `Gemma/rag/config.py`. Umzug auf `Obsidian_Zentralw/90_Wiki/
 4. `[[Wikilinks]]` für interne Verweise
 5. `log.md` mit Datums-Eintrag ergänzen
 
+## Mandatory bei jedem Milestone-Close (seit v1.3 Phase 26)
+
+Damit keine Doku-Lücke entsteht, wird bei JEDEM Milestone-Close die **komplette Doku-Kaskade** bedient — nicht nur `.planning/`:
+
+1. **`.planning/MILESTONES.md`** — Neuer Eintrag mit Start/Ende/Phasen/Commits/Status/FAMs nach v1.1/v1.2/v1.3-Schema
+2. **`.planning/PROJECT.md`** — Validated-Sektion um neue Deliverables erweitert, `Active:` aktualisiert
+3. **`.planning/briefings/vX.Y-CEO-Briefing.md`** — Ausführliche Executive-Summary nach v1.2/v1.3-Template (Teile 1–6 + Anhang A/B/C)
+4. **`$TOM_VAULT/log.md`** — Datums-Eintrag mit Phasen-Zusammenfassung (Commit-Hash + FAM pro Phase), "Neue Werkzeuge", "Architektur-Notizen", "Offen"-Block
+5. **`$TOM_VAULT/30_Projekte/Tom.md`** — Current-Milestone-Zeile updaten, Milestones-Kurz-Historie ergänzen, Werkzeug-Liste pflegen
+6. **Maximus_OS Close-Issue** an CEO-Agent (`bin/tom-issue --agent ceo --priority high`) mit Link auf das CEO-Briefing und Phasen-Commits
+7. **`.planning/phases/*/SUMMARY.md` + VERIFICATION.md** werden bereits pro Phase geschrieben (Executor-Convention) — nichts mehr zu tun am Close
+
+Wenn einer dieser Punkte ausgelassen wird, ist der Milestone **nicht** geschlossen. Die Regel gilt ab v1.3 rückwirkend und für alle künftigen Milestones.
+
 ## Answering User Questions
 
 1. "was steht an?" / "woran arbeite ich?" → `40_Aufgaben/TODOS.md` + `PROJEKTE.md`

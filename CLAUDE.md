@@ -292,7 +292,7 @@ Maxim hat im v1.4-Zeitraum 33 Community-Plugins installiert (+ 2 pre-v1.4), zwis
 | Plugin | Nutzen für Tom |
 |---|---|
 | `dataview` | Query-Engine für dynamische Dashboards (z.B. `40_Aufgaben/TODOS.md` als Dataview statt statische Liste) |
-| `templater-obsidian` | Template-Variablen für automatische Frontmatter-Befüllung (`title`, `created`, `type`) — könnte Tom's mandatory Frontmatter-Konvention automatisieren |
+| `templater-obsidian` | **Konfiguriert seit v1.4.1 Phase 35-Hotfix Schritt 4** — `templates_folder: "99_Vorlagen"`, 6 Folder-Templates für `90_Wiki/{konzepte,themen,personen,zitate}/`, `30_Projekte/Lesen/buecher/`, `00_Inbox/`. Automatisches Template-Insert beim Anlegen neuer Dateien. Ersetzt funktional einen separaten Auto-Note-Mover. |
 | `obsidian-tasks-plugin` | Task-Parsing mit Fristen/Prioritäten — Alternative oder Ergänzung zu `40_Aufgaben/TODOS.md` |
 | `obsidian-git` | Git-Integration für Vault — **installed-but-unused** (siehe Warning unten + ADR-002) |
 | `quickadd` | Quick-Capture-Makros — könnte Inbox-Flow aus Obsidian heraus beschleunigen |

@@ -406,6 +406,7 @@ Kleine Bridge-Phase zwischen v1.4-Close und v1.5-Kickoff. Drei Themen: Obsidian-
 - [x] **CLIP141-13a**: Ollama-Pipeline (Origin → CORS → gemma4 → deutsche Antwort) verifiziert via direktem POST gegen `/api/chat` mit Browser-Extension-Origin
 - [x] **CLIP141-13b**: 7 Tom-Templates direkt in Chrome-Extension-LevelDB-Storage importiert (Sync Extension Settings, lz-string-UTF16-komprimiert) inkl. Vault-Eintrag `Obsidian_Zentralw`
 - [~] **CLIP141-13c**: Echter Browser-Clip mit Frontmatter-Befüllung + `--queue-only`-Test + Fallback-Test — Maxim klickt einmal auf einen echten Wikipedia-Artikel und prüft das Ergebnis (siehe Phase-35-Hotfix-Note)
+- [x] **CLIP141-14**: tuan3w-Template-Adaption (Schritt 4) — 6 neue Wiki/Personal-Templates (`Konzept`, `Thema`, `Person-Wiki`, `Buch`, `Zitat`, `Gedanke`) mit Templater-Syntax + Tom-Frontmatter, Templater Folder-Routing für 6 Ordner, 2 Reading-Kanbans in `30_Projekte/Lesen/`, neue Wiki-Subfolder `zitate/` + `werkzeuge/`, README komplett überarbeitet, Entscheidung dokumentiert (Templater statt Auto Note Mover)
 
 **Code-Patch (v1.4.1 Phase 35-Hotfix):** `claude-memory-compiler/tom_tools/clip_enrich.py` mit `--queue-only`-Flag + erweitertes Skip-Gate für `enriched in (clip-time | tom-clip-enrich)` + `enriched_by`-Feld im Standard-Pfad. Rückwärts-kompatibel zu Phase-30-Legacy-Clippings.
 

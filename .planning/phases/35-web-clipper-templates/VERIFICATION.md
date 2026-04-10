@@ -114,6 +114,42 @@ Das wurde in **FAM-154 an CTO** dokumentiert. Bis Ollama wieder läuft, bleibt C
 8. **`tom-clip-enrich --queue-only <file>`** → Konzept-Einträge in `$TOM_VAULT/90_Wiki/konzepte-vorschlaege.md`; Frontmatter bleibt unverändert
 9. **Fallback-Test**: Ollama stoppen (`killall ollama`), erneut clippen → Felder enthalten Roh-Prompts → `tom-clip-enrich <file>` ohne `--queue-only` (Standard-Modus mit `--force` falls nötig) füllt sie nachträglich mit `enriched_by: tom-clip-enrich`
 
+### Hotfix Schritt 4 — tuan3w-Template-Adaption + Templater Folder-Routing
+
+Maxim hat angewiesen die Vorschläge aus [tuan3w/obsidian-template](https://github.com/tuan3w/obsidian-template) umzusetzen. Tom hat das Repo komplett analysiert (35 Markdown-Templates + Plugin-Configs + Hotkeys + Reading-Kanbans), die nützlichen Bausteine herausgefiltert und an Tom-Konventionen adaptiert.
+
+**Vault-Änderungen** (alle in iCloud, nicht in git):
+
+- 6 neue Templates in `99_Vorlagen/`:
+  - `wiki/Konzept.md` — analog tuan3w `Term.md`, deutsch, Tom-Frontmatter
+  - `wiki/Thema.md` — analog tuan3w `Resource.md`
+  - `wiki/Person-Wiki.md` — analog tuan3w `People.md` (mit explizitem Hinweis "NICHT Familie")
+  - `wiki/Buch.md` — analog tuan3w `Book.md`
+  - `Zitat.md` — analog tuan3w `Quote File.md`
+  - `Gedanke.md` — analog tuan3w `Thought.md`, Quick-Capture
+- Alle 6 nutzen Templater-Syntax (`<% tp.file.title %>`, `<% tp.file.creation_date('YYYY-MM-DD') %>`)
+- Templater-Konfig `.obsidian/plugins/templater-obsidian/data.json` neu angelegt: `templates_folder: "99_Vorlagen"`, 6 Folder-Templates aktiv
+- 2 Kanban-Boards in `30_Projekte/Lesen/`: `(Kanban) Buecher.md` + `(Kanban) Lese-Liste.md` mit Workflow-README
+- Wiki-Subfolder `90_Wiki/zitate/` + `90_Wiki/werkzeuge/` neu
+- `99_Vorlagen/README.md` komplett überarbeitet: Folder-Routing-Tabelle, Tom-Legacy vs Templater-Style getrennt, Inspirations-Quelle dokumentiert, Liste der bewusst-NICHT-übernommenen tuan3w-Features
+
+**Vault-Doku-Kaskade Schritt 4:**
+- Phase-35-Hotfix-Vault-Note um Schritt-4-Sektion erweitert
+- Journal-Eintrag updated
+- Entscheidungen.md neuer Eintrag "tuan3w-Template-Adaption mit Templater Folder-Routing statt Auto Note Mover"
+
+**Was bewusst NICHT aus tuan3w übernommen wurde:**
+
+| Feature | Grund |
+|---|---|
+| Auto Note Mover für Tag-Routing | Plugin nicht installiert, Templater Folder-Templates erfüllen den Use-Case |
+| Spaced-Repetition Anki-Cards | Plugin nicht installiert, kein Use-Case erfragt |
+| Khoj für Doc-Q&A | Lokales `gemma4` via `tom-ask`/`tom-wiki` deckt das ab |
+| Zettelkasten-ID-Prefix-Naming | Tom nutzt semantische Filenames |
+| Stats-Tracking-Skripte | Out-of-scope |
+| Daily-Note-Templates | Tom hat schon `30_Projekte/Tom/Journal/` mit eigener Doku-Routine |
+| Hotkey-Defaults Override | Maxim entscheidet Hotkeys selbst |
+
 ### Hotfix Schritt 3 — Direkter LevelDB-Import + Ollama-Models-Fix
 
 Maxim hat Tom angewiesen, die Browser-Setup-Schritte selbst durchzuführen ("du hast vollen Zugriff"). Schritt 3:

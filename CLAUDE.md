@@ -130,6 +130,28 @@ RAG-Config liegt in `Gemma/rag/config.py`. Umzug auf `Obsidian_Zentralw/90_Wiki/
 5. Personen → `90_Wiki/personen/` (fachliche/öffentliche Personen, NICHT Familie — die liegen in `10_Personen/`)
 6. Alle Indizes aktualisieren
 
+## Lokale Wiki-Queries via Gemma RAG (seit v1.1)
+
+Tom hat Zugriff auf ein lokales Gemma-Modell (`gemme`, basierend auf `gemma4:e4b`) mit RAG-Index über `$TOM_VAULT/90_Wiki/` und `$TOM_VAULT/Clippings/`. Wrapper: `bin/tom-ask` (symlinked in `~/bin/`).
+
+```bash
+tom-ask "Was ist Turboquant?"
+tom-ask "Welche Gemma 4 Groessen gibt es?"
+```
+
+**Wann `tom-ask` statt Obsidian-Suche:**
+- Konzeptuelle Fragen, die Synthese über mehrere Wiki-Seiten brauchen
+- Fragen nach Begriffsklärungen ("Was ist X?")
+- Wenn Tom selbst die Antwort nicht sofort weiß und grep/find zu mühsam wäre
+- Bei Maxim-Fragen, die ins öffentliche `90_Wiki/` gehören (nicht private Daten!)
+
+**Wann NICHT `tom-ask`:**
+- Persönliche Daten (Familie, Eltern, Dokumente, Aufgaben) — die liegen in `10_Personen/`, `20_Dokumente/`, `40_Aufgaben/` und sind NICHT im RAG-Index
+- Fragen nach aktuellem Stand ("was steht an?") → `40_Aufgaben/TODOS.md` direkt lesen
+- Wenn die Datei bekannt ist → direkt `Read` nutzen (schneller)
+
+**Setup-Dependency:** Braucht laufenden `ollama serve` + indexierte ChromaDB (`python3 Gemma/rag/index.py`). Bei Fehlern: `Gemma/README.md`.
+
 ## Workflows im Vault
 
 Die konkreten Workflows für Dokumente, Arzttermine, Social Posts, Fristen und Hardware sind in `$TOM_VAULT/CLAUDE.md` dokumentiert (WF-01 bis WF-05).

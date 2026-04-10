@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# tom-ask — Lokale Wiki-Query via Gemma RAG-Pipeline
+#
+# Zweck: Tom (Claude Code) und Maxim koennen Fragen an den lokalen Gemma-RAG
+# stellen, der gegen $TOM_VAULT/90_Wiki + Clippings indiziert ist.
+# Ergebnis: Antwort auf Deutsch plus Quellen-Liste.
+#
+# Usage:
+#   tom-ask "Was ist Turboquant?"
+#   tom-ask Welche Gemma 4 Groessen gibt es
+#
+# Setup-Voraussetzungen (einmalig, siehe Phase 10/11):
+#   - ollama serve laeuft
+#   - gemma4:e4b + nomic-embed-text + gemme sind verfuegbar
+#   - ChromaDB indiziert (python3 Gemma/rag/index.py)
+
+set -euo pipefail
+
+GEMMA_DIR="/Users/maxim/Claude/Gemma"
+VENV="$GEMMA_DIR/rag/.venv/bin/activate"
+
+if [[ $# -eq 0 ]]; then
+  cat <<EOF
+tom-ask — Lokale Wiki-Query via Gemma RAG
+
+Usage:
+  tom-ask "Deine Frage"
+  tom-ask Frage mit mehreren Worten
+
+Beispiele:
+  tom-ask "Was ist Turboquant?"
+  tom-ask "Welche Groessen gibt es bei Gemma 4?"
+EOF
+  exit 1
+fi
+
+if [[ ! -f "$VENV" ]]; then
+  echo "Error: venv nicht gefunden unter $VENV" >&2
+  echo "Setup: cd $GEMMA_DIR/rag && python3 -m venv .venv && source .venv/bin/activate && pip install chromadb ollama pyyaml" >&2
+  exit 1
+fi
+
+# Alle Argumente als eine Frage zusammenfuegen
+QUESTION="$*"
+
+# shellcheck disable=SC1090
+source "$VENV"
+
+cd "$GEMMA_DIR/rag"
+
+OLLAMA_MODELS="${OLLAMA_MODELS:-/Users/maxim/Ollama}" \
+TOM_VAULT="${TOM_VAULT:-/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw}" \
+  python3 query.py "$QUESTION"

@@ -10,10 +10,10 @@ See: `.planning/PROJECT.md` (updated 2026-04-10)
 ## Current Position
 
 - **Milestone:** v1.2 — Karpathy Wiki + claude-memory-compiler
-- **Phase:** Not started (defining requirements)
+- **Phase:** 14 — Tool-Install (not started)
 - **Plan:** —
-- **Status:** Defining requirements
-- **Last activity:** 2026-04-10 — Milestone v1.2 started
+- **Status:** Roadmap complete, awaiting `/gsd:plan-phase 14`
+- **Last activity:** 2026-04-10 — v1.2 Roadmap erstellt (8 Phasen, 43 Requirements gemappt)
 
 ## Progress
 
@@ -21,6 +21,19 @@ See: `.planning/PROJECT.md` (updated 2026-04-10)
 Phase:  [14][15][16][17][18][19][20][21]
 Status: [ ○ ][ ○ ][ ○ ][ ○ ][ ○ ][ ○ ][ ○ ][ ○ ]
 ```
+
+## Phase Overview (v1.2)
+
+| Phase | Name | Requirements | Depends on |
+|-------|------|--------------|------------|
+| 14 | Tool-Install | TOOL-01..05 | — |
+| 15 | Brain-Struktur | BRAIN-01..06 | — |
+| 16 | Hook-Integration | HOOK-01..06 | 14, 15 |
+| 17 | Karpathy-Index für 90_Wiki | KIDX-01..05 | — |
+| 18 | RAG-Erweiterung um gehirn-Collection | RAG2-01..05 | 15 |
+| 19 | Neue Wrapper tom-wiki/tom-compile/tom-lint | WRAP-01..07 | 14, 17 |
+| 20 | Multi-Projekt-Konvention | MULTI-01..05 | 19 |
+| 21 | Abschluss-Doku + Milestone-Close | DOC12-01..06 | 14–20 |
 
 ## Accumulated Context
 

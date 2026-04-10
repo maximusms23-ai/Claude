@@ -16,189 +16,259 @@ Phases 1–7 shipped in commit `525c073` (2026-04-10). See git history for v1.0 
 
 ---
 
-## v1.1 — Maximus_OS Integration + Ollama Gemma Revival
+## v1.1 — Maximus_OS Integration + Ollama Gemma Revival (Complete)
 
 **Goal:** Vault-Single-Source (iCloud), Hybrid-Integration mit Maximus_OS/PaperclipAI, lokales Gemma-Model gegen neuen Vault mit RAG.
 
 ### Phases
 
-- [ ] **Phase 8: Vault-Cleanup** — iCloud als Single Source of Truth, lokales Duplikat entfernen
-- [ ] **Phase 9: Maximus_OS Integration Tooling** — `tom-issue` Wrapper + Kommunikationsregeln
-- [ ] **Phase 10: Ollama Installation** — Ollama unter `/Users/maxim/Ollama` mit `gemma2:9b` bereit
-- [ ] **Phase 11: Gemma Custom Model + RAG Pipeline** — `gemme`-Model gebaut, ChromaDB reindiziert, Eval dokumentiert
-- [ ] **Phase 12: Tom ↔ Gemma Wiring** — `tom-ask` Wrapper live, Nutzungsregeln in CLAUDE.md
-- [ ] **Phase 13: Dokumentation + Abschluss** — Vault-Log, Hardware-Doku, Gemma-README, Milestone-Close
+- [x] **Phase 8: Vault-Cleanup** — iCloud als Single Source of Truth, lokales Duplikat entfernt
+- [x] **Phase 9: Maximus_OS Integration Tooling** — `tom-issue` Wrapper + Kommunikationsregeln
+- [x] **Phase 10: Ollama Installation** — Ollama unter `/Users/maxim/Ollama` mit `gemma4:e4b`
+- [x] **Phase 11: Gemma Custom Model + RAG Pipeline** — `gemme`-Model, ChromaDB, Eval
+- [x] **Phase 12: Tom ↔ Gemma Wiring** — `tom-ask` Wrapper live
+- [x] **Phase 13: Dokumentation + Abschluss** — v1.1 Milestone-Close
+
+Commit-Trail siehe `MILESTONES.md`.
+
+---
+
+## v1.2 — Karpathy Wiki + claude-memory-compiler
+
+**Goal:** Hybrid Wissens-System: Karpathy Index-first Retrieval für `90_Wiki/` (external), neues privates `95_Gehirn/` (internal) mit automatischem Capture aus Claude-Code-Konversationen via `claude-memory-compiler`, RAG bleibt als Fallback und wächst um dritte Collection.
+
+### Phases
+
+- [ ] **Phase 14: Tool-Install** — `claude-memory-compiler` geklont, gepatcht, Smoke-Test grün
+- [ ] **Phase 15: Brain-Struktur** — `$TOM_VAULT/95_Gehirn/` Ordner, Privacy-Regeln, MkDocs-Ausschluss
+- [ ] **Phase 16: Hook-Integration** — Projekt-lokale Claude-Code Hooks für Auto-Capture
+- [ ] **Phase 17: Karpathy-Index für 90_Wiki** — `90_Wiki/index.md` neu im Karpathy-Retrieval-Stil
+- [ ] **Phase 18: RAG-Erweiterung um gehirn-Collection** — Dritte ChromaDB-Collection additiv
+- [ ] **Phase 19: Neue Wrapper tom-wiki/tom-compile/tom-lint** — CLI-Tools + Wissens-Kaskade
+- [ ] **Phase 20: Multi-Projekt-Konvention** — `wiki_path`-Konvention über mehrere Projekte
+- [ ] **Phase 21: Abschluss-Doku + Milestone-Close** — v1.2 Doku, Artikel, Close-Issue
 
 ### Progress Table
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 8. Vault-Cleanup | 0/? | Not started | — |
-| 9. Maximus_OS Integration Tooling | 0/? | Not started | — |
-| 10. Ollama Installation | 0/? | Not started | — |
-| 11. Gemma Custom Model + RAG Pipeline | 0/? | Not started | — |
-| 12. Tom ↔ Gemma Wiring | 0/? | Not started | — |
-| 13. Dokumentation + Abschluss | 0/? | Not started | — |
+| 14. Tool-Install | 0/? | Not started | — |
+| 15. Brain-Struktur | 0/? | Not started | — |
+| 16. Hook-Integration | 0/? | Not started | — |
+| 17. Karpathy-Index für 90_Wiki | 0/? | Not started | — |
+| 18. RAG-Erweiterung um gehirn-Collection | 0/? | Not started | — |
+| 19. Neue Wrapper tom-wiki/tom-compile/tom-lint | 0/? | Not started | — |
+| 20. Multi-Projekt-Konvention | 0/? | Not started | — |
+| 21. Abschluss-Doku + Milestone-Close | 0/? | Not started | — |
 
 ---
 
-## Phase Details
+## Phase Details (v1.2)
 
-### Phase 8: Vault-Cleanup
+### Phase 14: Tool-Install
 
-**Goal**: Der iCloud-Vault ist als einzige Quelle der Wahrheit bestätigt und das lokale Duplikat ist vollständig aus Git und Dateisystem entfernt.
+**Goal**: `claude-memory-compiler` ist lokal installiert, gegen `$TOM_VAULT/95_Gehirn/` konfiguriert, und ein Struktur-Lint läuft grün.
 
-**Depends on**: Nothing (first phase of v1.1)
+**Depends on**: Nothing (erste v1.2-Phase, parallel zu Phase 15 möglich)
 
-**Requirements**: VCLEAN-01, VCLEAN-02, VCLEAN-03, VCLEAN-04, VCLEAN-05
+**Requirements**: TOOL-01, TOOL-02, TOOL-03, TOOL-04, TOOL-05
 
 **Success Criteria** (what must be TRUE):
-1. `git ls-files` zeigt keine Dateien unter `Obsidian_Zentralw/` mehr an
-2. `ls /Users/maxim/Claude/Obsidian_Zentralw` schlägt fehl — Verzeichnis existiert nicht lokal
-3. `.gitignore` enthält expliziten Eintrag für den lokalen Vault-Pfad mit erklärendem Kommentar zur iCloud-Canonical-Entscheidung
-4. `CLAUDE.md` und `AGENTS.md` referenzieren den iCloud-Pfad als `$TOM_VAULT`
-5. Ein Maximus_OS-Issue belegt den Cleanup mit Commit-Hash
+1. `/Users/maxim/Claude/claude-memory-compiler/` existiert als geklontes Git-Repo und ist im Parent-Repo getrackt
+2. `uv sync` im Tool-Repo läuft ohne Fehler durch, `uv run scripts/lint.py --structural-only` terminiert mit Exit-Code 0
+3. `scripts/config.py` referenziert `TOM_VAULT` per Env-Var und zeigt auf `$TOM_VAULT/95_Gehirn/`
+4. Ein Maximus_OS-Issue an CTO dokumentiert Tool-Install + Config-Patch mit Commit-Hash
 
 **Plans**: TBD
 
 ---
 
-### Phase 9: Maximus_OS Integration Tooling
+### Phase 15: Brain-Struktur
 
-**Goal**: Tom kann über einen lokalen Wrapper strukturierte Issues an Maximus_OS schicken, Agent-Aliase sind hinterlegt, und die Kommunikationsregeln sind in allen relevanten Quellen dokumentiert.
+**Goal**: Der neue private `95_Gehirn/`-Raum ist im Vault angelegt, dokumentiert Privacy-Regeln und ist verifiziert vom MkDocs-Publish-Scope ausgeschlossen.
 
-**Depends on**: Phase 8 (CLAUDE.md-Pfade müssen bereits aktualisiert sein)
+**Depends on**: Nothing (parallel zu Phase 14 möglich)
 
-**Requirements**: MOS-01, MOS-02, MOS-03, MOS-04, MOS-05, MOS-06
+**Requirements**: BRAIN-01, BRAIN-02, BRAIN-03, BRAIN-04, BRAIN-05, BRAIN-06
 
 **Success Criteria** (what must be TRUE):
-1. `bin/tom-issue --title "Test" --description "Smoke" --agent tom` erstellt ein Issue im Maximus_OS-Dashboard ohne Fehler
-2. `--agent wiki-kurator`, `--agent archivarius` und `--agent cto` routen an die jeweils richtigen Agent-IDs
-3. `CLAUDE.md` und `AGENTS.md` beschreiben klar, wann ein Issue nötig ist (Milestones, Architektur, Handoffs) und wann nicht (Kleinkram < 5 Min)
-4. `Obsidian_Zentralw/CLAUDE.md` enthält Workflow WF-06 "Issue an Maximus_OS schreiben" mit Beispielen
+1. `$TOM_VAULT/95_Gehirn/` enthält Unterordner `daily/`, `knowledge/{concepts,connections,qa}/`, `reports/`
+2. `95_Gehirn/CLAUDE.md` dokumentiert was rein darf, was nicht, Compile-Trigger und Lint-Regeln
+3. `95_Gehirn/index.md` und `log.md` existieren mit Initial-Inhalt
+4. `mkdocs.yml` ist verifiziert — ein Build-Dry-Run enthält keine `95_Gehirn/`-Pfade
+5. Ein Maximus_OS-Issue an archivarius dokumentiert Struktur + Privacy-Regeln
 
 **Plans**: TBD
 
 ---
 
-### Phase 10: Ollama Installation
+### Phase 16: Hook-Integration
 
-**Goal**: Ollama ist sauber unter `/Users/maxim/Ollama` installiert, `gemma2:9b` ist geladen und eine einfache Prompt-Anfrage liefert eine plausible Antwort.
+**Goal**: Projekt-lokale Claude-Code-Hooks schreiben bei SessionEnd automatisch Daily-Entries nach `95_Gehirn/daily/`, ohne bestehende globale GSD/RTK-Hooks zu brechen.
 
-**Depends on**: Nothing (kann parallel zu Phase 9 laufen; Phase 11 hängt von Phase 10 ab)
+**Depends on**: Phase 14 (Tool installiert), Phase 15 (Brain-Struktur existiert)
 
-**Requirements**: OLL-01, OLL-02, OLL-03, OLL-04, OLL-05, OLL-06
+**Requirements**: HOOK-01, HOOK-02, HOOK-03, HOOK-04, HOOK-05, HOOK-06
 
 **Success Criteria** (what must be TRUE):
-1. `which ollama` und `ollama --version` liefern gültige Ausgaben in einer frischen Shell
-2. `echo $OLLAMA_MODELS` gibt `/Users/maxim/Ollama` zurück — auch nach Shell-Neustart (persistent in `~/.zshrc`)
-3. `ollama list` zeigt `gemma2:9b` und das Modell liegt physisch in `/Users/maxim/Ollama`
-4. `ollama run gemma2:9b "Hallo"` gibt eine sinnvolle Antwort zurück
-5. Ein Maximus_OS-Issue dokumentiert den Reinstall mit Pfad und Version
+1. `/Users/maxim/Claude/.claude/settings.json` existiert und enthält `SessionStart`, `SessionEnd`, `PreCompact` Hooks via `uv run` auf `claude-memory-compiler/hooks/*.py`
+2. Nach einer Claude-Code-Session existiert ein Entry in `$TOM_VAULT/95_Gehirn/daily/YYYY-MM-DD.md`
+3. Globale GSD + RTK Hooks sind nach dem Merge noch funktional (Smoke-Test: `rtk --version`, GSD-Hook-Trigger)
+4. `/Users/maxim/Claude/CLAUDE.md` dokumentiert aktive Hooks + Auto-Capture-Verhalten
+5. Ein Maximus_OS-Issue an CTO dokumentiert Hook-Aktivierung
 
 **Plans**: TBD
 
 ---
 
-### Phase 11: Gemma Custom Model + RAG Pipeline
+### Phase 17: Karpathy-Index für 90_Wiki
 
-**Goal**: Das Custom-Model `gemme` ist auf Basis von `gemma2:9b` gebaut, ChromaDB ist gegen den iCloud-Vault reindiziert, und eine RAG-Query liefert inhaltlich plausible Antworten mit dokumentiertem Eval-Baseline.
+**Goal**: `90_Wiki/index.md` ist nach Karpathy-Retrieval-Methode neu geschrieben — Index-first, gruppiert, mit Nutzungshinweis — und beantwortet typische Fragen ohne RAG.
 
-**Depends on**: Phase 10 (Ollama + `gemma2:9b` muss verfügbar sein), Phase 8 (iCloud-Vault-Pfade müssen final sein)
+**Depends on**: Nothing (unabhängig von Tool-Install)
 
-**Requirements**: GEM-01, GEM-02, GEM-03, GEM-04, GEM-05, GEM-06, GEM-07, GEM-08
+**Requirements**: KIDX-01, KIDX-02, KIDX-03, KIDX-04, KIDX-05
 
 **Success Criteria** (what must be TRUE):
-1. `ollama list` zeigt `gemme` als eigenes Model
-2. `python3 Gemma/rag/query.py "Was ist in 90_Wiki/index.md dokumentiert?"` gibt eine inhaltlich plausible Antwort mit Quellenangabe zurück
-3. `eval/run_eval.py` läuft durch und gibt einen dokumentierten Baseline-Score > 0 aus
-4. `Gemma/training/data/qa_pairs.jsonl` enthält mindestens 10 Q&A-Paare
-5. `Gemma/rag/config.py` verweist ausschließlich auf iCloud-Vault-Pfade
+1. Alter `index.md` ist als `90_Wiki/history.md` erhalten (Changelog bewahrt)
+2. Neuer `90_Wiki/index.md` beginnt mit Nutzungshinweis "zuerst Index, dann 3–5 relevante Artikel lesen, dann synthetisieren"
+3. Alle bestehenden `90_Wiki/`-Artikel sind gelistet mit 1–2-Zeilen-Beschreibung, gruppiert nach Konzepte/Themen/Projekte/Personen/Quellen
+4. Smoke-Test: "Was ist Turboquant?" wird via Index → direkte Reads beantwortet, ohne RAG
+5. Ein Maximus_OS-Issue an wiki-kurator dokumentiert die Index-Umschreibung
 
 **Plans**: TBD
 
 ---
 
-### Phase 12: Tom ↔ Gemma Wiring
+### Phase 18: RAG-Erweiterung um gehirn-Collection
 
-**Goal**: `tom-ask` ist als Shell-Wrapper im PATH verfügbar, leitet Fragen an das lokale RAG weiter und gibt Antwort plus Quellen zurück; die Nutzungsregeln sind in `CLAUDE.md` dokumentiert.
+**Goal**: Die Gemma-RAG-Pipeline indiziert additiv eine dritte Collection `gehirn` aus `95_Gehirn/knowledge/` und durchsucht sie zusammen mit `wiki` und `clippings`.
 
-**Depends on**: Phase 11 (RAG-Pipeline muss funktionieren)
+**Depends on**: Phase 15 (`95_Gehirn/knowledge/` muss existieren, ggf. leer)
 
-**Requirements**: WIRE-01, WIRE-02, WIRE-03, WIRE-04, WIRE-05
+**Requirements**: RAG2-01, RAG2-02, RAG2-03, RAG2-04, RAG2-05
 
 **Success Criteria** (what must be TRUE):
-1. `tom-ask "Was hat Maxim über PaperclipAI dokumentiert?"` gibt eine Antwort mit Quellenangabe direkt im Terminal aus
-2. `which tom-ask` findet das Binary (Symlink oder PATH-Erweiterung aktiv nach Shell-Neustart)
-3. `CLAUDE.md` enthält eine Sektion "Lokale Wiki-Queries" mit konkreten Beispielen wann `tom-ask` vs. Obsidian-Suche sinnvoll ist
-4. Maximus_OS-Agent-Konfiguration für `ollama run gemme` ist entweder aktiviert und dokumentiert, oder ein Issue an CTO ist eröffnet
+1. `Gemma/rag/config.py` definiert `GEHIRN_PATH = TOM_VAULT / "95_Gehirn" / "knowledge"`
+2. `index.py` indiziert die dritte Collection `gehirn` additiv in `index_all()`; gegen leeres Verzeichnis meldet es 0 Chunks fehlerfrei
+3. `query.py` durchsucht alle drei Collections (wiki, clippings, gehirn) in einem Call
+4. Ein Maximus_OS-Issue an CTO dokumentiert die RAG-Erweiterung
 
 **Plans**: TBD
 
 ---
 
-### Phase 13: Dokumentation + Abschluss
+### Phase 19: Neue Wrapper tom-wiki/tom-compile/tom-lint
 
-**Goal**: Alle Installationen und Entscheidungen aus v1.1 sind im Vault und in Maximus_OS nachvollziehbar dokumentiert, und das Milestone-Abschluss-Issue schließt v1.1 formal ab.
+**Goal**: Drei neue CLI-Wrapper sind live: `tom-wiki` (Index-first Query), `tom-compile` (Memory-Compile), `tom-lint` (Brain-Struktur-Lint). Die Wissens-Kaskade Direct-Read → tom-wiki → tom-ask ist dokumentiert.
 
-**Depends on**: Phase 12 (alles live bevor dokumentiert wird)
+**Depends on**: Phase 14 (compile/lint-Scripts vorhanden), Phase 17 (`90_Wiki/index.md` neu)
 
-**Requirements**: DOC11-01, DOC11-02, DOC11-03, DOC11-04, DOC11-05
+**Requirements**: WRAP-01, WRAP-02, WRAP-03, WRAP-04, WRAP-05, WRAP-06, WRAP-07
 
 **Success Criteria** (what must be TRUE):
-1. `Obsidian_Zentralw/log.md` enthält einen datierten v1.1-Abschluss-Eintrag mit den wichtigsten Änderungen
-2. `Obsidian_Zentralw/70_Hardware/ollama-setup.md` existiert und beschreibt vollständig den Ollama-Setup (Pfad, Env-Var, Model, Befehle)
-3. `Gemma/README.md` erlaubt einen vollständigen Setup-Nachvollzug ohne externe Hilfe (Install, Modelfile, Config, RAG-Run, Training, Eval)
-4. `90_Wiki/projekte/paperclipai.md` ist mit dem v1.1 Integration Layer aktualisiert
-5. Ein finales Milestone-Abschluss-Issue in Maximus_OS referenziert alle relevanten Commit-Hashes und den Roadmap-Link
+1. `bin/tom-wiki`, `bin/tom-compile`, `bin/tom-lint` sind ausführbar und nach `~/bin/` symlinked
+2. `tom-wiki "Was ist Ollama?"` liefert eine Antwort via Index ohne RAG-Aufruf
+3. `tom-lint --structural-only` läuft fehlerfrei gegen den aktuellen `95_Gehirn/`-Stand
+4. `CLAUDE.md` + `AGENTS.md` dokumentieren die dreistufige Wissens-Kaskade (Direct-Read → tom-wiki → tom-ask)
+5. Ein Maximus_OS-Issue an CTO dokumentiert die neuen CLI-Tools
 
 **Plans**: TBD
 
 ---
 
-## Coverage: v1.1
+### Phase 20: Multi-Projekt-Konvention
+
+**Goal**: Die `wiki_path`-Konvention erlaubt es fremden Projekten auf demselben Mac, dasselbe `95_Gehirn/` und `90_Wiki/` zu nutzen. Ein zweites Projekt verifiziert das End-to-End.
+
+**Depends on**: Phase 19 (Wrapper müssen existieren)
+
+**Requirements**: MULTI-01, MULTI-02, MULTI-03, MULTI-04, MULTI-05
+
+**Success Criteria** (what must be TRUE):
+1. Die `wiki_path`-Template-Konvention ist entweder in `claude-memory-compiler/docs/multi-project.md` oder als CLAUDE.md-Anhang dokumentiert
+2. Mindestens ein zweites Projekt auf dem Mac hat die `wiki_path`-Sektion eingebettet
+3. Smoke-Test: `tom-wiki "Frage"` aus dem zweiten Projekt-Verzeichnis liefert eine Antwort
+4. `95_Gehirn/CLAUDE.md` erwähnt dass Brain shared ist, pro Projekt eigene Daily-Logs möglich
+5. Ein Maximus_OS-Issue an wiki-kurator dokumentiert die Multi-Projekt-Konvention
+
+**Plans**: TBD
+
+---
+
+### Phase 21: Abschluss-Doku + Milestone-Close
+
+**Goal**: v1.2 ist in Vault, Wiki und Planning-Artefakten vollständig dokumentiert; ein Milestone-Close-Issue an CEO schließt v1.2 formal ab.
+
+**Depends on**: Phases 14–20 (alles live bevor dokumentiert)
+
+**Requirements**: DOC12-01, DOC12-02, DOC12-03, DOC12-04, DOC12-05, DOC12-06
+
+**Success Criteria** (what must be TRUE):
+1. `$TOM_VAULT/log.md` enthält einen datierten v1.2-Abschluss-Eintrag
+2. `90_Wiki/projekte/claude-memory-compiler.md` und `90_Wiki/konzepte/karpathy-wiki-methode.md` existieren als publizierbare Artikel
+3. `claude-memory-compiler/TOM-PATCHES.md` dokumentiert alle Config-Änderungen gegen Upstream
+4. `REQUIREMENTS.md`, `STATE.md`, `MILESTONES.md`, `PROJECT.md` sind auf v1.2 Close aktualisiert
+5. Ein finales Maximus_OS Milestone-Close-Issue an CEO (`priority=high`) referenziert alle Commit-Hashes und die Verification-Summary
+
+**Plans**: TBD
+
+---
+
+## Coverage: v1.2
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| VCLEAN-01 | 8 | Pending |
-| VCLEAN-02 | 8 | Pending |
-| VCLEAN-03 | 8 | Pending |
-| VCLEAN-04 | 8 | Pending |
-| VCLEAN-05 | 8 | Pending |
-| MOS-01 | 9 | Pending |
-| MOS-02 | 9 | Pending |
-| MOS-03 | 9 | Pending |
-| MOS-04 | 9 | Pending |
-| MOS-05 | 9 | Pending |
-| MOS-06 | 9 | Pending |
-| OLL-01 | 10 | Pending |
-| OLL-02 | 10 | Pending |
-| OLL-03 | 10 | Pending |
-| OLL-04 | 10 | Pending |
-| OLL-05 | 10 | Pending |
-| OLL-06 | 10 | Pending |
-| GEM-01 | 11 | Pending |
-| GEM-02 | 11 | Pending |
-| GEM-03 | 11 | Pending |
-| GEM-04 | 11 | Pending |
-| GEM-05 | 11 | Pending |
-| GEM-06 | 11 | Pending |
-| GEM-07 | 11 | Pending |
-| GEM-08 | 11 | Pending |
-| WIRE-01 | 12 | Pending |
-| WIRE-02 | 12 | Pending |
-| WIRE-03 | 12 | Pending |
-| WIRE-04 | 12 | Pending |
-| WIRE-05 | 12 | Pending |
-| DOC11-01 | 13 | Pending |
-| DOC11-02 | 13 | Pending |
-| DOC11-03 | 13 | Pending |
-| DOC11-04 | 13 | Pending |
-| DOC11-05 | 13 | Pending |
+| TOOL-01 | 14 | Pending |
+| TOOL-02 | 14 | Pending |
+| TOOL-03 | 14 | Pending |
+| TOOL-04 | 14 | Pending |
+| TOOL-05 | 14 | Pending |
+| BRAIN-01 | 15 | Pending |
+| BRAIN-02 | 15 | Pending |
+| BRAIN-03 | 15 | Pending |
+| BRAIN-04 | 15 | Pending |
+| BRAIN-05 | 15 | Pending |
+| BRAIN-06 | 15 | Pending |
+| HOOK-01 | 16 | Pending |
+| HOOK-02 | 16 | Pending |
+| HOOK-03 | 16 | Pending |
+| HOOK-04 | 16 | Pending |
+| HOOK-05 | 16 | Pending |
+| HOOK-06 | 16 | Pending |
+| KIDX-01 | 17 | Pending |
+| KIDX-02 | 17 | Pending |
+| KIDX-03 | 17 | Pending |
+| KIDX-04 | 17 | Pending |
+| KIDX-05 | 17 | Pending |
+| RAG2-01 | 18 | Pending |
+| RAG2-02 | 18 | Pending |
+| RAG2-03 | 18 | Pending |
+| RAG2-04 | 18 | Pending |
+| RAG2-05 | 18 | Pending |
+| WRAP-01 | 19 | Pending |
+| WRAP-02 | 19 | Pending |
+| WRAP-03 | 19 | Pending |
+| WRAP-04 | 19 | Pending |
+| WRAP-05 | 19 | Pending |
+| WRAP-06 | 19 | Pending |
+| WRAP-07 | 19 | Pending |
+| MULTI-01 | 20 | Pending |
+| MULTI-02 | 20 | Pending |
+| MULTI-03 | 20 | Pending |
+| MULTI-04 | 20 | Pending |
+| MULTI-05 | 20 | Pending |
+| DOC12-01 | 21 | Pending |
+| DOC12-02 | 21 | Pending |
+| DOC12-03 | 21 | Pending |
+| DOC12-04 | 21 | Pending |
+| DOC12-05 | 21 | Pending |
+| DOC12-06 | 21 | Pending |
 
-**v1.1 total: 35 — Mapped: 35 — Unmapped: 0**
+**v1.2 total: 43 — Mapped: 43 — Unmapped: 0 ✓**
 
 ---
 
-*Roadmap created: 2026-04-10*
-*Milestone: v1.1 — Maximus_OS Integration + Ollama Gemma Revival*
+*Roadmap v1.1 created: 2026-04-10*
+*Roadmap v1.2 appended: 2026-04-10*
+*Current milestone: v1.2 — Karpathy Wiki + claude-memory-compiler*

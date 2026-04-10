@@ -119,18 +119,53 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 
 ## Traceability
 
-Updated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOOL-01..05 | Phase 14 | Pending |
-| BRAIN-01..06 | Phase 15 | Pending |
-| HOOK-01..06 | Phase 16 | Pending |
-| KIDX-01..05 | Phase 17 | Pending |
-| RAG2-01..05 | Phase 18 | Pending |
-| WRAP-01..07 | Phase 19 | Pending |
-| MULTI-01..05 | Phase 20 | Pending |
-| DOC12-01..06 | Phase 21 | Pending |
+| TOOL-01 | Phase 14 | Pending |
+| TOOL-02 | Phase 14 | Pending |
+| TOOL-03 | Phase 14 | Pending |
+| TOOL-04 | Phase 14 | Pending |
+| TOOL-05 | Phase 14 | Pending |
+| BRAIN-01 | Phase 15 | Pending |
+| BRAIN-02 | Phase 15 | Pending |
+| BRAIN-03 | Phase 15 | Pending |
+| BRAIN-04 | Phase 15 | Pending |
+| BRAIN-05 | Phase 15 | Pending |
+| BRAIN-06 | Phase 15 | Pending |
+| HOOK-01 | Phase 16 | Pending |
+| HOOK-02 | Phase 16 | Pending |
+| HOOK-03 | Phase 16 | Pending |
+| HOOK-04 | Phase 16 | Pending |
+| HOOK-05 | Phase 16 | Pending |
+| HOOK-06 | Phase 16 | Pending |
+| KIDX-01 | Phase 17 | Pending |
+| KIDX-02 | Phase 17 | Pending |
+| KIDX-03 | Phase 17 | Pending |
+| KIDX-04 | Phase 17 | Pending |
+| KIDX-05 | Phase 17 | Pending |
+| RAG2-01 | Phase 18 | Pending |
+| RAG2-02 | Phase 18 | Pending |
+| RAG2-03 | Phase 18 | Pending |
+| RAG2-04 | Phase 18 | Pending |
+| RAG2-05 | Phase 18 | Pending |
+| WRAP-01 | Phase 19 | Pending |
+| WRAP-02 | Phase 19 | Pending |
+| WRAP-03 | Phase 19 | Pending |
+| WRAP-04 | Phase 19 | Pending |
+| WRAP-05 | Phase 19 | Pending |
+| WRAP-06 | Phase 19 | Pending |
+| WRAP-07 | Phase 19 | Pending |
+| MULTI-01 | Phase 20 | Pending |
+| MULTI-02 | Phase 20 | Pending |
+| MULTI-03 | Phase 20 | Pending |
+| MULTI-04 | Phase 20 | Pending |
+| MULTI-05 | Phase 20 | Pending |
+| DOC12-01 | Phase 21 | Pending |
+| DOC12-02 | Phase 21 | Pending |
+| DOC12-03 | Phase 21 | Pending |
+| DOC12-04 | Phase 21 | Pending |
+| DOC12-05 | Phase 21 | Pending |
+| DOC12-06 | Phase 21 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 43 total
@@ -139,4 +174,4 @@ Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-04-10*
-*Last updated: 2026-04-10 after v1.2 milestone start*
+*Last updated: 2026-04-10 after v1.2 roadmap creation*

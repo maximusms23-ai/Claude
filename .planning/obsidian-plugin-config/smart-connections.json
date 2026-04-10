@@ -1,14 +1,24 @@
 {
   "_meta": {
-    "description": "Smart Connections Plugin Config-Backup (Tom v1.4 Phase 29)",
+    "description": "Smart Connections Plugin Config-Backup (Tom v1.4 Phase 29 + Phase 29-Hotfix)",
     "plugin_version": "4.3.0",
     "vault_path": "$TOM_VAULT",
     "backup_created": "2026-04-10",
-    "rationale": "Reproducibility bei Vault-Restore oder Plugin-Reinit. Die Ollama-Settings müssen nach Plugin-Aktivierung in Obsidian UI gesetzt werden (siehe activation_steps)."
+    "hotfix_applied": "2026-04-10",
+    "rationale": "Reproducibility bei Vault-Restore oder Plugin-Reinit. Die Ollama-Settings + Excluded Folders müssen nach Plugin-Aktivierung in Obsidian UI gesetzt werden (siehe activation_steps)."
   },
 
   "plugin_id": "smart-connections",
   "enabled_in": ".obsidian/community-plugins.json",
+
+  "lessons_learned": {
+    "scignore_not_respected": {
+      "finding": "Smart Connections v4.3.0 ignoriert `.scignore` beim Initial-Index (empirisch festgestellt am 2026-04-10 — nach Plugin-Aktivierung wurden 56 persönliche Files indiziert, obwohl .scignore korrekt gesetzt war).",
+      "impact": "Privacy-Versprechen von OBPL-04 wurde verletzt. Embeddings blieben zwar lokal (.smart-env/multi/), aber persönliche Daten (10_Personen, 20_Dokumente, 40_Aufgaben, 50_Gesundheit, 60_Finanzen, 70_Hardware, 80_Social_Media, 95_Gehirn/daily) waren im Plugin-State.",
+      "fix": "1) Plugin deaktivieren, 2) .smart-env/multi/*.ajson für persönliche Ordner gelöscht (56 Files), 3) Exclude-Liste im Plugin-UI setzen statt via .scignore, 4) Plugin re-enable + Re-Index.",
+      "correct_mechanism": "Settings → Smart Connections → Excluded Folders (UI-Eingabe, nicht .scignore)"
+    }
+  },
 
   "recommended_settings": {
     "embed_model": {
@@ -23,19 +33,40 @@
       "model": "gemme:latest",
       "rationale": "Custom-Model aus v1.1 Phase 11, basiert auf gemma4:e4b, 8192 Kontext, temperature 0.7. Identisches Modell wie tom-wiki/tom-ask nutzen."
     },
-    "privacy_exclude_file": ".scignore",
-    "privacy_exclude_rationale": "Nur 90_Wiki/ und 95_Gehirn/knowledge/ dürfen indiziert werden. Alle persönlichen Ordner (10_Personen, 20_Dokumente, 40_Aufgaben, 50_Gesundheit, 60_Finanzen, 70_Hardware, 80_Social_Media) sowie raw/Clippings/Archiv sind in .scignore ausgeschlossen."
+    "excluded_folders_ui_list": [
+      "00_Inbox",
+      "10_Personen",
+      "20_Dokumente",
+      "30_Projekte",
+      "40_Aufgaben",
+      "50_Gesundheit",
+      "60_Finanzen",
+      "70_Hardware",
+      "80_Social_Media",
+      "95_Gehirn/daily",
+      "95_Gehirn/reports",
+      "95_Gehirn/qa",
+      "Archiv",
+      "raw",
+      "Clippings",
+      "output",
+      "99_Vorlagen"
+    ],
+    "excluded_folders_rationale": "Nur 90_Wiki/ und 95_Gehirn/knowledge/ dürfen indiziert werden. MUSS im Plugin-UI gesetzt werden — .scignore wird nicht respektiert (siehe lessons_learned)."
   },
 
   "activation_steps": [
     "1. Obsidian öffnen / neustarten",
     "2. Settings → Community Plugins → 'Smart Connections' sollte sichtbar sein (bereits installiert via Files-Drop)",
-    "3. Plugin aktivieren (Toggle ON)",
-    "4. Settings → Smart Connections → Embed Model → Ollama → nomic-embed-text:latest",
-    "5. Settings → Smart Connections → Chat Model → Ollama → gemme:latest",
-    "6. Smart Connections Panel öffnen (Command: 'Smart Connections: Open Smart View' oder Sidebar-Icon)",
-    "7. Initial-Indexing abwarten (nur 90_Wiki/ + 95_Gehirn/knowledge/ dank .scignore)",
-    "8. Smoke-Test: Query 'TurboQuant' → sollte 90_Wiki/konzepte/turboquant.md finden"
+    "3. Plugin DEAKTIVIEREN (Toggle OFF) falls bereits aktiv",
+    "4. [WICHTIG] Settings → Smart Connections → Excluded Folders: Alle 17 Einträge aus recommended_settings.excluded_folders_ui_list eintragen (eine pro Zeile)",
+    "5. Settings → Smart Connections → Embed Model → Ollama → nomic-embed-text:latest",
+    "6. Settings → Smart Connections → Chat Model → Ollama → gemme:latest",
+    "7. Plugin AKTIVIEREN (Toggle ON)",
+    "8. Smart Connections Panel öffnen (Command: 'Smart Connections: Open Smart View' oder Sidebar-Icon)",
+    "9. Initial-Indexing abwarten (NUR 90_Wiki/ + 95_Gehirn/knowledge/ dank UI-Exclude-Liste)",
+    "10. Verifikation: ls .smart-env/multi/ → darf NUR Files mit Präfix 90_Wiki_* oder 95_Gehirn_knowledge_* enthalten",
+    "11. Smoke-Test: Query 'TurboQuant' → sollte 90_Wiki/konzepte/turboquant.md finden"
   ],
 
   "fallback_plugin_if_smart_connections_unusable": {
@@ -48,6 +79,7 @@
   "observability": {
     "index_location": ".smart-env/ (innerhalb des Vaults)",
     "exclude_index_from_git": "$TOM_VAULT ist sowieso nicht in git — kein Extra-Aufwand",
-    "size_estimate": "Bei aktuell <100 Dateien in 90_Wiki/ + 95_Gehirn/knowledge/: wenige MB"
+    "size_estimate": "Bei aktuell <100 Dateien in 90_Wiki/ + 95_Gehirn/knowledge/: wenige MB",
+    "privacy_check_command": "ls $TOM_VAULT/.smart-env/multi/ | grep -vE '^(90_Wiki|95_Gehirn_knowledge)' | wc -l  # MUSS 0 sein"
   }
 }

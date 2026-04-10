@@ -79,3 +79,47 @@ ls -la "$TOM_VAULT/.smart-env/" 2>&1 || echo "not yet"
 - `~ .planning/REQUIREMENTS.md`
 
 ## Status: ✓ AUTONOMER ANTEIL COMPLETE — MAXIM UI-HANDOFF DOKUMENTIERT
+
+---
+
+## Hotfix-Addendum (2026-04-10)
+
+Nach Maxim's Plugin-Aktivierung in Obsidian UI wurde festgestellt, dass Smart Connections v4.3.0 die `.scignore`-Datei **nicht respektiert**. Der Initial-Index hat 56 persönliche Files in `.smart-env/multi/` geschrieben, darunter:
+- `10_Personen/*` (Eltern, Familie, Kontakte)
+- `20_Dokumente/*` (alle 15 Kategorien)
+- `30_Projekte/Tom`, `40_Aufgaben/*`, `50_Gesundheit/*`, `60_Finanzen/*`, `70_Hardware/*`, `80_Social_Media/*`
+- `95_Gehirn/daily/*`, `95_Gehirn/CLAUDE.md`, `95_Gehirn/log.md`
+- Vault-Root-Files (`CLAUDE.md`, `log.md`, `index.md`)
+- `Clippings/*`, `raw/*`, `99_Vorlagen/*`
+
+Dies verletzt OBPL-04 (Privacy-Ausschluss-Versprechen).
+
+### Root-Cause
+Smart Connections liest `.scignore` nicht (oder erst nach dem Initial-Index). Die Exclude-Liste muss über die Plugin-UI gesetzt werden: `Settings → Smart Connections → Excluded Folders`.
+
+### Fix (vollständig)
+1. ✓ **Cache gelöscht**: 56 persönliche `.ajson` Files aus `.smart-env/multi/` entfernt. Nach Löschung: 25 Files verbleibend, ausschließlich `90_Wiki_*` (24) und `95_Gehirn_knowledge_*` (1).
+2. ✓ **Config-Backup aktualisiert**: `.planning/obsidian-plugin-config/smart-connections.json` enthält jetzt `lessons_learned`-Block + `excluded_folders_ui_list` mit 17 Einträgen + erweiterte `activation_steps`.
+3. ✓ **`.scignore` mit Warning-Header ergänzt**: Datei bleibt als Referenz-Dokumentation, Header macht klar dass sie vom Plugin nicht gelesen wird.
+4. ✓ **ADR-001**: `.planning/obsidian-plugin-config/adr-001-smart-connections-privacy.md` dokumentiert den Incident + Decision.
+5. ⏳ **Maxim-Handoff**: Excluded-Folders-Liste im Plugin-UI eintragen, Plugin re-enable, Re-Index abwarten, Smoke-Test `TurboQuant`.
+
+### Verifikation (nach Maxim's Re-Index)
+```bash
+# Privacy-Check (MUSS 0 zurückgeben)
+ls "$TOM_VAULT/.smart-env/multi/" | grep -vE "^(90_Wiki|95_Gehirn_knowledge)" | wc -l
+```
+
+Aktueller Stand direkt nach Cache-Clean (vor Re-Index):
+```
+$ ls .smart-env/multi/ | wc -l
+25
+$ ls .smart-env/multi/ | grep -vE "^(90_Wiki|95_Gehirn_knowledge)" | wc -l
+0
+```
+
+### Neue Requirements (tracked in v1.4)
+- **OBPL-06** — `.smart-env/multi/` enthält keine Files aus persönlichen Ordnern (✓ cache-clean, ⏳ post-re-index)
+- **OBPL-07** — Exclude-Liste dokumentiert im Config-Backup mit dem tatsächlich wirksamen Mechanismus (✓ smart-connections.json v2)
+
+## Status nach Hotfix: ✓ CACHE CLEAN, ✓ DOCS UPDATED — MAXIM UI-RECONFIG PENDING

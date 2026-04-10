@@ -69,4 +69,38 @@
 
 **Eval-Baseline (v1.3):** `tom-wiki` 60% Avg (80% auf Wiki-Queries) vs `tom-ask` 33% — dokumentiert unter `Gemma/eval/results/v1.3-baseline.md`. Karpathy Index-first empirisch bestätigt.
 
+## v1.4 — Aktive KI + Dokumenten-Fundament (Complete)
+
+**Started:** 2026-04-10
+**Completed:** 2026-04-10
+**Goal:** Tom bekommt (1) ein Volltext-Dokumenten-Fundament via OCR + SQLite-FTS5, (2) Obsidian-native Semantic-Search via Smart Connections mit Ollama-Backend, (3) automatisches Clipper-Enrichment (Summary/Tags/Konzepte/Wiki-Kategorie-Vorschlag), (4) einen dokumentierten Token-Spar-Pfad für `tom-compile`. Die Document-Lifecycle-State-Machine ist bewusst nach v1.5 deferred.
+**Phases:** 27–32 (6 Phasen, 39 Requirements inkl. Phase 29-Hotfix OBPL-06/07 + CLOSE14-08/09/10)
+**Status:** ✓ Shipped
+
+**Commits:**
+- Phase 27 — `9c045db` feat(archivum): OCR + FTS5 Volltext-Fundament
+- Phase 28 — `0e6f5ee` feat(tom-doc): CLI-Wrapper für Dokumenten-Volltext
+- Phase 29 — `2b692a8` feat(obsidian): Smart Connections Plugin-Install + Privacy-Exclude
+- Phase 29-Hotfix — `6ec745d` fix(smart-connections): Privacy-Leak Repair + ADRs
+- Phase 30 — `d18952b` feat(tom-clip-enrich): Clipper Auto-Enrichment via gemme
+- Phase 31 — `1df1dca` feat(tom-compile): Token-Spar-Lokalisierung via gemme
+- Phase 32 — (diesem folgend) docs: Tom v1.4 Abschluss-Doku + CLAUDE.md Plugin-Landscape
+
+**Maximus_OS Audit-Trail:** (wird in Phase 32 Close-Issue gesammelt — FAM-TBD)
+
+**Neue Werkzeuge:**
+- `bin/tom-doc` — CLI für SQLite-FTS5-Volltextsuche über OCR'd Archiv-PDFs (Subcommands: `index`, `search`, `list`, `show`)
+- `bin/tom-clip-enrich` — Summary + Auto-Tags + Konzept-Vorschläge + Wiki-Kategorie-Vorschlag für Clippings (idempotent via `enriched: true`)
+- `tom-compile --local` — Alternative Compile-Implementierung via `gemme` ohne `claude_agent_sdk` (Default bleibt claude-sdk)
+- `archivum/` Sub-Projekt: OCR-Pipeline (`pdftotext` → `ocrmypdf` Fallback), SQLite FTS5 Schema, SHA256-Idempotenz-Cache
+- Smart Connections Obsidian-Plugin v4.3.0 mit Ollama-Backend (`nomic-embed-text` + `gemme`)
+
+**Mid-Phase-Intervention (Phase 29-Hotfix):**
+Nach Maxim's Aktivierung von Smart Connections in Obsidian UI wurde festgestellt, dass das Plugin `.scignore` nicht respektiert. 56 persönliche `.ajson`-Embeddings landeten trotz Exclude-Liste in `.smart-env/multi/`. Fix: Cache-Clean, UI-Exclude-Anleitung, ADR-001 dokumentiert Incident + Decision. Neue Requirements OBPL-06/07 in v1.4 gezogen.
+
+**Plugin-Landschaft (neu in v1.4):**
+Maxim hat zusätzlich 33 Community-Plugins in Obsidian installiert. Dokumentiert in `CLAUDE.md` "Obsidian Plugin Landscape". Tom-relevante Plugins (Dataview, Templater, Tasks, QuickAdd, obsidian-git) sind für v1.5-Integration vorgemerkt. ADR-002 vertagt Vault-in-git-Entscheidung explizit auf v1.5/v1.6.
+
+Siehe `.planning/ROADMAP.md` für Phasen-Details, `.planning/briefings/v1.4-CEO-Briefing.md` für Executive Summary.
+
 Siehe `.planning/ROADMAP.md` für Phasen-Details.

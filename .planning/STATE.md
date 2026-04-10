@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.4
-milestone_name: Aktive KI + Dokumenten-Fundament
-status: executing
-last_updated: "2026-04-10T18:50:00.000Z"
+milestone_name: Complete
+status: complete
+last_updated: "2026-04-10T21:00:00.000Z"
 progress:
   total_phases: 6
-  completed_phases: 5
-  total_plans: 5
-  completed_plans: 5
+  completed_phases: 6
+  total_plans: 6
+  completed_plans: 6
 ---
 
 # State: Tom v1.4
@@ -22,19 +22,17 @@ See: `.planning/PROJECT.md` (updated 2026-04-10)
 
 ## Current Position
 
-Phases: 27 ✓, 28 ✓, 29 ~ (Maxim-UI-Handoff offen), 30 ✓, 31 ✓
-Next: Phase 32 — Milestone-Close v1.4
-Status: 5 von 6 Phasen shipped, nur Close + optional Maxim-Plugin-Aktivierung
-Last activity: 2026-04-10 — Phase 31 shipped (LOCAL-01..04)
+Phases: 27 ✓, 28 ✓, 29 ✓ (+ Hotfix), 30 ✓, 31 ✓, 32 ✓
+Next: v1.5 Kickoff (Lifecycle-State-Machine + Plugin-Integrationen)
+Status: v1.4 Shipped — alle 39 Requirements complete (37 original + 2 OBPL-06/07 aus Hotfix + 3 CLOSE14-08/09/10 Plugin-Landscape-Erweiterung)
+Last activity: 2026-04-10 — Phase 32 Milestone-Close shipped
 
 ## Progress
 
 ```
-v1.4: [x] Phase 27  [x] Phase 28  [~] Phase 29  [x] Phase 30  [x] Phase 31  [ ] Phase 32
-       83%                                                                              100%
+v1.4: [x] Phase 27  [x] Phase 28  [x] Phase 29+Hotfix  [x] Phase 30  [x] Phase 31  [x] Phase 32
+       100%
 ```
-
-Phase 29 ist technisch auto-ready, braucht nur noch Maxim UI-Aktivierung (Obsidian Settings → Smart Connections → ON + Ollama-Models). Das kann parallel zu Phase 32-Close passieren.
 
 ## Phase 27 Decisions
 

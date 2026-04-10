@@ -41,8 +41,17 @@ Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Lebe
   - Karpathy-Schwelle bleibt **500** (bewusste Entscheidung gegen Anhebung auf 1500); Skalierungs-Stufen dokumentiert
   - Anthropic-SDK-Clarification in `claude-memory-compiler/TOM-PATCHES.md` (bundled-CLI-Pfad nutzt Max-Subscription)
   - Obsidian-Doku-Lücke geschlossen: `log.md`-Eintrag, `30_Projekte/Tom.md` als Meta-Einstieg, Milestone-Close-Checklist in `CLAUDE.md`
+- ✓ Tom v1.4 — Aktive KI + Dokumenten-Fundament (Phasen 27–32):
+  - `archivum/` Sub-Projekt mit OCR-Pipeline (`pdftotext` → `ocrmypdf` Fallback), SQLite FTS5 Volltext-Index, SHA256-Idempotenz
+  - `bin/tom-doc` CLI (index/search/list/show) mit Wissens-Kaskade-Anbindung für persönliche Dokumente
+  - Smart Connections Obsidian-Plugin v4.3.0 mit Ollama-Backend (`nomic-embed-text` + `gemme`), Privacy-Exclude via UI (Phase 29-Hotfix)
+  - `bin/tom-clip-enrich` — Summary + Auto-Tags + Konzept-Vorschläge + Wiki-Kategorie, idempotent via `enriched: true` Frontmatter-Flag
+  - `tom-compile --local` via `gemme` als Alternative zum `claude_agent_sdk`-Default; Eval-Vergleich dokumentiert
+  - `tom-lint --structural-only` als launchd-tauglicher Default in CLAUDE.md verankert
+  - ADR-001 (`.scignore` nicht respektiert → UI-Exclude-Liste) + ADR-002 (Obsidian-Git deferred → v1.5/v1.6)
+  - `CLAUDE.md` "Obsidian Plugin Landscape"-Sektion dokumentiert alle 35 Plugins mit Tom-Relevanz-Kategorisierung
 
-**Active:** Tom v1.4 — Aktive KI + Dokumenten-Fundament
+**Active:** Tom v1.5 — TBD (Kickoff nach v1.4-Close)
 
 ## Current Milestone: v1.4 — Aktive KI + Dokumenten-Fundament
 

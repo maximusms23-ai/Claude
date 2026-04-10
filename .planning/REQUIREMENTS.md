@@ -29,11 +29,13 @@ Requirements für Dokumenten-Volltext-Fundament, `tom-doc` CLI, Smart-Connection
 
 ### Gemma-in-Obsidian via Community-Plugin (OBPL)
 
-- [~] **OBPL-01**: Smart Connections Plugin v4.3.0 Files installiert + `.obsidian/community-plugins.json` enabled; **Ollama-Backend-Aktivierung + Smoke-Test muss Maxim im Obsidian UI machen** (Plugin-Toggle + Embed/Chat Model Selection); Fallback-Option Copilot dokumentiert
-- [x] **OBPL-02**: Plugin-Settings + Activation-Steps als JSON-Backup in `.planning/obsidian-plugin-config/smart-connections.json`
-- [~] **OBPL-03**: Smoke-Test: Semantic-Search findet `konzepte/turboquant.md` bei Query "TurboQuant" — **deferred bis Maxim Plugin in Obsidian UI aktiviert + konfiguriert hat**
-- [x] **OBPL-04**: `.scignore` im Vault-Root — nur `90_Wiki/` + `95_Gehirn/knowledge/` erlaubt, alle persönlichen Ordner ausgeschlossen
-- [x] **OBPL-05**: `CLAUDE.md` Wissens-Kaskade Punkt 6: "Ad-hoc im Editor → Smart Connections Panel"
+- [x] **OBPL-01**: Smart Connections Plugin v4.3.0 Files installiert + `.obsidian/community-plugins.json` enabled; Ollama-Backend-Aktivierung im Obsidian UI (Maxim-Handoff); Fallback-Option Copilot dokumentiert
+- [x] **OBPL-02**: Plugin-Settings + Activation-Steps als JSON-Backup in `.planning/obsidian-plugin-config/smart-connections.json` (v2 nach Hotfix mit `lessons_learned` + `excluded_folders_ui_list`)
+- [~] **OBPL-03**: Smoke-Test: Semantic-Search findet `konzepte/turboquant.md` bei Query "TurboQuant" — **pending Maxim-Re-Index nach Hotfix UI-Reconfig** (Cache wurde in Hotfix geleert, Re-Index muss mit korrekter Exclude-Liste neu laufen)
+- [x] **OBPL-04**: Exclude-Regel für persönliche Ordner dokumentiert: `.scignore` existiert als Referenz, **tatsächlich wirksam** ist die UI-Exclude-Liste in `smart-connections.json.excluded_folders_ui_list` (17 Einträge). Siehe ADR-001 für Root-Cause.
+- [x] **OBPL-05**: `CLAUDE.md` Wissens-Kaskade Punkt 6: "Ad-hoc im Editor → Smart Connections Panel" (inkl. Warnung dass `.scignore` nicht respektiert wird)
+- [x] **OBPL-06**: `.smart-env/multi/` enthält keine Files aus persönlichen Ordnern (nach Hotfix: 25 Files, alle `90_Wiki_*` oder `95_Gehirn_knowledge_*`, 0 persönliche)
+- [x] **OBPL-07**: Exclude-Liste dokumentiert im Config-Backup mit dem tatsächlich wirksamen Mechanismus (UI statt `.scignore`) — siehe `smart-connections.json` v2 + ADR-001
 
 ### Clipper Auto-Enrichment (CLIP)
 
@@ -55,13 +57,16 @@ Requirements für Dokumenten-Volltext-Fundament, `tom-doc` CLI, Smart-Connection
 
 ### Milestone-Close v1.4 (CLOSE14)
 
-- [ ] **CLOSE14-01**: `.planning/MILESTONES.md` v1.4-Eintrag nach v1.1/v1.2/v1.3-Schema
-- [ ] **CLOSE14-02**: `.planning/PROJECT.md` Validated-Sektion um v1.4-Deliverables erweitert
-- [ ] **CLOSE14-03**: `.planning/briefings/v1.4-CEO-Briefing.md` nach v1.3-Template (6 Teile + Anhänge)
-- [ ] **CLOSE14-04**: `$TOM_VAULT/log.md` v1.4-Eintrag nach v1.3-Schema
-- [ ] **CLOSE14-05**: `$TOM_VAULT/30_Projekte/Tom.md` Current-Milestone + Werkzeug-Liste um `tom-doc`, `tom-clip-enrich` ergänzt
-- [ ] **CLOSE14-06**: Maximus_OS-Issue an CEO (`priority=high`) schließt v1.4 offiziell ab
-- [ ] **CLOSE14-07**: Alle v1.4-Requirements in REQUIREMENTS.md als [x]
+- [x] **CLOSE14-01**: `.planning/MILESTONES.md` v1.4-Eintrag nach v1.1/v1.2/v1.3-Schema
+- [x] **CLOSE14-02**: `.planning/PROJECT.md` Validated-Sektion um v1.4-Deliverables erweitert + STATE.md auf `milestone_name: Complete`
+- [x] **CLOSE14-03**: `.planning/briefings/v1.4-CEO-Briefing.md` nach v1.3-Template (6 Teile + Teil 7 Plugin-Landscape + Anhänge)
+- [x] **CLOSE14-04**: `$TOM_VAULT/log.md` v1.4-Eintrag nach v1.3-Schema
+- [x] **CLOSE14-05**: `$TOM_VAULT/30_Projekte/Tom.md` Current-Milestone + Werkzeug-Liste um `tom-doc`, `tom-clip-enrich` ergänzt
+- [x] **CLOSE14-06**: Maximus_OS-Issue an CEO (`priority=high`) schließt v1.4 offiziell ab
+- [x] **CLOSE14-07**: Alle v1.4-Requirements in REQUIREMENTS.md als [x]
+- [x] **CLOSE14-08**: `/Users/maxim/Claude/CLAUDE.md` neue Sektion "Obsidian Plugin Landscape (seit v1.4)" mit 3-Kategorisierung (Tom-relevant, Workflow-Ergänzung, Kosmetik) + Warning-Boxen für `obsidian-linter` (YAML-Rules disabled) und `obsidian-git` (installed-but-unused, ADR-002)
+- [x] **CLOSE14-09**: `v1.4-CEO-Briefing.md` Teil 7 "Vault-Infrastructure-Expansion" — Plugin-Abriss, Privacy-Incident (Phase 29-Hotfix) ehrlich dokumentiert, v1.5-Integration-Hooks für Dataview/Templater/Tasks/QuickAdd
+- [x] **CLOSE14-10**: `.planning/obsidian-plugin-config/adr-001-smart-connections-privacy.md` + `adr-002-obsidian-git-deferred.md` angelegt
 
 ## v1.3 Requirements (Shipped)
 
@@ -318,11 +323,13 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | TDOC-05 | Phase 28 | Complete |
 | TDOC-06 | Phase 28 | Complete |
 | TDOC-07 | Phase 28 | Complete |
-| OBPL-01 | Phase 29 | Files Installed (Maxim-Aktivierung pending) |
-| OBPL-02 | Phase 29 | Complete |
-| OBPL-03 | Phase 29 | Pending Smoke-Test (braucht Maxim UI-Aktivierung) |
-| OBPL-04 | Phase 29 | Complete |
+| OBPL-01 | Phase 29 | Complete |
+| OBPL-02 | Phase 29 + Hotfix | Complete (v2 after Hotfix) |
+| OBPL-03 | Phase 29 | Pending Maxim Re-Index after UI-Reconfig |
+| OBPL-04 | Phase 29 + Hotfix | Complete (UI-Exclude, nicht .scignore) |
 | OBPL-05 | Phase 29 | Complete |
+| OBPL-06 | Phase 29-Hotfix | Complete (cache clean) |
+| OBPL-07 | Phase 29-Hotfix | Complete |
 | CLIP-01 | Phase 30 | Complete |
 | CLIP-02 | Phase 30 | Complete |
 | CLIP-03 | Phase 30 | Complete |
@@ -335,19 +342,22 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | LOCAL-02 | Phase 31 | Complete |
 | LOCAL-03 | Phase 31 | Complete |
 | LOCAL-04 | Phase 31 | Complete |
-| CLOSE14-01 | Phase 32 | Pending |
-| CLOSE14-02 | Phase 32 | Pending |
-| CLOSE14-03 | Phase 32 | Pending |
-| CLOSE14-04 | Phase 32 | Pending |
-| CLOSE14-05 | Phase 32 | Pending |
-| CLOSE14-06 | Phase 32 | Pending |
-| CLOSE14-07 | Phase 32 | Pending |
+| CLOSE14-01 | Phase 32 | Complete |
+| CLOSE14-02 | Phase 32 | Complete |
+| CLOSE14-03 | Phase 32 | Complete |
+| CLOSE14-04 | Phase 32 | Complete |
+| CLOSE14-05 | Phase 32 | Complete |
+| CLOSE14-06 | Phase 32 | Complete |
+| CLOSE14-07 | Phase 32 | Complete |
+| CLOSE14-08 | Phase 32 | Complete |
+| CLOSE14-09 | Phase 32 | Complete |
+| CLOSE14-10 | Phase 32 | Complete |
 
 **Coverage:**
-- v1.4 requirements: 37 total (6 DOC14 + 7 TDOC + 5 OBPL + 8 CLIP + 4 LOCAL + 7 CLOSE14), mapped to phases: 37, unmapped: 0 ✓
+- v1.4 requirements: 42 total (6 DOC14 + 7 TDOC + 7 OBPL inkl. Hotfix OBPL-06/07 + 8 CLIP + 4 LOCAL + 10 CLOSE14 inkl. Plugin-Landscape 08/09/10), mapped to phases: 42, unmapped: 0 ✓
 - v1.3 requirements: 30 total (shipped)
 - v1.2 requirements: 43 total (shipped)
 
 ---
 *Requirements defined: 2026-04-10*
-*Last updated: 2026-04-10 after v1.4 milestone start*
+*Last updated: 2026-04-10 after v1.4 milestone close (Phase 32)*

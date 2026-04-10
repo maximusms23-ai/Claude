@@ -168,7 +168,7 @@ Bei jeder Wissensfrage nutze Tom **in dieser Reihenfolge**:
    - **Privacy**: Index bleibt lokal in `/Users/maxim/Claude/archivum/`, NIE im Wiki
 6. **Ad-hoc im Editor (Semantic-Search)** → Smart Connections Panel in Obsidian (seit v1.4)
    - Community-Plugin mit Ollama-Backend (`nomic-embed-text` + `gemme`)
-   - Indiziert NUR `90_Wiki/` + `95_Gehirn/knowledge/` dank `.scignore`
+   - Indiziert NUR `90_Wiki/` + `95_Gehirn/knowledge/` — **Exclude-Liste MUSS im Plugin-UI gesetzt sein** (`.scignore` wird nicht respektiert, siehe Phase 29-Hotfix + ADR-001)
    - Für schnelle "verwandte Notizen"-Lookups beim Schreiben
    - Fallback wenn aus Obsidian heraus keine CLI verfügbar ist
 
@@ -252,6 +252,51 @@ Trigger-Zeit auf 03:00 ändern: Im Plist `<key>Hour</key><integer>18</integer>` 
 ## Workflows im Vault
 
 Die konkreten Workflows für Dokumente, Arzttermine, Social Posts, Fristen und Hardware sind in `$TOM_VAULT/CLAUDE.md` dokumentiert (WF-01 bis WF-05).
+
+## Obsidian Plugin Landscape (seit v1.4)
+
+Maxim hat im v1.4-Zeitraum 33 Community-Plugins in Obsidian installiert, zusätzlich zu den 2 pre-v1.4 Plugins (`obsidian-local-images-plus`, `smart-connections`). Die aktuellen **35 Plugins** liegen in `$TOM_VAULT/.obsidian/plugins/` und sind in drei Kategorien nach Tom-Relevanz gruppiert.
+
+### Tom-relevant (muss ggf. in v1.5 integriert werden)
+
+| Plugin | Nutzen für Tom |
+|---|---|
+| `dataview` | Query-Engine für dynamische Dashboards (z.B. `40_Aufgaben/TODOS.md` als Dataview statt statische Liste) |
+| `templater-obsidian` | Template-Variablen für automatische Frontmatter-Befüllung (`title`, `created`, `type`) — könnte Tom's mandatory Frontmatter-Konvention automatisieren |
+| `obsidian-tasks-plugin` | Task-Parsing mit Fristen/Prioritäten — Alternative oder Ergänzung zu `40_Aufgaben/TODOS.md` |
+| `obsidian-git` | Git-Integration für Vault — **installed-but-unused** (siehe Warning unten + ADR-002) |
+| `quickadd` | Quick-Capture-Makros — könnte Inbox-Flow aus Obsidian heraus beschleunigen |
+| `smart-connections` | Semantic-Search Panel mit Ollama-Backend (Phase 29 + Hotfix) |
+
+### Workflow-Ergänzung (orthogonal zu Tom, aber nützlich)
+
+`excalibrain`, `obsidian-excalidraw-plugin`, `pdf-plus`, `calendar`, `obsidian-full-calendar`, `obsidian-day-planner`, `obsidian-tracker`, `obsidian-annotator`, `obsidian-kanban`, `obsidian-advanced-slides`, `obsidian-mind-map`, `obsidian-pandoc`, `obsidian-enhancing-export`, `notebook-navigator`, `obsidian-icon-folder`
+
+### Kosmetik / Input (neutral)
+
+`obsidian-linter`, `obsidian-style-settings`, `editing-toolbar`, `advanced-canvas`, `darlal-switcher-plus`, `obsidian-auto-link-title`, `image-converter`, `oz-image-plugin`, `obsidian-local-images-plus`, `media-extended`, `obsidian-advanced-uri`, `table-editor-obsidian`, `obsidian-latex-suite`, `obsidian-5e-statblocks`, `obsidian-importer`
+
+### ⚠️ Warning: obsidian-linter
+
+Aktuell sind **alle YAML-Rules disabled** (default nach Install) → keine akute Kollision mit Tom's mandatory Frontmatter-Konvention (`title`, `created`, `type`, optional `tags`). Wenn Maxim später Rules aktiviert (z.B. `yaml-key-sort`), muss geprüft werden, dass:
+1. Die vier Pflichtfelder nicht umsortiert/entfernt werden
+2. `created: YYYY-MM-DD` als Date-Format erhalten bleibt (kein Auto-Convert zu ISO-Timestamp)
+3. Wikilinks im Body nicht als URLs umgeschrieben werden
+
+Bei Aktivierung: Smoke-Test mit `$TOM_VAULT/99_Vorlagen/Dokument.md` gegen Linter laufen lassen, bevor großflächige Anwendung.
+
+### ⚠️ Warning: obsidian-git
+
+Der Vault ist seit v1.1 explizit **NICHT in git** (iCloud + Time Machine als Backup). Das Plugin ist installiert, darf aber **NICHT als Primary-Backup konfiguriert werden**, ohne vorher die Vault-in-git-Entscheidung zu treffen (ADR-002 deferred → v1.5/v1.6).
+
+**Empfehlung** (wenn es doch sein muss): Nur als sekundäres Backup in ein dediziertes lokales Repo ohne Remote, Scope beschränkt auf `90_Wiki/` + `95_Gehirn/knowledge/`, persönliche Ordner via `.gitignore` konsequent ausgeschlossen. Siehe `.planning/obsidian-plugin-config/adr-002-obsidian-git-deferred.md`.
+
+### Referenzen
+
+- `.planning/obsidian-plugin-config/smart-connections.json` — Plugin-Config-Backup (Phase 29 + Hotfix)
+- `.planning/obsidian-plugin-config/adr-001-smart-connections-privacy.md` — `.scignore`-Incident + UI-Exclude-Decision
+- `.planning/obsidian-plugin-config/adr-002-obsidian-git-deferred.md` — Vault-in-git-Entscheidung deferred
+- `.planning/briefings/v1.4-CEO-Briefing.md` Teil 7 — Vault-Infrastructure-Expansion
 
 ## Maximus_OS-Kommunikation (Hybrid-Modell, seit v1.1)
 

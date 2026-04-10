@@ -30,13 +30,13 @@ Requirements für Single-Source-Vault, Maximus_OS Hybrid-Integration und Ollama 
 - [ ] **OLL-01**: `ollama` Binary ist installiert und verifiziert (`which ollama`, `ollama --version`)
 - [ ] **OLL-02**: `OLLAMA_MODELS=/Users/maxim/Ollama` ist persistent in `~/.zshrc` und Verzeichnis existiert
 - [ ] **OLL-03**: Ollama-Server läuft und `ollama list` funktioniert
-- [ ] **OLL-04**: `gemma2:9b` ist geladen (via `ollama pull`) und physisch in `/Users/maxim/Ollama`
-- [ ] **OLL-05**: Smoke-Test: `ollama run gemma2:9b "Hallo"` liefert plausible Antwort
+- [ ] **OLL-04**: `gemma4:e4b` ist geladen (via `ollama pull`) und physisch in `/Users/maxim/Ollama`
+- [ ] **OLL-05**: Smoke-Test: `ollama run gemma4:e4b "Hallo"` liefert plausible Antwort
 - [ ] **OLL-06**: Abschluss-Issue dokumentiert Ollama-Reinstall mit Pfad + Version
 
 ### Gemma Custom Model + RAG (GEM)
 
-- [ ] **GEM-01**: `Gemma/modelfile/Modelfile` verweist auf `gemma2:9b` (statt ungültigem `gemma4:latest`)
+- [ ] **GEM-01**: `Gemma/modelfile/Modelfile` verweist auf `gemma4:e4b` (statt ungültigem `gemma4:latest`)
 - [ ] **GEM-02**: Custom-Model `gemme` ist via `ollama create` gebaut und in `ollama list` sichtbar
 - [ ] **GEM-03**: `Gemma/rag/config.py` zeigt auf iCloud-Vault-Pfade (`90_Wiki`, `Clippings`)
 - [ ] **GEM-04**: ChromaDB ist gegen neuen Vault reindiziert, Chunk-Count ist geloggt

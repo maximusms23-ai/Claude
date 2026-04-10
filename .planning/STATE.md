@@ -31,7 +31,7 @@ Status: [  ][  ][  ][  ][  ][  ]
 - **Vault-Cleanup Option A**: iCloud-Vault (`/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw/`) wird Single Source of Truth, lokales Duplikat wird aus Git und Dateisystem entfernt. Backup via iCloud + Time Machine.
 - **Maximus_OS Hybrid-Modell**: Tom macht interaktive Arbeit direkt (< 5 Min), Maximus_OS bekommt Issues für Milestones, Audit-Trail, Background-Tasks, Handoffs an spezialisierte Agents. Company-ID `2ff8e79a-c0f8-4966-aaba-13b9ea06cc03`.
 - **Ollama Pfad**: `/Users/maxim/Ollama` via `OLLAMA_MODELS` Env-Var, persistent in `~/.zshrc`.
-- **Base-Model**: `gemma2:9b` (ca. 5.4 GB). Custom model `gemme` via `Gemma/modelfile/Modelfile`.
+- **Base-Model**: `gemma4:e4b` (9.6 GB, 4.5B effektiv, 128K Kontext) — user-bestätigt 2026-04-10 nach Prüfung gegen Mac M4 16 GB RAM. Custom model `gemme` via `Gemma/modelfile/Modelfile` (existierender `FROM gemma4:latest` ist korrekt, `latest` = `e4b`).
 - **Kein echtes Fine-Tuning in v1.1**: Self-Instruct-Datensammlung aus `90_Wiki/` — späteres externes FT (MLX-LM/Unsloth) in v1.2+.
 - **Dual-Nutzung**: Tom (Claude Code) + Maximus_OS-Agent "Tom" nutzen beide `ollama run gemme` mit derselben RAG-Quelle.
 

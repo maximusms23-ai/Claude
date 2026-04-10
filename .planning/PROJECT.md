@@ -27,23 +27,25 @@ Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Lebe
   - RAG-Pipeline gegen iCloud-Vault
   - `bin/tom-ask` für lokale Wiki-Queries
 
-## Current Milestone: v1.1 — Maximus_OS Integration + Ollama Gemma Revival
+## Current Milestone: v1.2 — Karpathy Wiki + claude-memory-compiler
 
-**Goal:** Vault-Single-Source auf iCloud bereinigen, Hybrid-Integration mit Maximus_OS aufsetzen, lokales Gemma-Model gegen den neuen Vault mit RAG-Pipeline reanimieren.
+**Goal:** Hybrid Wissens-System: Karpathy Index-first Retrieval für `90_Wiki/` (external), neues privates `95_Gehirn/` (internal) mit automatischem Capture aus Claude-Code-Konversationen via `claude-memory-compiler`, RAG bleibt als Fallback und wächst um dritte Collection.
 
 **Target features:**
-- Vault-Cleanup: lokales Duplikat entfernen, iCloud als Single Source of Truth
-- Maximus_OS Hybrid-Integration: `tom-issue` Wrapper + Kommunikationsregeln
-- Ollama Re-Install unter `/Users/maxim/Ollama` + `gemma2:9b` Base-Model
-- Custom `gemme`-Model + RAG-Pipeline gegen neuen Vault
-- `tom-ask` Wrapper für lokale RAG-Queries
-- Dokumentation + Abschluss-Audit
+- `claude-memory-compiler` Tool-Install + Config-Patch auf `$TOM_VAULT/95_Gehirn/`
+- `95_Gehirn/` Vault-Struktur (privat, NIE publiziert) mit Privacy-Regeln
+- Projekt-lokale Claude-Code Hooks (SessionStart/SessionEnd/PreCompact) für Auto-Capture
+- `90_Wiki/index.md` neu im Karpathy-Retrieval-Stil (statt Changelog)
+- Gemma-RAG um dritte Collection `gehirn` erweitern
+- Neue CLI-Wrapper: `tom-wiki` (Index-first), `tom-compile`, `tom-lint`
+- Multi-Projekt-Konvention via `wiki_path` in fremden CLAUDE.md
+- Abschluss-Doku + Milestone-Close
 
 ### Active
 
-<!-- Milestone v1.1 scope. -->
+<!-- Milestone v1.2 scope. -->
 
-Siehe `.planning/REQUIREMENTS.md` (Milestone v1.1).
+Siehe `.planning/REQUIREMENTS.md` (Milestone v1.2).
 
 ### Out of Scope
 
@@ -81,4 +83,4 @@ Siehe `.planning/REQUIREMENTS.md` (Milestone v1.1).
 | 00_Inbox → 99_Vorlagen Nummerierungsschema | Ordnet sich auto-sortiert, Trennung persönlich/wiki bleibt visuell | — Pending |
 
 ---
-*Last updated: 2026-04-10 after Tom v1.1 milestone complete*
+*Last updated: 2026-04-10 after Tom v1.2 milestone start*

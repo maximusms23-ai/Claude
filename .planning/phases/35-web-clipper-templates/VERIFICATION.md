@@ -184,6 +184,60 @@ Direkt nach dem ersten Hotfix-Commit (`f11b4d7`) hat Maxim mit einem Browser-Scr
 
 **Erkenntnis:** Das ursprüngliche Konzept "Markdown-Templates im Vault sind die Quelle" funktioniert nicht — die Extension hat eigene Storage und liest die Vault-Files nicht. Die Markdown-Files in `99_Vorlagen/web-clipper/*.md` bleiben als **Lese-Referenz für Tom + Maxim** liegen, die JSONs in `json/` sind die **operativen Templates**, die in die Extension importiert werden.
 
+### Hotfix Schritt 5 — Interpret-Button-Aktivierung + gemma4 als Default-Model
+
+Nach Schritt 4 hat Maxim per Screenshot demonstriert, dass der Web-Clipper-Popup bei ihm **keinen** "interpret"-Button zeigt, obwohl die Templates aus Schritt 3 korrekt geladen sind. Ursache aus LevelDB-Dump:
+
+```json
+"interpreter_settings": {
+  "interpreterEnabled": true,
+  "interpreterAutoRun": true,
+  "interpreterModel": "",                          ← EMPTY
+  "models": [{"id":"1775722457516","name":"gemma4",...}]
+}
+```
+
+**Zwei Befunde:**
+
+1. `interpreterModel` leer → Extension hat kein Default-Model → Button wird ausgeblendet
+2. `interpreterAutoRun: true` → Selbst bei gesetztem Model würden die Prompts still im Hintergrund beim "Add to Obsidian"-Klick laufen, ohne separaten Trigger-Button
+
+**Vorgehen** (Chrome-quit → LevelDB-Patch → Chrome-reopen, Pattern aus Schritt 3):
+
+1. Chrome sauber beendet via `osascript … quit`, Lock freigegeben
+2. Node-Script `/tmp/cliplev/patch-interpreter.mjs` (Reuse classic-level aus Schritt 3):
+   - `interpreter_settings` gelesen und JSON-parsed
+   - `interpreterModel = "1775722457516"` (gemma4-Model-ID aus `models[0].id`)
+   - `interpreterAutoRun = false`
+   - Alle anderen Felder unverändert (Models, Providers, defaultPromptContext, interpreterEnabled)
+   - Zurückgeschrieben + Re-Read-Verifikation
+3. Chrome via `open -a "Google Chrome"` neu gestartet
+4. Ollama-State verifiziert: `ollama serve` läuft, `OLLAMA_ORIGINS=chrome-extension://*,moz-extension://*` persistent
+
+**Verifikation (automatisiert, vor Maxim-Handoff):**
+
+| Check | Ergebnis |
+|---|---|
+| Chrome beim Patch beendet (`pgrep -fl "MacOS/Google Chrome$"` leer) | ✓ |
+| `interpreterModel == "1775722457516"` (Re-Read) | ✓ |
+| `interpreterAutoRun == false` (Re-Read) | ✓ |
+| `models[0].name == "gemma4"` unverändert | ✓ |
+| `providers[0].baseUrl == "http://127.0.0.1:11434/api/chat"` unverändert | ✓ |
+| Chrome läuft wieder normal | ✓ |
+| `ollama serve` läuft (PID vorhanden) | ✓ |
+| `launchctl getenv OLLAMA_ORIGINS` == `chrome-extension://*,moz-extension://*` | ✓ |
+
+**Maxim-Handoff (1 Klick für CLIP141-15-Smoke-Test):**
+
+1. Beliebige Seite öffnen (z.B. https://de.wikipedia.org/wiki/Mannheim)
+2. Web-Clipper-Icon klicken
+3. Template **"Tom-Artikel"** wählen
+4. **Erwartung:** Zwischen "notes/clippings"-Path und "Add to Obsidian"-Button erscheint Model-Dropdown mit **gemma4** + violetter **interpret**-Button
+5. Auf **interpret** klicken → `{{"…"}}`-Prompts laufen gegen gemma4 → Felder gefüllt
+6. Auf **Add to Obsidian** klicken → Datei in `Clippings/Artikel/Mannheim.md` mit gefüllten `summary`, `tags`, `konzepte_vorschlaege`, `enriched: clip-time`, `enriched_by: gemma4-interpreter`
+
+**Rollback**, falls `interpreterAutoRun: false` unerwartete UX bricht: zweiter Patch zurück auf `true`.
+
 ### Was im Hotfix NICHT enthalten ist
 
 - mcp-tools-Integration (v1.5-Kandidat, ADR-004)

@@ -128,6 +128,17 @@ Damit keine Doku-Lücke entsteht, wird bei JEDEM Milestone-Close die **komplette
 
 Wenn einer dieser Punkte ausgelassen wird, ist der Milestone **nicht** geschlossen. Die Regel gilt ab v1.3 rückwirkend und für alle künftigen Milestones.
 
+## Mandatory pro GSD-Phase (seit v1.4.1 Phase 33)
+
+Zusätzlich zur Milestone-Close-Checklist gilt **pro abgeschlossener Phase** eine laufende Obsidian-Doku-Routine, damit der Vault nicht erst beim Milestone-Close gefüttert wird:
+
+1. **Phase-Note anlegen** → `$TOM_VAULT/30_Projekte/Tom/Phasen/Phase-NN-Name.md` (Template `99_Vorlagen/Tom-Phase.md`) mit Ziel, Requirements, Shipped, Key Decisions, Links (inkl. Commit-Hash + FAM-ID wenn vorhanden)
+2. **Journal updaten** → `$TOM_VAULT/30_Projekte/Tom/Journal/YYYY-MM-DD.md` (Template `99_Vorlagen/Tom-Journal.md`, erster Touch pro Tag legt an) mit Phasen-Zeile + Commit-Referenz
+3. **Key Decisions** → bei relevanten Entscheidungen neuen Eintrag oben in `$TOM_VAULT/30_Projekte/Tom/Entscheidungen.md` (append-only, neuste oben, Format: Kontext / Entscheidung / Warum / Konsequenz / Referenz)
+4. **Dashboard-Refresh** → `$TOM_VAULT/index.md` Tom-Status-Sektion updaten (Letzte Phase + Commit + Aktive-Arbeit-Link)
+
+Erst nach diesen 4 Schritten gilt die Phase als wirklich abgeschlossen. Die bestehende Git-Seite (`.planning/phases/NN/SUMMARY.md` + VERIFICATION.md) bleibt unverändert — sie ist die Tech-Sicht, die Obsidian-Notes sind die Vault-Sicht.
+
 ## Answering User Questions
 
 1. "was steht an?" / "woran arbeite ich?" → `40_Aufgaben/TODOS.md` + `PROJEKTE.md`

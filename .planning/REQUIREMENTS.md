@@ -352,12 +352,49 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | CLOSE14-08 | Phase 32 | Complete |
 | CLOSE14-09 | Phase 32 | Complete |
 | CLOSE14-10 | Phase 32 | Complete |
+| DOC141-01 | Phase 33 | Complete |
+| DOC141-02 | Phase 33 | Complete |
+| DOC141-03 | Phase 33 | Complete |
+| DOC141-04 | Phase 33 | Complete |
+| DOC141-05 | Phase 33 | Complete |
+| DOC141-06 | Phase 33 | Complete |
 
 **Coverage:**
+- v1.4.1 requirements: DOC141-01..06 (Phase 33) + OBPL141-01..05 (Phase 34) + CLIP141-01..06 (Phase 35)
 - v1.4 requirements: 42 total (6 DOC14 + 7 TDOC + 7 OBPL inkl. Hotfix OBPL-06/07 + 8 CLIP + 4 LOCAL + 10 CLOSE14 inkl. Plugin-Landscape 08/09/10), mapped to phases: 42, unmapped: 0 ✓
 - v1.3 requirements: 30 total (shipped)
 - v1.2 requirements: 43 total (shipped)
 
+## v1.4.1 Requirements (Bridge-Patch)
+
+Kleine Bridge-Phase zwischen v1.4-Close und v1.5-Kickoff. Drei Themen: Obsidian-Doku-Routine, Plugin-Audit (17 neue Plugins), Web-Clipper-Template-System.
+
+### Obsidian-Projekt-Doku-Backfill (DOC141)
+
+- [x] **DOC141-01**: `$TOM_VAULT/30_Projekte/Tom/Phasen/` mit 7 Backfill-Phase-Notes (Phase 27, 28, 29, 29-Hotfix, 30, 31, 32)
+- [x] **DOC141-02**: `$TOM_VAULT/30_Projekte/Tom/Journal/2026-04-10.md` Backfill-Eintrag
+- [x] **DOC141-03**: `$TOM_VAULT/30_Projekte/Tom/Entscheidungen.md` mit 5–7 retroaktiven Key-Decisions aus v1.4
+- [x] **DOC141-04**: `$TOM_VAULT/index.md` Tom-Status-Dashboard-Sektion
+- [x] **DOC141-05**: `$TOM_VAULT/99_Vorlagen/Tom-Phase.md` + `Tom-Journal.md` Templates
+- [x] **DOC141-06**: `/Users/maxim/Claude/CLAUDE.md` Sektion "Mandatory pro GSD-Phase" mit 4-Punkte-Checklist
+
+### Obsidian Plugin-Audit v1.4.1 (OBPL141)
+
+- [ ] **OBPL141-01**: `.planning/obsidian-plugin-config/plugin-audit-v1.4.1.md` mit allen 17 neuen Plugins (Klassifikation, URL, Empfehlung)
+- [ ] **OBPL141-02**: Config-Backups in `.planning/obsidian-plugin-config/<plugin-id>.json` für Tom-relevante Plugins (nach Maxim-Abnahme)
+- [ ] **OBPL141-03**: `CLAUDE.md` "Obsidian Plugin Landscape" auf 53 Plugins erweitert (Warnings + Empfehlungen)
+- [ ] **OBPL141-04**: ADR-003 `obsidian-ocr` vs `tom-doc` Koexistenz-Entscheidung
+- [ ] **OBPL141-05**: ADR-004 `mcp-tools` als v1.5-Kandidat (nur Dokumentation, keine Integration)
+
+### Web-Clipper-Template-System (CLIP141)
+
+- [ ] **CLIP141-01**: `$TOM_VAULT/99_Vorlagen/web-clipper/` mit 7 Templates (Artikel, Paper, Video, Dokument, Social-Post, Rezept, Werkzeug) + README.md
+- [ ] **CLIP141-02**: `$TOM_VAULT/Clippings/{Artikel,Paper,Videos,Dokumente,Social,Rezepte,Werkzeuge}/` Zielordner
+- [ ] **CLIP141-03**: Browser-Extension-Konfigurations-Doku in `web-clipper/README.md`
+- [ ] **CLIP141-04**: Smoke-Test (1 echter Clip + `tom-clip-enrich`-Lauf + Idempotenz-Check)
+- [ ] **CLIP141-05**: `CLAUDE.md` "Wissens-Kaskade" + "Ingesting New Sources" um Clipper-Flow ergänzt
+- [ ] **CLIP141-06**: `tom-clip-enrich`-Anleitung in `web-clipper/README.md` referenziert
+
 ---
 *Requirements defined: 2026-04-10*
-*Last updated: 2026-04-10 after v1.4 milestone close (Phase 32)*
+*Last updated: 2026-04-10 after v1.4.1 Phase 33 (Obsidian-Doku-Routine)*

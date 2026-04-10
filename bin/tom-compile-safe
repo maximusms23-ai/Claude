@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# tom-compile-safe — Fehlertoleranter Wrapper um bin/tom-compile
+#
+# Prüft vor jedem Lauf:
+#   1. Ollama-Binary verfügbar
+#   2. Ollama-Server erreichbar (ollama list exit 0)
+#   3. $TOM_VAULT-Verzeichnis existiert und ist lesbar
+#
+# Loggt jeden Lauf (auch Abbrüche) nach ~/Library/Logs/tom-compile.log
+# mit Format: TIMESTAMP | STATUS | EXIT=N | DURATION=Ns | MSG
+#
+# Wird vom launchd-Job com.maxim.tom-compile aufgerufen (siehe Plan 22-02).
+
+set -uo pipefail
+
+LOG_FILE="$HOME/Library/Logs/tom-compile.log"
+TOM_VAULT_DEFAULT="/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw"
+export TOM_VAULT="${TOM_VAULT:-$TOM_VAULT_DEFAULT}"
+TOM_COMPILE="/Users/maxim/Claude/bin/tom-compile"
+
+mkdir -p "$(dirname "$LOG_FILE")"
+
+log_line() {
+  local status="$1" exit_code="$2" duration="$3" msg="$4"
+  local ts
+  ts=$(date "+%Y-%m-%d %H:%M:%S %z")
+  printf '%s | %s | EXIT=%s | DURATION=%ss | %s\n' \
+    "$ts" "$status" "$exit_code" "$duration" "$msg" >> "$LOG_FILE"
+}
+
+START_TS=$(date +%s)
+
+# Preflight 1: ollama-Binary
+if ! command -v ollama >/dev/null 2>&1; then
+  log_line "SKIP" "0" "0" "ollama binary not found in PATH"
+  exit 0
+fi
+
+# Preflight 2: ollama-Server erreichbar
+if ! ollama list >/dev/null 2>&1; then
+  log_line "SKIP" "0" "0" "ollama server not responding (ollama list failed)"
+  exit 0
+fi
+
+# Preflight 3: $TOM_VAULT erreichbar
+if [ ! -d "$TOM_VAULT" ]; then
+  log_line "SKIP" "0" "0" "TOM_VAULT not reachable: $TOM_VAULT"
+  exit 0
+fi
+
+if [ ! -r "$TOM_VAULT" ]; then
+  log_line "SKIP" "0" "0" "TOM_VAULT not readable: $TOM_VAULT"
+  exit 0
+fi
+
+# Preflight 4: tom-compile existiert
+if [ ! -x "$TOM_COMPILE" ]; then
+  log_line "FAIL" "1" "0" "tom-compile not executable at $TOM_COMPILE"
+  exit 1
+fi
+
+# Run tom-compile und Exit-Code capturen
+log_line "START" "-" "0" "running tom-compile $*"
+set +e
+"$TOM_COMPILE" "$@"
+RC=$?
+set -e
+
+END_TS=$(date +%s)
+DURATION=$((END_TS - START_TS))
+
+if [ "$RC" -eq 0 ]; then
+  log_line "OK" "$RC" "$DURATION" "tom-compile finished successfully"
+else
+  log_line "FAIL" "$RC" "$DURATION" "tom-compile exited with error"
+fi
+
+exit "$RC"

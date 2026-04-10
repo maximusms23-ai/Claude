@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# tom-compile — Kompiliere daily-Logs aus 95_Gehirn/daily/ zu knowledge/-Artikeln
+#
+# Zweck: Manueller Trigger für claude-memory-compiler/scripts/compile.py.
+# Nimmt alle neuen daily-Entries seit letztem Lauf, extrahiert Konzepte und
+# schreibt sie als Artikel nach $TOM_VAULT/95_Gehirn/knowledge/concepts/ und
+# /connections/. Nutzt Claude Agent SDK (via User-Subscription, keine extra
+# API-Kosten).
+#
+# Usage:
+#   tom-compile               # kompiliert nur neue daily-logs
+#   tom-compile --all         # re-kompiliert alles (kann teuer werden)
+#
+# Läuft typischerweise einmal täglich (z.B. 18:00). Nicht bei jedem SessionEnd.
+
+set -euo pipefail
+
+TOOL_DIR="/Users/maxim/Claude/claude-memory-compiler"
+export TOM_VAULT="${TOM_VAULT:-/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw}"
+
+cd "$TOOL_DIR"
+exec uv run python scripts/compile.py "$@"

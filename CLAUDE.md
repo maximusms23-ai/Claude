@@ -130,6 +130,28 @@ RAG-Config liegt in `Gemma/rag/config.py`. Umzug auf `Obsidian_Zentralw/90_Wiki/
 5. Personen → `90_Wiki/personen/` (fachliche/öffentliche Personen, NICHT Familie — die liegen in `10_Personen/`)
 6. Alle Indizes aktualisieren
 
+## Wissens-Kaskade (seit v1.2)
+
+Bei jeder Wissensfrage nutze Tom **in dieser Reihenfolge**:
+
+1. **Persönliche/aktuelle Daten** → Direkt-Read
+   - `$TOM_VAULT/40_Aufgaben/TODOS.md`, `PROJEKTE.md`
+   - `$TOM_VAULT/10_Personen/*`, `20_Dokumente/*`
+   - Schneller als jedes Tool.
+2. **Öffentliches Wiki-Thema** → `tom-wiki "Frage"` (Index-first, lokal via gemme)
+   - Liest `$TOM_VAULT/90_Wiki/index.md` + Artikel
+   - Präzise bei bekannten Themen (bis ~500 Artikel)
+3. **Brain-Frage** (Konversations-Wissen) → `tom-wiki --brain "Frage"`
+   - Liest `$TOM_VAULT/95_Gehirn/index.md` + kompilierte Konzepte
+   - Nur privat, nie öffentlich
+4. **Fuzzy oder unklar** → `tom-ask "Frage"` (Gemma RAG, drei Collections)
+   - Cosine-Similarity über `wiki` + `clippings` + `gehirn`
+   - Fallback wenn Index-first nichts findet
+
+Weitere Brain-Tools:
+- `tom-compile` — Kompiliert daily-logs → knowledge-Artikel (täglich oder manuell)
+- `tom-lint [--structural-only]` — Health-Check für Brain-Struktur
+
 ## Lokale Wiki-Queries via Gemma RAG (seit v1.1)
 
 Tom hat Zugriff auf ein lokales Gemma-Modell (`gemme`, basierend auf `gemma4:e4b`) mit RAG-Index über `$TOM_VAULT/90_Wiki/` und `$TOM_VAULT/Clippings/`. Wrapper: `bin/tom-ask` (symlinked in `~/bin/`).

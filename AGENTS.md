@@ -102,3 +102,16 @@ Tom postet Audit-/Milestone-/Handoff-Infos als Issues in PaperclipAI-Company `Ma
 **Kein Issue für:** Typos, Zwischenstände, Queries, rein lesende Operationen.
 
 Details: siehe `CLAUDE.md` Sektion "Maximus_OS-Kommunikation".
+
+## Wissens-Kaskade (seit v1.2)
+
+Wissensfragen durchlaufen diese Kaskade:
+
+1. **Direct-Read** für persönliche/aktuelle Daten (`40_Aufgaben/`, `10_Personen/`, `20_Dokumente/`)
+2. **`tom-wiki "Frage"`** — Karpathy Index-first über `$TOM_VAULT/90_Wiki/` (lokal via gemme)
+3. **`tom-wiki --brain "Frage"`** — selbes Prinzip, aber über privates `$TOM_VAULT/95_Gehirn/`
+4. **`tom-ask "Frage"`** — Gemma RAG-Fallback über drei Collections (wiki, clippings, gehirn)
+
+Weitere Brain-Tools: `tom-compile` (daily → knowledge), `tom-lint [--structural-only]` (Health-Check).
+
+Details: siehe `CLAUDE.md` Sektion "Wissens-Kaskade".

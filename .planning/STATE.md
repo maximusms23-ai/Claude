@@ -10,10 +10,19 @@ See: `.planning/PROJECT.md` (updated 2026-04-10)
 ## Current Position
 
 - **Milestone:** v1.1 — Maximus_OS Integration + Ollama Gemma Revival
-- **Phase:** Not started (defining requirements)
+- **Phase:** 8 — Vault-Cleanup (ready to plan)
 - **Plan:** —
-- **Status:** Defining requirements
-- **Last activity:** 2026-04-10 — Milestone v1.1 started
+- **Status:** Phase 8 ready to plan
+- **Last activity:** 2026-04-10 — Roadmap v1.1 created (Phases 8–13)
+
+## Progress
+
+```
+Phase:  [ 8 ][ 9 ][10][11][12][13]
+Status: [  ][  ][  ][  ][  ][  ]
+         ^
+         Next
+```
 
 ## Accumulated Context
 
@@ -23,7 +32,7 @@ See: `.planning/PROJECT.md` (updated 2026-04-10)
 - **Maximus_OS Hybrid-Modell**: Tom macht interaktive Arbeit direkt (< 5 Min), Maximus_OS bekommt Issues für Milestones, Audit-Trail, Background-Tasks, Handoffs an spezialisierte Agents. Company-ID `2ff8e79a-c0f8-4966-aaba-13b9ea06cc03`.
 - **Ollama Pfad**: `/Users/maxim/Ollama` via `OLLAMA_MODELS` Env-Var, persistent in `~/.zshrc`.
 - **Base-Model**: `gemma2:9b` (ca. 5.4 GB). Custom model `gemme` via `Gemma/modelfile/Modelfile`.
-- **Kein echtes Fine-Tuning in v1.1**: Self-Instruct-Datensammlung aus `90_Wiki/` → späteres externes FT (MLX-LM/Unsloth) in v1.2+.
+- **Kein echtes Fine-Tuning in v1.1**: Self-Instruct-Datensammlung aus `90_Wiki/` — späteres externes FT (MLX-LM/Unsloth) in v1.2+.
 - **Dual-Nutzung**: Tom (Claude Code) + Maximus_OS-Agent "Tom" nutzen beide `ollama run gemme` mit derselben RAG-Quelle.
 
 ### Personen in Maxims Leben (unverändert)

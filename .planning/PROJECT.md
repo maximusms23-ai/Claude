@@ -34,8 +34,15 @@ Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Lebe
   - Gemma RAG um dritte Collection `gehirn` erweitert
   - `bin/tom-wiki`, `bin/tom-compile`, `bin/tom-lint` Wrapper
   - Multi-Projekt-`wiki_path`-Konvention (Gemma/ als erstes Sub-Projekt)
+- ✓ Tom v1.3 — Compile-Automation + Quality-Pass (Phasen 22–26):
+  - `launchd` Daily-Compile-Job (18:00 Europe/Berlin) via `bin/tom-compile-safe` Preflight-Wrapper
+  - `tom-wiki` Quality-Pass: Keyword-Filter, TOP_K=5, harter Zitations-Prompt
+  - Eval-Framework erweitert: v1.3-Baseline `tom-wiki` 60% (80% auf Wiki-Queries) vs `tom-ask` 33%
+  - Karpathy-Schwelle bleibt **500** (bewusste Entscheidung gegen Anhebung auf 1500); Skalierungs-Stufen dokumentiert
+  - Anthropic-SDK-Clarification in `claude-memory-compiler/TOM-PATCHES.md` (bundled-CLI-Pfad nutzt Max-Subscription)
+  - Obsidian-Doku-Lücke geschlossen: `log.md`-Eintrag, `30_Projekte/Tom.md` als Meta-Einstieg, Milestone-Close-Checklist in `CLAUDE.md`
 
-**Active:** v1.3 — Compile-Automation + Quality-Pass (siehe unten)
+**Active:** — (v1.4 in Planung: Dokumenten-Volltext hybrid)
 
 ## Current Milestone: v1.3 — Compile-Automation + Quality-Pass
 

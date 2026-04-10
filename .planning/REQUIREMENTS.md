@@ -1,155 +1,171 @@
 # Requirements: Tom — Persönlicher Lebens-Assistent
 
 **Defined:** 2026-04-10
-**Milestone:** v1.0 — Tom Bootstrap
+**Current Milestone:** v1.1 — Maximus_OS Integration + Ollama Gemma Revival
 **Core Value:** Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Leben wichtig ist — Tom weiß, wo was liegt, und unterstützt proaktiv.
 
-## v1.0 Requirements
+## v1.1 Requirements (Current)
 
-Requirements für das initiale Tom-Setup. Jeder Eintrag mappt auf genau eine Phase im Roadmap.
+Requirements für Single-Source-Vault, Maximus_OS Hybrid-Integration und Ollama Gemma Revival. Jeder Eintrag mappt auf genau eine Phase im Roadmap.
+
+### Vault-Cleanup (VCLEAN)
+
+- [ ] **VCLEAN-01**: iCloud-Vault wird als canonical bestätigt (md-Count + stichprobenhafter Content-Diff gegen lokales Duplikat)
+- [ ] **VCLEAN-02**: Lokaler `Obsidian_Zentralw/` ist aus Git entfernt (`git rm -r --cached`) und physisch gelöscht
+- [ ] **VCLEAN-03**: `.gitignore` verhindert Wiederaufnahme des lokalen Pfades mit Kommentar zur iCloud-Canonical-Entscheidung
+- [ ] **VCLEAN-04**: `CLAUDE.md` + `AGENTS.md` zeigen auf iCloud-Vault-Pfad (Variable `$TOM_VAULT` empfohlen)
+- [ ] **VCLEAN-05**: Maximus_OS-Issue dokumentiert Vault-Cleanup mit Commit-Hash
+
+### Maximus_OS Integration (MOS)
+
+- [ ] **MOS-01**: `bin/tom-issue` Wrapper-Skript existiert, kapselt Company-ID, unterstützt `--title`/`--description`/`--priority`/`--agent` Flags
+- [ ] **MOS-02**: `tom-issue` kennt Agent-Aliase (tom, wiki-kurator, archivarius, cto) mit hinterlegten Agent-IDs
+- [ ] **MOS-03**: Smoke-Test: `tom-issue` erstellt erfolgreich ein Test-Issue im Maximus_OS-Dashboard
+- [ ] **MOS-04**: `CLAUDE.md` + `AGENTS.md` dokumentieren Kommunikationsregeln (Milestones/Architektur/Tools → Issue; Kleinkram → kein Issue)
+- [ ] **MOS-05**: `Obsidian_Zentralw/CLAUDE.md` Workflow WF-06 "Issue an Maximus_OS schreiben" ist dokumentiert
+- [ ] **MOS-06**: Abschluss-Issue für Maximus_OS Integration Layer mit Referenz auf `bin/tom-issue`
+
+### Ollama Installation (OLL)
+
+- [ ] **OLL-01**: `ollama` Binary ist installiert und verifiziert (`which ollama`, `ollama --version`)
+- [ ] **OLL-02**: `OLLAMA_MODELS=/Users/maxim/Ollama` ist persistent in `~/.zshrc` und Verzeichnis existiert
+- [ ] **OLL-03**: Ollama-Server läuft und `ollama list` funktioniert
+- [ ] **OLL-04**: `gemma2:9b` ist geladen (via `ollama pull`) und physisch in `/Users/maxim/Ollama`
+- [ ] **OLL-05**: Smoke-Test: `ollama run gemma2:9b "Hallo"` liefert plausible Antwort
+- [ ] **OLL-06**: Abschluss-Issue dokumentiert Ollama-Reinstall mit Pfad + Version
+
+### Gemma Custom Model + RAG (GEM)
+
+- [ ] **GEM-01**: `Gemma/modelfile/Modelfile` verweist auf `gemma2:9b` (statt ungültigem `gemma4:latest`)
+- [ ] **GEM-02**: Custom-Model `gemme` ist via `ollama create` gebaut und in `ollama list` sichtbar
+- [ ] **GEM-03**: `Gemma/rag/config.py` zeigt auf iCloud-Vault-Pfade (`90_Wiki`, `Clippings`)
+- [ ] **GEM-04**: ChromaDB ist gegen neuen Vault reindiziert, Chunk-Count ist geloggt
+- [ ] **GEM-05**: `eval/run_eval.py` liefert dokumentierten Baseline-Score > 0
+- [ ] **GEM-06**: `query.py "Was ist in 90_Wiki/index.md dokumentiert?"` liefert plausible Antwort
+- [ ] **GEM-07**: `training/collector.py` hat ≥10 Q&A-Pairs in `training/data/qa_pairs.jsonl` gesammelt
+- [ ] **GEM-08**: Abschluss-Issue dokumentiert Gemma RAG mit Eval-Score
+
+### Tom ↔ Gemma Wiring (WIRE)
+
+- [ ] **WIRE-01**: `bin/tom-ask` Wrapper ruft `Gemma/rag/query.py` auf und gibt Antwort + Quellen zurück
+- [ ] **WIRE-02**: `tom-ask` ist im `PATH` verfügbar (Symlink oder PATH-Extension)
+- [ ] **WIRE-03**: `CLAUDE.md` Sektion "Lokale Wiki-Queries" dokumentiert wann Tom `tom-ask` statt Obsidian-Suche nutzt
+- [ ] **WIRE-04**: Maximus_OS Tom-Agent-Konfiguration ist geprüft (entweder kann Agent `ollama run gemme` nutzen → dokumentiert, oder Issue an CTO eröffnet)
+- [ ] **WIRE-05**: Abschluss-Issue dokumentiert `tom-ask` Live-Status
+
+### Dokumentation (DOC11)
+
+- [ ] **DOC11-01**: `Obsidian_Zentralw/log.md` hat v1.1 Abschluss-Eintrag
+- [ ] **DOC11-02**: `Obsidian_Zentralw/70_Hardware/ollama-setup.md` dokumentiert Ollama-Setup via Hardware-Template
+- [ ] **DOC11-03**: `Obsidian_Zentralw/90_Wiki/projekte/paperclipai.md` ist mit v1.1 Integration-Layer aktualisiert
+- [ ] **DOC11-04**: `Gemma/README.md` enthält komplette Setup-Doku (Install, Modelfile, Config, RAG-Run, Training, Eval, Fine-Tuning-Roadmap)
+- [ ] **DOC11-05**: Finales Milestone-Abschluss-Issue in Maximus_OS mit Commit-Hashes und Roadmap-Link
+
+## v1.0 Requirements (Shipped — Commit `525c073`)
+
+Requirements für das initiale Tom-Setup. Komplett shipped in Commit `525c073` (Phases 1–7).
 
 ### Identität (IDENT)
 
-- [ ] **IDENT-01**: Claude nimmt in diesem Repo die Rolle "Tom" als persönlicher Lebens-Assistent an (nicht Research-Wiki-Autor)
-- [ ] **IDENT-02**: Tom kennt die Personen in Maxims Leben (Familie + Eltern) und deren Rollen
-- [ ] **IDENT-03**: Tom kennt seine Aufgabenbereiche (Familie, Eltern-Betreuung, Dokumente, Hardware, Social Media, Wiki)
-- [ ] **IDENT-04**: `CLAUDE.md`, `AGENTS.md`, `Obsidian/CLAUDE.md` sind konsistent auf Tom-Rolle umgeschrieben
+- ✓ **IDENT-01**: Claude nimmt in diesem Repo die Rolle "Tom" als persönlicher Lebens-Assistent an
+- ✓ **IDENT-02**: Tom kennt die Personen in Maxims Leben (Familie + Eltern) und deren Rollen
+- ✓ **IDENT-03**: Tom kennt seine Aufgabenbereiche (Familie, Eltern-Betreuung, Dokumente, Hardware, Social Media, Wiki)
+- ✓ **IDENT-04**: `CLAUDE.md`, `AGENTS.md`, `Obsidian/CLAUDE.md` sind konsistent auf Tom-Rolle umgeschrieben
 
 ### Vault-Struktur (VAULT)
 
-- [ ] **VAULT-01**: Neuer Vault existiert mit Ordnern 00_Inbox, 10_Personen, 20_Dokumente, 30_Projekte, 40_Aufgaben, 50_Gesundheit, 60_Finanzen, 70_Hardware, 80_Social_Media, 90_Wiki, 99_Vorlagen, raw, Clippings, output
-- [ ] **VAULT-02**: Bestehendes `wiki/` ist nach `90_Wiki/` migriert, keine Datei verloren
-- [ ] **VAULT-03**: Bestehende `TODOS.md` und `PROJEKTE.md` sind in `40_Aufgaben/` verschoben (oder verlinkt)
-- [ ] **VAULT-04**: Symlink `Archiv → ~/Downloads/Archiv` funktioniert und ist aus Obsidian verlinkbar
-- [ ] **VAULT-05**: `index.md` (Tom-Hub Dashboard) zeigt Sektionen: Heute, Offene Aufgaben, Eltern-Status, Laufende Projekte, Letzte Clippings
-- [ ] **VAULT-06**: `log.md` (chronologisches Ereignis-Log) existiert und wird bei Ingest/Query/Lint beschrieben
-- [ ] **VAULT-07**: `mkdocs.yml` publiziert ausschließlich `90_Wiki/`, alle persönlichen Ordner sind explizit ausgeschlossen
+- ✓ **VAULT-01..07**: Vault-Gerüst mit 00–99 Ordnern, Migration, Symlink, Dashboard, Log, mkdocs-Scope
 
 ### Personen (PERS)
 
-- [ ] **PERS-01**: `10_Personen/Familie/Maxim-Schmidt.md` mit Frontmatter, Rollen, Links
-- [ ] **PERS-02**: `10_Personen/Familie/Olga-Schmidt.md` mit Frontmatter, Rollen, Links
-- [ ] **PERS-03**: `10_Personen/Familie/Karina-Schmidt.md` mit Frontmatter, Rollen, Links
-- [ ] **PERS-04**: `10_Personen/Familie/Elina-Schmidt.md` mit Frontmatter, Rollen, Links
-- [ ] **PERS-05**: `10_Personen/Eltern/Waldemar-Schmidt.md` inkl. Betreuungs-Sektion (Ämter, Vollmachten, laufende Anträge)
-- [ ] **PERS-06**: `10_Personen/Eltern/Nina-Schmidt.md` inkl. Betreuungs-Sektion
-- [ ] **PERS-07**: `10_Personen/Kontakte/` Ordner existiert für Ärzte/Ämter/Handwerker (leer, mit README)
-- [ ] **PERS-08**: Alle Personen-Seiten sind aus `index.md` verlinkt und untereinander vernetzt
+- ✓ **PERS-01..08**: 6 Personen-Seiten + Kontakte-Ordner, Eltern mit Betreuungs-Sektion, Vernetzung
 
 ### Dokumente-Mapping (DOC)
 
-- [ ] **DOC-01**: Für jede der 15 Archiv-Kategorien (01 Arbeitgeber … 15 Sonstiges) existiert eine Metadaten-Seite unter `20_Dokumente/`
-- [ ] **DOC-02**: Jede Kategorie-Seite enthält: Pfad zum Archiv-Ordner, wichtige Dateien (Platzhalter), Fristen/Wiedervorlagen, Ansprechpartner
-- [ ] **DOC-03**: Betreuungs-Dokumente (`13_Betreuung.md`) sind mit Waldemar/Nina verlinkt
-- [ ] **DOC-04**: Universitäts-Dokumente (`12_Uni.md`) sind mit Maxim verlinkt
-- [ ] **DOC-05**: Jede Kategorie-Seite hat einheitliches Frontmatter (`type: dokumenten-index`)
+- ✓ **DOC-01..05**: 15 Kategorie-Metadaten-Seiten, Verknüpfung mit Personen, einheitliches Frontmatter
 
 ### Templates (TMPL)
 
-- [ ] **TMPL-01**: `99_Vorlagen/Person.md` — Template für neue Personen
-- [ ] **TMPL-02**: `99_Vorlagen/Dokument.md` — Template für neue Dokument-Metadaten
-- [ ] **TMPL-03**: `99_Vorlagen/Termin.md` — Template für Termine (Arzt, Amt, etc.)
-- [ ] **TMPL-04**: `99_Vorlagen/Projekt.md` — Template für Projekte/Vorhaben
-- [ ] **TMPL-05**: `99_Vorlagen/Arzttermin.md` — spezialisiertes Template für medizinische Termine
-- [ ] **TMPL-06**: `99_Vorlagen/Vertrag.md` — Template für Versicherungen/Verträge
-- [ ] **TMPL-07**: `99_Vorlagen/Social-Post.md` — Template für Social-Media-Posts
-- [ ] **TMPL-08**: `99_Vorlagen/Hardware-Geraet.md` — Template für Hardware-Setups
-- [ ] **TMPL-09**: `99_Vorlagen/Quelle.md` — Template für Wiki-Quellen (Migration aus Altbestand)
+- ✓ **TMPL-01..09**: 9 Vorlagen für Person, Dokument, Termin, Projekt, Arzttermin, Vertrag, Social-Post, Hardware, Quelle
 
 ### Bootstrap (BOOT)
 
-- [ ] **BOOT-01**: Gerüst-Seiten in `30_Projekte/`, `50_Gesundheit/`, `60_Finanzen/`, `70_Hardware/`, `80_Social_Media/` existieren mit README + Frontmatter
-- [ ] **BOOT-02**: `log.md` listet initial alle leeren Seiten, die später organisch gefüllt werden sollen
-- [ ] **BOOT-03**: `index.md` Dashboard rendert ohne Broken Links, alle Sektionen haben mindestens Platzhalter-Inhalt
+- ✓ **BOOT-01..03**: Gerüst-Seiten + Dashboard + Log final
 
 ### Workflows (WF)
 
-- [ ] **WF-01**: `Obsidian_Zentralw/CLAUDE.md` (neuer Vault-Stammordner) dokumentiert Workflow "Neues Dokument ablegen" (Scan → Inbox → kategorisieren → Archiv + Metadaten-Seite)
-- [ ] **WF-02**: Workflow "Arzttermin erfassen" dokumentiert (Person → Termin-Template → Verknüpfung Gesundheit)
-- [ ] **WF-03**: Workflow "Social-Media-Post erstellen" dokumentiert (Idee → Draft → Kanal → Tracking)
-- [ ] **WF-04**: Workflow "Frist / Wiedervorlage anlegen" dokumentiert (40_Aufgaben + Verknüpfung auf Dokument/Person)
-- [ ] **WF-05**: Workflow "Hardware-Setup dokumentieren" dokumentiert (Gerät → 70_Hardware → Seriennummer, Netzwerk, Config)
+- ✓ **WF-01..05**: 5 Workflows in Vault-CLAUDE.md dokumentiert
 
-## v1.1+ Requirements (Deferred)
+## v1.2+ Requirements (Deferred)
 
-### Migration nach iCloud
+### Fine-Tuning (FT)
 
-- **MIG-01**: Vault von lokalem Pfad nach `/Volumes/Obsidian/.../Obsidian_Zentralw` verschieben
-- **MIG-02**: iCloud-Sync verifizieren, Obsidian-App-Konfiguration anpassen
+- **FT-01**: Gemma Fine-Tuning via externem Runner (MLX-LM oder Unsloth)
+- **FT-02**: Training-Pipeline aus `qa_pairs.jsonl` in echtes Gewichts-Update
+- **FT-03**: A/B-Eval zwischen Base- und Fine-Tuned-Model
 
 ### Automatisierung
 
 - **AUTO-01**: Templater-Plugin für automatische Frontmatter-Befüllung
 - **AUTO-02**: Dataview-Queries für Dashboard statt statischer Listen
 - **AUTO-03**: Automatischer Digest ("was steht heute an?") via Hook
-
-### RAG-Integration
-
-- **RAG-01**: Gemma/RAG-Pipeline auf neuen Vault-Pfad umziehen
-- **RAG-02**: Getrennte ChromaDB-Collections für persönlich vs. wiki
+- **AUTO-04**: Maximus_OS Tom-Agent kann eigenständig `tom-ask` aufrufen
 
 ## Out of Scope
 
 | Feature | Grund |
 |---------|-------|
-| Eigene App/UI | Tom lebt in Claude Code + Obsidian, keine eigene Oberfläche |
-| OCR-Pipeline für Scans | Zu komplex für v1.0, Scans kommen manuell |
-| Proaktive Interview-Phasen | Inhalte wachsen organisch, keine Zwangsinterviews |
-| Persönliche Daten public deployen | Privacy-Constraint — nur `90_Wiki/` geht auf die Website |
-| Automatischer Sync zu Cloud-Diensten | Out-of-Scope für Bootstrap, später ggf. über GSD-Phase |
-| Mobile-App-Integration | Obsidian Mobile reicht, keine Custom-Integration |
+| Echtes Fine-Tuning in v1.1 | Ollama kann keine Gemma-FT direkt; externer Runner kommt in v1.2+ |
+| Lokaler Vault bleibt git-versioniert | iCloud Canonical-Entscheidung; Backup via iCloud + Time Machine |
+| Maximus_OS führt interaktive Arbeit aus | Tom-Agent in error-State; Hybrid-Modell (Tom direkt, Maximus_OS für Audit/Background) |
+| Automatisches Fine-Tuning im CI | Zu komplex für lokales Setup, kommt ggf. v1.3+ |
+| Mobile-RAG via Obsidian | Obsidian kann nicht direkt Ollama ansteuern |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| IDENT-01 | Phase 1 | Pending |
-| IDENT-02 | Phase 1 | Pending |
-| IDENT-03 | Phase 1 | Pending |
-| IDENT-04 | Phase 1 | Pending |
-| VAULT-01 | Phase 2 | Pending |
-| VAULT-02 | Phase 2 | Pending |
-| VAULT-03 | Phase 2 | Pending |
-| VAULT-04 | Phase 2 | Pending |
-| VAULT-05 | Phase 2 | Pending |
-| VAULT-06 | Phase 2 | Pending |
-| VAULT-07 | Phase 2 | Pending |
-| PERS-01 | Phase 3 | Pending |
-| PERS-02 | Phase 3 | Pending |
-| PERS-03 | Phase 3 | Pending |
-| PERS-04 | Phase 3 | Pending |
-| PERS-05 | Phase 3 | Pending |
-| PERS-06 | Phase 3 | Pending |
-| PERS-07 | Phase 3 | Pending |
-| PERS-08 | Phase 3 | Pending |
-| DOC-01 | Phase 4 | Pending |
-| DOC-02 | Phase 4 | Pending |
-| DOC-03 | Phase 4 | Pending |
-| DOC-04 | Phase 4 | Pending |
-| DOC-05 | Phase 4 | Pending |
-| TMPL-01 | Phase 5 | Pending |
-| TMPL-02 | Phase 5 | Pending |
-| TMPL-03 | Phase 5 | Pending |
-| TMPL-04 | Phase 5 | Pending |
-| TMPL-05 | Phase 5 | Pending |
-| TMPL-06 | Phase 5 | Pending |
-| TMPL-07 | Phase 5 | Pending |
-| TMPL-08 | Phase 5 | Pending |
-| TMPL-09 | Phase 5 | Pending |
-| BOOT-01 | Phase 6 | Pending |
-| BOOT-02 | Phase 6 | Pending |
-| BOOT-03 | Phase 6 | Pending |
-| WF-01 | Phase 7 | Pending |
-| WF-02 | Phase 7 | Pending |
-| WF-03 | Phase 7 | Pending |
-| WF-04 | Phase 7 | Pending |
-| WF-05 | Phase 7 | Pending |
+| VCLEAN-01 | Phase 8 | Pending |
+| VCLEAN-02 | Phase 8 | Pending |
+| VCLEAN-03 | Phase 8 | Pending |
+| VCLEAN-04 | Phase 8 | Pending |
+| VCLEAN-05 | Phase 8 | Pending |
+| MOS-01 | Phase 9 | Pending |
+| MOS-02 | Phase 9 | Pending |
+| MOS-03 | Phase 9 | Pending |
+| MOS-04 | Phase 9 | Pending |
+| MOS-05 | Phase 9 | Pending |
+| MOS-06 | Phase 9 | Pending |
+| OLL-01 | Phase 10 | Pending |
+| OLL-02 | Phase 10 | Pending |
+| OLL-03 | Phase 10 | Pending |
+| OLL-04 | Phase 10 | Pending |
+| OLL-05 | Phase 10 | Pending |
+| OLL-06 | Phase 10 | Pending |
+| GEM-01 | Phase 11 | Pending |
+| GEM-02 | Phase 11 | Pending |
+| GEM-03 | Phase 11 | Pending |
+| GEM-04 | Phase 11 | Pending |
+| GEM-05 | Phase 11 | Pending |
+| GEM-06 | Phase 11 | Pending |
+| GEM-07 | Phase 11 | Pending |
+| GEM-08 | Phase 11 | Pending |
+| WIRE-01 | Phase 12 | Pending |
+| WIRE-02 | Phase 12 | Pending |
+| WIRE-03 | Phase 12 | Pending |
+| WIRE-04 | Phase 12 | Pending |
+| WIRE-05 | Phase 12 | Pending |
+| DOC11-01 | Phase 13 | Pending |
+| DOC11-02 | Phase 13 | Pending |
+| DOC11-03 | Phase 13 | Pending |
+| DOC11-04 | Phase 13 | Pending |
+| DOC11-05 | Phase 13 | Pending |
 
 **Coverage:**
-- v1.0 requirements: 40 total
-- Mapped to phases: 40
+- v1.1 requirements: 35 total
+- Mapped to phases: 35
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-10*
-*Last updated: 2026-04-10 after initial definition*
+*Last updated: 2026-04-10 after v1.1 milestone start*

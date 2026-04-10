@@ -271,14 +271,14 @@ Commit-Trail siehe `MILESTONES.md`.
 
 ## v1.3 — Compile-Automation + Quality-Pass
 
-**Goal:** Den in v1.2 gebauten Brain- und Wiki-Flow in den Dauerbetrieb bringen — launchd-Automation für `tom-compile`, Quality-Pass für `tom-wiki`, erweitertes Eval-Framework, dokumentierte Karpathy-Schwelle (1500) und Anthropic-SDK-Clarification. Keine Architektur-Änderungen.
+**Goal:** Den in v1.2 gebauten Brain- und Wiki-Flow in den Dauerbetrieb bringen — launchd-Automation für `tom-compile`, Quality-Pass für `tom-wiki`, erweitertes Eval-Framework, bestätigte Karpathy-Schwelle (500, v1.3-Entscheidung: keine Anhebung) inkl. Skalierungs-Stufen und Anthropic-SDK-Clarification. Keine Architektur-Änderungen.
 
 ### Phases
 
 - [x] **Phase 22: Compile-Automation** — launchd Daily-Job + fehlertoleranter `tom-compile-safe` Wrapper (completed 2026-04-10)
 - [x] **Phase 23: tom-wiki Quality-Pass** — stärkerer Prompt, Context-Filter, Quellen-Zitation (completed 2026-04-10)
 - [x] **Phase 24: Eval-Framework-Erweiterung** — Brain-Corpus + Side-by-Side-Vergleich tom-wiki vs tom-ask (completed 2026-04-10)
-- [x] **Phase 25: Doku + Schwellen-Update** — Karpathy-Schwelle 1500 in CLAUDE.md dokumentiert (completed 2026-04-10)
+- [x] **Phase 25: Doku + Schwellen-Update** — Karpathy-Schwelle bleibt 500 + Skalierungs-Stufen in CLAUDE.md (completed 2026-04-10)
 - [ ] **Phase 26: SDK-Clarification + Milestone-Close** — Anthropic-SDK-Recherche + v1.3 formal abschließen
 
 ### Progress Table

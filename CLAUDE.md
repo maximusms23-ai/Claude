@@ -133,3 +133,33 @@ RAG-Config liegt in `Gemma/rag/config.py`. Umzug auf `Obsidian_Zentralw/90_Wiki/
 ## Workflows im Vault
 
 Die konkreten Workflows für Dokumente, Arzttermine, Social Posts, Fristen und Hardware sind in `$TOM_VAULT/CLAUDE.md` dokumentiert (WF-01 bis WF-05).
+
+## Maximus_OS-Kommunikation (Hybrid-Modell, seit v1.1)
+
+Tom arbeitet interaktiv direkt mit Maxim. Maximus_OS (PaperclipAI, localhost:3100, Company `Maximus_OS` ID `2ff8e79a-c0f8-4966-aaba-13b9ea06cc03`) bekommt Issues als **Audit-Trail und Handoff-Kanal** — nicht als Ausführungspfad.
+
+**Tool**: `bin/tom-issue` Wrapper (Company-ID + Agent-Aliase hardcoded). Aliase: `tom`, `cto`, `ceo`, `cmo`, `archivarius`, `wiki-kurator`, `uxdesigner`, `staff`, `qa`, `release`.
+
+```bash
+# Standard-Call
+bin/tom-issue --title "T" --description "D" --priority medium
+
+# An spezifischen Agent zuweisen
+bin/tom-issue --title "T" --description "D" --agent wiki-kurator
+```
+
+**Wann Issue erstellen** (realtime Info-Pflicht):
+- **Milestone-Start/-Ende**: Immer, mit Commit-Hash und Zusammenfassung
+- **Phase-Abschluss**: Immer, mit REQ-Coverage + Commit-Hash
+- **Architektur-Änderungen**: Immer, `priority=high`
+- **Neues Tool / Skript in `bin/`**: An CTO-Agent, `priority=medium`
+- **Wiki-Pflege-Aufgaben**: An `wiki-kurator`
+- **Dokumenten-Metadaten / Archiv-Pflege**: An `archivarius`
+- **Background-/Research-Tasks** die Tom nicht selbst macht: An passenden Agent
+- **Irreversible Aktionen** (Löschungen, Migrationen): Immer, mit Rollback-Hinweis
+
+**Wann KEIN Issue** (Spam vermeiden):
+- Kleine lokale Fixes (Typo, Format, Broken Link)
+- Zwischenstände innerhalb einer laufenden Phase
+- Experiment-Commits die sofort wieder überschrieben werden
+- Rein lesende Operationen (Queries, grep, Navigation)

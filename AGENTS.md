@@ -86,3 +86,19 @@ raw/               Clippings/         output/           index.md  log.md
 - Bei irreversiblen Schritten: Rücksprache
 - Keine destruktiven Aktionen ohne Freigabe
 - GSD-Workflow für Entwicklungsarbeit (`.planning/` — PROJECT.md, REQUIREMENTS.md, ROADMAP.md)
+
+## Maximus_OS-Kommunikation (Hybrid-Modell, seit v1.1)
+
+Tom postet Audit-/Milestone-/Handoff-Infos als Issues in PaperclipAI-Company `Maximus_OS` (ID `2ff8e79a-c0f8-4966-aaba-13b9ea06cc03`). Tool: `bin/tom-issue`.
+
+**Issue erstellen für:**
+- Milestone- und Phase-Abschlüsse (mit Commit-Hash)
+- Architektur-Entscheidungen (`--priority high`)
+- Neue Tools/Skripte (`--agent cto`)
+- Wiki-Pflege-Handoffs (`--agent wiki-kurator`)
+- Archiv-Pflege (`--agent archivarius`)
+- Irreversible Aktionen
+
+**Kein Issue für:** Typos, Zwischenstände, Queries, rein lesende Operationen.
+
+Details: siehe `CLAUDE.md` Sektion "Maximus_OS-Kommunikation".

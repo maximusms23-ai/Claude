@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+# tom-issue — Wrapper um `paperclipai issue create` für Tom/Maximus_OS-Kommunikation
+#
+# Zweck: Tom (Claude Code) postet Status-Updates, Milestones und Background-Tasks
+# als Issues in die Maximus_OS-Company, ohne jedes Mal die Company-UUID und
+# die Agent-UUIDs im Kopf halten zu müssen.
+#
+# Usage:
+#   tom-issue --title "T" --description "D" [--priority low|medium|high] [--agent <alias>] [--json]
+#
+# Agent-Aliase: tom, cto, ceo, cmo, archivarius, wiki-kurator, uxdesigner,
+#               staff, qa, release
+#
+# Beispiel:
+#   tom-issue --title "Phase 9 complete" --description "tom-issue wrapper live" \
+#             --priority medium --agent cto
+
+set -euo pipefail
+
+COMPANY_ID="2ff8e79a-c0f8-4966-aaba-13b9ea06cc03"  # Maximus_OS
+
+# Agent-Aliase → IDs (aus `paperclipai agent list -C ...`)
+# Kompatibel mit macOS bash 3.2 (keine assoc arrays) via lookup function.
+agent_id() {
+  case "$1" in
+    tom)          echo "6aa5f64f-82f9-4bb7-b117-77a321b67b8e" ;;
+    cto)          echo "355d1cd0-575a-44e9-8bf9-24f597ab1843" ;;
+    ceo)          echo "a2996e07-9ae4-4234-ab90-a86201016081" ;;
+    cmo)          echo "ad980657-2c07-4019-b43b-28c5c43d6b6d" ;;
+    archivarius)  echo "c9c74426-e0ea-4da5-848d-0f61cfb314c6" ;;
+    wiki-kurator) echo "cb8cd2fd-7bca-4186-98d1-c0eca3d51369" ;;
+    uxdesigner)   echo "6fb7e15e-64e1-4a41-a3e4-cc44945feaff" ;;
+    staff)        echo "b7187676-5d22-4ba1-8b75-e90f39208848" ;;
+    qa)           echo "f7a35597-241f-420e-bd9f-770240c99330" ;;
+    release)      echo "8fd36464-acb2-4eb4-b0ff-e14d9dc0e3ea" ;;
+    *)            return 1 ;;
+  esac
+}
+AGENT_ALIASES="tom cto ceo cmo archivarius wiki-kurator uxdesigner staff qa release"
+
+TITLE=""
+DESCRIPTION=""
+PRIORITY="medium"
+AGENT_ALIAS=""
+JSON_FLAG=""
+
+usage() {
+  cat <<EOF
+tom-issue — Post an issue to Maximus_OS (PaperclipAI)
+
+Usage:
+  tom-issue --title "T" --description "D" [options]
+
+Options:
+  --title        Issue title (required)
+  --description  Issue description (required)
+  --priority     low | medium (default) | high
+  --agent        Assignee alias (tom, cto, ceo, cmo, archivarius, wiki-kurator,
+                 uxdesigner, staff, qa, release)
+  --json         Return full JSON response instead of just identifier
+  -h, --help     Show this help
+
+Examples:
+  tom-issue --title "Phase 9 complete" --description "wrapper live" --priority high
+  tom-issue --title "Research task" --description "..." --agent wiki-kurator
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --title)       TITLE="$2"; shift 2 ;;
+    --description) DESCRIPTION="$2"; shift 2 ;;
+    --priority)    PRIORITY="$2"; shift 2 ;;
+    --agent)       AGENT_ALIAS="$2"; shift 2 ;;
+    --json)        JSON_FLAG="--json"; shift ;;
+    -h|--help)     usage; exit 0 ;;
+    *)             echo "Unknown arg: $1" >&2; usage; exit 1 ;;
+  esac
+done
+
+if [[ -z "$TITLE" || -z "$DESCRIPTION" ]]; then
+  echo "Error: --title and --description are required" >&2
+  usage
+  exit 1
+fi
+
+case "$PRIORITY" in
+  low|medium|high) ;;
+  *) echo "Error: --priority must be low|medium|high" >&2; exit 1 ;;
+esac
+
+CMD=(paperclipai issue create -C "$COMPANY_ID" --title "$TITLE" --description "$DESCRIPTION" --priority "$PRIORITY")
+
+if [[ -n "$AGENT_ALIAS" ]]; then
+  if ! AGENT_ID=$(agent_id "$AGENT_ALIAS"); then
+    echo "Error: unknown agent alias '$AGENT_ALIAS'. Available: $AGENT_ALIASES" >&2
+    exit 1
+  fi
+  CMD+=(--assignee-agent-id "$AGENT_ID")
+fi
+
+if [[ -n "$JSON_FLAG" ]]; then
+  CMD+=("$JSON_FLAG")
+  "${CMD[@]}"
+else
+  # Extract identifier (FAM-NNN) from JSON response for concise output
+  "${CMD[@]}" --json 2>/dev/null | python3 -c "
+import json, sys
+try:
+    data = json.load(sys.stdin)
+    print(data.get('identifier', data))
+except Exception as e:
+    print(f'Error parsing response: {e}', file=sys.stderr)
+    sys.exit(1)
+"
+fi

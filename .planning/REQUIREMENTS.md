@@ -43,11 +43,15 @@ Requirements für Compile-Automation, `tom-wiki` Quality-Pass, Eval-Framework-Er
 
 ### SDK-Clarification + Abschluss (CLOSE13)
 
-- [ ] **CLOSE13-01**: Anthropic-SDK-Clarification (Subscription-Quota-Frage für `tom-compile`) ist recherchiert und zusammengefasst in `claude-memory-compiler/TOM-PATCHES.md`
-- [ ] **CLOSE13-02**: CEO-Briefing `Obsidian/Projekte/Paperclip-v1.3-CEO-Briefing.md` dokumentiert alle Phasen 22–26 mit Commits und Outcomes
-- [ ] **CLOSE13-03**: `.planning/MILESTONES.md` um v1.3-Eintrag erweitert (Start, Ende, Phasen, Status, Commits)
-- [ ] **CLOSE13-04**: `.planning/PROJECT.md` Validated-Sektion um v1.3-Einträge erweitert
-- [ ] **CLOSE13-05**: Maximus_OS-Issue an CEO schließt Milestone v1.3 offiziell ab
+- [x] **CLOSE13-01**: Anthropic-SDK-Clarification (Subscription-Quota-Frage für `tom-compile`) ist recherchiert und zusammengefasst in `claude-memory-compiler/TOM-PATCHES.md` (Abschnitt 8)
+- [x] **CLOSE13-02**: CEO-Briefing `.planning/briefings/v1.3-CEO-Briefing.md` (Pfad angepasst auf v1.2-Konvention) dokumentiert alle Phasen 22–26 mit Commits und Outcomes
+- [x] **CLOSE13-03**: `.planning/MILESTONES.md` um v1.3-Eintrag erweitert (Start, Ende, Phasen, Status, Commits)
+- [x] **CLOSE13-04**: `.planning/PROJECT.md` Validated-Sektion um v1.3-Einträge erweitert
+- [x] **CLOSE13-05**: Maximus_OS-Issue an CEO schließt Milestone v1.3 offiziell ab (FAM-139)
+- [x] **CLOSE13-06**: `$TOM_VAULT/log.md` bekommt v1.3-Eintrag nach v1.1/v1.2-Schema (Phasen-Zusammenfassung, neue Werkzeuge, Architektur-Notizen, Offen-Block)
+- [x] **CLOSE13-07**: `$TOM_VAULT/30_Projekte/Tom.md` als Meta-Projekt-Seite einmalig angelegt (Frontmatter, Current Milestone, Werkzeug-Liste, Doku-Kaskade-Tabelle, Milestones-Kurz-Historie)
+- [x] **CLOSE13-08**: `$TOM_VAULT/index.md` Sektion "Laufende Projekte" um `[[30_Projekte/Tom]]` erweitert, damit Tom selbst vom Hub-Dashboard aus auffindbar ist
+- [x] **CLOSE13-09**: `/Users/maxim/Claude/CLAUDE.md` hat neue Sektion "Mandatory bei jedem Milestone-Close" mit 7-Punkte-Checklist, damit die Doku-Lücke für v1.4+ dauerhaft geschlossen ist
 
 ## v1.2 Requirements (Shipped)
 
@@ -233,14 +237,18 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | DOC13-02 | Phase 25 | Complete |
 | DOC13-03 | Phase 25 | Complete |
 | DOC13-04 | Phase 25 | Complete |
-| CLOSE13-01 | Phase 26 | Pending |
-| CLOSE13-02 | Phase 26 | Pending |
-| CLOSE13-03 | Phase 26 | Pending |
-| CLOSE13-04 | Phase 26 | Pending |
-| CLOSE13-05 | Phase 26 | Pending |
+| CLOSE13-01 | Phase 26 | Complete |
+| CLOSE13-02 | Phase 26 | Complete |
+| CLOSE13-03 | Phase 26 | Complete |
+| CLOSE13-04 | Phase 26 | Complete |
+| CLOSE13-05 | Phase 26 | Complete |
+| CLOSE13-06 | Phase 26 | Complete |
+| CLOSE13-07 | Phase 26 | Complete |
+| CLOSE13-08 | Phase 26 | Complete |
+| CLOSE13-09 | Phase 26 | Complete |
 
 **Coverage:**
-- v1.3 requirements: 26 total, mapped to phases: 26, unmapped: 0 ✓
+- v1.3 requirements: 30 total (26 original + 4 Obsidian-Lücken-Fix aus Phase 26), mapped to phases: 30, unmapped: 0 ✓
 - v1.2 requirements: 43 total (shipped)
 
 ---

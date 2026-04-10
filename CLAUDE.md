@@ -140,7 +140,7 @@ Bei jeder Wissensfrage nutze Tom **in dieser Reihenfolge**:
    - Schneller als jedes Tool.
 2. **Öffentliches Wiki-Thema** → `tom-wiki "Frage"` (Index-first, lokal via gemme)
    - Liest `$TOM_VAULT/90_Wiki/index.md` + Artikel
-   - Präzise bei bekannten Themen (bis ~500 Artikel)
+   - Präzise bei bekannten Themen (bis **500 Artikel** — siehe Skalierungs-Stufen unten)
 3. **Brain-Frage** (Konversations-Wissen) → `tom-wiki --brain "Frage"`
    - Liest `$TOM_VAULT/95_Gehirn/index.md` + kompilierte Konzepte
    - Nur privat, nie öffentlich
@@ -151,6 +151,22 @@ Bei jeder Wissensfrage nutze Tom **in dieser Reihenfolge**:
 Weitere Brain-Tools:
 - `tom-compile` — Kompiliert daily-logs → knowledge-Artikel (täglich oder manuell)
 - `tom-lint [--structural-only]` — Health-Check für Brain-Struktur
+
+### Skalierungs-Stufen (v1.3-Entscheidung: Schwelle bleibt 500)
+
+Die Karpathy-Index-first-Methode skaliert nicht unbegrenzt — ab einer kritischen Wiki-Größe wird der Kontext zu groß für `gemme`. v1.3-Entscheidung (2026-04-10): **Schwelle bleibt bei 500 Artikeln**, nicht auf 1500 angehoben. Grund: Die v1.3 Eval-Baseline (`Gemma/eval/results/v1.3-baseline.md`) bestätigt `tom-wiki` 80% vs `tom-ask` 33% auf Wiki-Queries — die aktuelle Methode funktioniert gut im Ist-Zustand und soll erst wechseln, wenn die Präzision spürbar fällt.
+
+| Stufe | Wiki-Größe | Primär-Tool | Fallback | Status |
+|-------|------------|-------------|----------|--------|
+| **Index-first** | **<500 Artikel** | `tom-wiki` (Karpathy Index + Top-K) | `tom-ask` | **aktuell aktiv** |
+| **Hybrid** | 500–2000 | `tom-wiki` mit engerem Keyword-Filter, `tom-ask` für fuzzy | — | geplant bei Überschreitung |
+| **RAG-Primary** | >2000 | `tom-ask` (Cosine + LLM-Synthese) | `tom-wiki` nur für bekannte Topics | ferne Zukunft |
+
+**Umstiegspfad bei Überschreitung:**
+1. Messen: `ls $TOM_VAULT/90_Wiki/**/*.md | wc -l` regelmäßig prüfen
+2. Bei >500: Eval erneut gegen beide Tools fahren (`python3 Gemma/eval/run_eval.py`)
+3. Wenn `tom-wiki` Avg-Score unter 50% fällt → Wrapper-Config in `tom_tools/wiki_query.py` auf Hybrid-Modus (schmaleres Top-K, aggressiveres Keyword-Filtering)
+4. Bei >2000 → Primär-Kaskade umstellen: Punkt 2 der Wissens-Kaskade wird `tom-ask`, `tom-wiki` rutscht auf Fallback-Position
 
 ## Lokale Wiki-Queries via Gemma RAG (seit v1.1)
 

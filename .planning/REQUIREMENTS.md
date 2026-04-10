@@ -1,10 +1,55 @@
 # Requirements: Tom — Persönlicher Lebens-Assistent
 
 **Defined:** 2026-04-10
-**Current Milestone:** v1.2 — Karpathy Wiki + claude-memory-compiler
+**Current Milestone:** v1.3 — Compile-Automation + Quality-Pass
 **Core Value:** Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Leben wichtig ist — Tom weiß, wo was liegt, und unterstützt proaktiv.
 
-## v1.2 Requirements (Current)
+## v1.3 Requirements (Current)
+
+Requirements für Compile-Automation, `tom-wiki` Quality-Pass, Eval-Framework-Erweiterung, Doku-Updates und Anthropic-SDK-Clarification. Jeder Eintrag mappt auf genau eine Phase im Roadmap (Phasen 22–26).
+
+### Compile-Automation (CRON)
+
+- [ ] **CRON-01**: `~/Library/LaunchAgents/com.maxim.tom-compile.plist` existiert und startet `tom-compile-safe` täglich um 18:00 Europe/Berlin
+- [ ] **CRON-02**: `bin/tom-compile-safe` prüft vor Ausführung, ob `ollama serve` läuft und `$TOM_VAULT` erreichbar ist — exitet sauber mit Log-Eintrag wenn nicht
+- [ ] **CRON-03**: `tom-compile-safe` schreibt Run-Log nach `~/Library/Logs/tom-compile.log` (Timestamp, Exit-Code, Duration)
+- [ ] **CRON-04**: `launchctl load` des Plists registriert den Job; `launchctl list | grep tom-compile` zeigt aktiven Eintrag
+- [ ] **CRON-05**: Manueller Trigger via `launchctl start com.maxim.tom-compile` erzeugt erfolgreichen Compile-Lauf ohne Fehler
+- [ ] **CRON-06**: Maximus_OS-Issue an CTO dokumentiert launchd-Job + Plist-Pfad + Log-Location
+
+### tom-wiki Quality-Pass (QUAL)
+
+- [ ] **QUAL-01**: `claude-memory-compiler/tom_tools/wiki_query.py` hat neuen, stärkeren System-Prompt der präzise Antworten + Quellen-Zitation verlangt
+- [ ] **QUAL-02**: Context-Filter reduziert den an `gemme` übergebenen Kontext auf nur Index + relevante Artikel (statt alle) — per Keyword-Matching aus Query
+- [ ] **QUAL-03**: Antworten von `tom-wiki` zitieren mindestens eine Quell-Datei explizit per Wiki-Link oder Dateiname
+- [ ] **QUAL-04**: Smoke-Test: `tom-wiki "Was ist TurboQuant?"` liefert präzisere Antwort als Baseline (nicht generisch, verweist auf `turboquant.md`)
+- [ ] **QUAL-05**: Patches sind in `claude-memory-compiler/TOM-PATCHES.md` dokumentiert
+- [ ] **QUAL-06**: Maximus_OS-Issue an CTO dokumentiert Quality-Pass + Before/After-Beispiel
+
+### Eval-Framework-Erweiterung (EVAL)
+
+- [ ] **EVAL-01**: `Gemma/eval/` hat neuen Test-Corpus-Eintrag mit Brain-Artikeln aus `95_Gehirn/knowledge/`
+- [ ] **EVAL-02**: `run_eval.py` erweitert um Side-by-Side-Vergleich `tom-wiki` vs `tom-ask` (gleiche Query, beide Antworten, manuelle oder LLM-Score)
+- [ ] **EVAL-03**: Eval produziert Report-File unter `Gemma/eval/results/v1.3-baseline.md` mit Score-Vergleich
+- [ ] **EVAL-04**: Mindestens 10 Test-Queries im Corpus decken Wiki-Themen und Brain-Themen ab
+- [ ] **EVAL-05**: Maximus_OS-Issue an CTO dokumentiert Eval-Ergebnisse + Interpretation
+
+### Doku + Schwellen-Update (DOC13)
+
+- [ ] **DOC13-01**: `CLAUDE.md` Wissens-Kaskade aktualisiert: Karpathy-Schwelle 1500 (statt 500), expliziter Umstiegspfad auf RAG-Primary dokumentiert
+- [ ] **DOC13-02**: `$TOM_VAULT/CLAUDE.md` (Vault-Regeln) ebenfalls auf 1500 aktualisiert, falls dort erwähnt
+- [ ] **DOC13-03**: Neue Sektion "Skalierungs-Stufen" in `CLAUDE.md` skizziert: <1500 = Index-first, 1500–5000 = Hybrid, >5000 = RAG-Primary
+- [ ] **DOC13-04**: Maximus_OS-Issue an wiki-kurator dokumentiert Doku-Update
+
+### SDK-Clarification + Abschluss (CLOSE13)
+
+- [ ] **CLOSE13-01**: Anthropic-SDK-Clarification (Subscription-Quota-Frage für `tom-compile`) ist recherchiert und zusammengefasst in `claude-memory-compiler/TOM-PATCHES.md`
+- [ ] **CLOSE13-02**: CEO-Briefing `Obsidian/Projekte/Paperclip-v1.3-CEO-Briefing.md` dokumentiert alle Phasen 22–26 mit Commits und Outcomes
+- [ ] **CLOSE13-03**: `.planning/MILESTONES.md` um v1.3-Eintrag erweitert (Start, Ende, Phasen, Status, Commits)
+- [ ] **CLOSE13-04**: `.planning/PROJECT.md` Validated-Sektion um v1.3-Einträge erweitert
+- [ ] **CLOSE13-05**: Maximus_OS-Issue an CEO schließt Milestone v1.3 offiziell ab
+
+## v1.2 Requirements (Shipped)
 
 Requirements für Karpathy-Wiki-Methode, automatisches Konversations-Capture via `claude-memory-compiler`, Hybrid RAG + Index-first Retrieval, Multi-Projekt-Nutzung. Jeder Eintrag mappt auf genau eine Phase im Roadmap.
 
@@ -167,11 +212,37 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | DOC12-05 | Phase 21 | Complete |
 | DOC12-06 | Phase 21 | Complete |
 
+| CRON-01 | Phase 22 | Pending |
+| CRON-02 | Phase 22 | Pending |
+| CRON-03 | Phase 22 | Pending |
+| CRON-04 | Phase 22 | Pending |
+| CRON-05 | Phase 22 | Pending |
+| CRON-06 | Phase 22 | Pending |
+| QUAL-01 | Phase 23 | Pending |
+| QUAL-02 | Phase 23 | Pending |
+| QUAL-03 | Phase 23 | Pending |
+| QUAL-04 | Phase 23 | Pending |
+| QUAL-05 | Phase 23 | Pending |
+| QUAL-06 | Phase 23 | Pending |
+| EVAL-01 | Phase 24 | Pending |
+| EVAL-02 | Phase 24 | Pending |
+| EVAL-03 | Phase 24 | Pending |
+| EVAL-04 | Phase 24 | Pending |
+| EVAL-05 | Phase 24 | Pending |
+| DOC13-01 | Phase 25 | Pending |
+| DOC13-02 | Phase 25 | Pending |
+| DOC13-03 | Phase 25 | Pending |
+| DOC13-04 | Phase 25 | Pending |
+| CLOSE13-01 | Phase 26 | Pending |
+| CLOSE13-02 | Phase 26 | Pending |
+| CLOSE13-03 | Phase 26 | Pending |
+| CLOSE13-04 | Phase 26 | Pending |
+| CLOSE13-05 | Phase 26 | Pending |
+
 **Coverage:**
-- v1.2 requirements: 43 total
-- Mapped to phases: 43
-- Unmapped: 0 ✓
+- v1.3 requirements: 26 total, mapped to phases: 26, unmapped: 0 ✓
+- v1.2 requirements: 43 total (shipped)
 
 ---
 *Requirements defined: 2026-04-10*
-*Last updated: 2026-04-10 after v1.2 milestone complete*
+*Last updated: 2026-04-10 after v1.3 milestone start*

@@ -152,6 +152,18 @@ tom-ask "Welche Gemma 4 Groessen gibt es?"
 
 **Setup-Dependency:** Braucht laufenden `ollama serve` + indexierte ChromaDB (`python3 Gemma/rag/index.py`). Bei Fehlern: `Gemma/README.md`.
 
+## Claude-Code Hooks (seit v1.2 Phase 16)
+
+Dieses Projekt hat projekt-lokale Claude-Code-Hooks in `/Users/maxim/Claude/.claude/settings.json`, die in den **claude-memory-compiler** (`/Users/maxim/Claude/claude-memory-compiler/`) zeigen:
+
+- **SessionStart** → `hooks/session-start.py` injiziert `$TOM_VAULT/95_Gehirn/index.md` + letzte daily-logs als Context
+- **SessionEnd** → `hooks/session-end.py` extrahiert Conversation-Turns und spawnt `flush.py` detached (schreibt nach `$TOM_VAULT/95_Gehirn/daily/YYYY-MM-DD.md`)
+- **PreCompact** → `hooks/pre-compact.py` gleicher Mechanismus vor Compact-Events
+
+Diese Hooks **mergen** mit den globalen Hooks in `~/.claude/settings.json` (GSD `SessionStart`, RTK `PreToolUse`) — beide bleiben aktiv. SessionEnd/PreCompact sind detached, d.h. der Hook selbst kehrt in <10 s zurück, die Extraction läuft im Hintergrund.
+
+Compile-Phase (daily → knowledge) wird manuell via `tom-compile` getriggert (nicht bei jedem SessionEnd).
+
 ## Workflows im Vault
 
 Die konkreten Workflows für Dokumente, Arzttermine, Social Posts, Fristen und Hardware sind in `$TOM_VAULT/CLAUDE.md` dokumentiert (WF-01 bis WF-05).

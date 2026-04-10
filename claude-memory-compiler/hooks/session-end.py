@@ -25,9 +25,13 @@ if os.environ.get("CLAUDE_INVOKED_BY"):
     sys.exit(0)
 
 ROOT = Path(__file__).resolve().parent.parent
-DAILY_DIR = ROOT / "daily"
 SCRIPTS_DIR = ROOT / "scripts"
 STATE_DIR = SCRIPTS_DIR
+
+# TOM-PATCHED: DAILY_DIR comes from config.py so it points at
+# $TOM_VAULT/95_Gehirn/daily/ instead of the tool repo.
+sys.path.insert(0, str(SCRIPTS_DIR))
+from config import DAILY_DIR  # noqa: E402
 
 logging.basicConfig(
     filename=str(SCRIPTS_DIR / "flush.log"),

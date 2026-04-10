@@ -21,11 +21,10 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-# Paths relative to project root
-ROOT = Path(__file__).resolve().parent.parent
-KNOWLEDGE_DIR = ROOT / "knowledge"
-DAILY_DIR = ROOT / "daily"
-INDEX_FILE = KNOWLEDGE_DIR / "index.md"
+# TOM-PATCHED: paths come from scripts/config.py so they respect TOM_VAULT
+# env var and point at $TOM_VAULT/95_Gehirn/ instead of the tool repo.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+from config import DAILY_DIR, KNOWLEDGE_DIR, INDEX_FILE  # noqa: E402
 
 MAX_CONTEXT_CHARS = 20_000
 MAX_LOG_LINES = 30

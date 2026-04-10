@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Aktive KI + Dokumenten-Fundament
-status: defining-requirements
-last_updated: "2026-04-10T18:00:00.000Z"
+status: executing
+last_updated: "2026-04-10T18:50:00.000Z"
 progress:
   total_phases: 6
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
 ---
 
 # State: Tom v1.4
@@ -22,17 +22,24 @@ See: `.planning/PROJECT.md` (updated 2026-04-10)
 
 ## Current Position
 
-Phase: Not started (Phase 27 pending)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-04-10 — Milestone v1.4 gestartet
+Phase: 27 — OCR-Toolkette + Archiv-Fundament — ✓ COMPLETE
+Next: Phase 28 — tom-doc CLI
+Status: Ready to plan next phase
+Last activity: 2026-04-10 — Phase 27 shipped (DOC14-01..06)
 
 ## Progress
 
 ```
-v1.4: [ ] Phase 27  [ ] Phase 28  [ ] Phase 29  [ ] Phase 30  [ ] Phase 31  [ ] Phase 32
-       0%                                                                              100%
+v1.4: [x] Phase 27  [ ] Phase 28  [ ] Phase 29  [ ] Phase 30  [ ] Phase 31  [ ] Phase 32
+       17%                                                                              100%
 ```
+
+## Phase 27 Decisions
+
+- pdftotext-first Extraction mit ocrmypdf-Fallback (150× schneller für moderne PDFs)
+- Normale FTS5-Table statt contentless (Snippets brauchen dupliziertes Storage)
+- SHA256-basierte Idempotenz (pfad-unabhängig)
+- Poppler als zusätzliche Baseline-Dependency
 
 ## Accumulated Context (von v1.3 übernommen)
 

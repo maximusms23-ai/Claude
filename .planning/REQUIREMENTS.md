@@ -10,12 +10,12 @@ Requirements für Dokumenten-Volltext-Fundament, `tom-doc` CLI, Smart-Connection
 
 ### OCR + Dokumenten-Fundament (DOC14)
 
-- [ ] **DOC14-01**: `tesseract` + `ocrmypdf` + `tesseract-lang-deu` via Homebrew installiert; `tesseract --list-langs` enthält `deu`
-- [ ] **DOC14-02**: `$TOM_VAULT/Archiv/` Symlink auf `~/Downloads/Archiv/` existiert
-- [ ] **DOC14-03**: `/Users/maxim/Claude/archivum/` mit `db/`, `ocr-cache/`, `logs/`, `README.md` angelegt
-- [ ] **DOC14-04**: SQLite FTS5 Schema in `archivum/db/archivum.db` — Tabellen `documents` + `documents_fts`
-- [ ] **DOC14-05**: OCR-Pipeline-Script `archivum/ocr_pipeline.py` — `ocrmypdf --language deu --sidecar` über alle PDFs, Cache nach `ocr-cache/<hash>.txt`, idempotent
-- [ ] **DOC14-06**: Smoke-Test mit mindestens einem echten Maxim-Dokument — Volltext ist in FTS5-Index abfragbar
+- [x] **DOC14-01**: `tesseract` + `ocrmypdf` + `tesseract-lang-deu` via Homebrew installiert; `tesseract --list-langs` enthält `deu`
+- [x] **DOC14-02**: `$TOM_VAULT/Archiv/` Symlink auf `~/Downloads/Archiv/` existiert
+- [x] **DOC14-03**: `/Users/maxim/Claude/archivum/` mit `db/`, `ocr-cache/`, `logs/`, `README.md` angelegt
+- [x] **DOC14-04**: SQLite FTS5 Schema in `archivum/db/archivum.db` — Tabellen `documents` + `documents_fts`
+- [x] **DOC14-05**: OCR-Pipeline-Script `archivum/ocr_pipeline.py` — pdftotext-first + ocrmypdf Fallback, Cache nach `ocr-cache/<hash>.txt`, idempotent
+- [x] **DOC14-06**: Smoke-Test mit `2204_Arbeitsvertrag_Schmidt.pdf` — 89805 Zeichen, 27 Seiten, via pdftotext, Suche nach "Arbeitsvertrag"/"Gehalt"/"Schmidt" findet Snippets
 
 ### tom-doc CLI (TDOC)
 
@@ -305,12 +305,12 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | CLOSE13-07 | Phase 26 | Complete |
 | CLOSE13-08 | Phase 26 | Complete |
 | CLOSE13-09 | Phase 26 | Complete |
-| DOC14-01 | Phase 27 | Pending |
-| DOC14-02 | Phase 27 | Pending |
-| DOC14-03 | Phase 27 | Pending |
-| DOC14-04 | Phase 27 | Pending |
-| DOC14-05 | Phase 27 | Pending |
-| DOC14-06 | Phase 27 | Pending |
+| DOC14-01 | Phase 27 | Complete |
+| DOC14-02 | Phase 27 | Complete |
+| DOC14-03 | Phase 27 | Complete |
+| DOC14-04 | Phase 27 | Complete |
+| DOC14-05 | Phase 27 | Complete |
+| DOC14-06 | Phase 27 | Complete |
 | TDOC-01 | Phase 28 | Pending |
 | TDOC-02 | Phase 28 | Pending |
 | TDOC-03 | Phase 28 | Pending |

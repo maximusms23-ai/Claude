@@ -26,6 +26,14 @@ Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Lebe
   - Ollama + `gemma4:e4b` + Custom-Model `gemme`
   - RAG-Pipeline gegen iCloud-Vault
   - `bin/tom-ask` für lokale Wiki-Queries
+- ✓ Tom v1.2 — Karpathy Wiki + claude-memory-compiler (Phasen 14–21):
+  - `claude-memory-compiler` installiert + auf `$TOM_VAULT/95_Gehirn/` gepatcht
+  - `95_Gehirn/` private Brain-Struktur mit Privacy-Regeln
+  - Projekt-lokale Claude-Code-Hooks (SessionStart/End/PreCompact)
+  - `90_Wiki/index.md` im Karpathy-Retrieval-Stil (statt Changelog)
+  - Gemma RAG um dritte Collection `gehirn` erweitert
+  - `bin/tom-wiki`, `bin/tom-compile`, `bin/tom-lint` Wrapper
+  - Multi-Projekt-`wiki_path`-Konvention (Gemma/ als erstes Sub-Projekt)
 
 ## Current Milestone: v1.2 — Karpathy Wiki + claude-memory-compiler
 

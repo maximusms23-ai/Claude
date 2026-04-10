@@ -399,7 +399,7 @@ Kleine Bridge-Phase zwischen v1.4-Close und v1.5-Kickoff. Drei Themen: Obsidian-
 
 - [x] **CLIP141-07**: `OLLAMA_ORIGINS` persistent via `launchctl setenv` auf `chrome-extension://*,moz-extension://*` gesetzt; CORS-Preflight im README dokumentiert
 - [x] **CLIP141-08**: Interpreter-Provider-Setup dokumentiert in `web-clipper/README.md` Abschnitt 2 (Endpoint `http://127.0.0.1:11434/api/chat`, Model `gemme`)
-- [x] **CLIP141-09**: Alle 7 Templates mit 3 Interpreter-Prompts (`summary`, `tags`-Ergänzung, `konzepte_vorschlaege`) refaktoriert inkl. typ-spezifischer Prompt-Formulierung und "Betrachte nur die ersten X Zeichen"-Hinweis
+- [x] **CLIP141-09**: Alle 7 Templates mit 3 Interpreter-Prompts (`summary`, `tags`-Ergänzung, `konzepte_vorschlaege`) refaktoriert inkl. typ-spezifischer Prompt-Formulierung und "Betrachte nur die ersten X Zeichen"-Hinweis. **Schritt 2:** Zusätzlich 7 importable JSON-Templates in `99_Vorlagen/web-clipper/json/Tom-*.json` (Schema `0.1.0`, Properties + noteContentFormat + path), weil die Browser-Extension nur JSON liest, nicht die Vault-Markdown-Files. Modell-Label konsistent `gemma4-interpreter`
 - [x] **CLIP141-10**: ADR-005 `adr-005-web-clipper-interpreter-vs-clip-enrich.md` in `.planning/obsidian-plugin-config/` angelegt
 - [x] **CLIP141-11**: `web-clipper/README.md` überarbeitet — Interpreter-Setup als Primary, CORS-Troubleshooting, `tom-clip-enrich` auf Fallback-Rolle + `--queue-only` dokumentiert
 - [x] **CLIP141-12**: `CLAUDE.md` Web-Clipper-Flow-Sektion aktualisiert — Interpreter-Primary, `--queue-only` erwähnt, ADR-005-Verweis

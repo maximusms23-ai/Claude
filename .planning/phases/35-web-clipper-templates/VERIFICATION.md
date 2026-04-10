@@ -72,6 +72,9 @@ Um CLIP141-04 zu schließen, muss Maxim folgende Schritte manuell ausführen:
 | H8 | `CLAUDE.md` Web-Clipper-Flow-Sektion aktualisiert: "Interpreter ist Primary" | Sektion Zeilen 158-ff | ✓ |
 | H9 | REQUIREMENTS.md CLIP141-07..13 additiv | Zeilen 399+ | ✓ |
 | H10 | Vault-Doku-Routine (Phase-Note + Journal + Entscheidungen + index.md + log.md) | Alle 4 Punkte der "Mandatory pro GSD-Phase"-Checklist | ✓ |
+| H10b | 7 importable JSON-Templates in `99_Vorlagen/web-clipper/json/` (Schritt 2) | `Tom-Artikel.json`..`Tom-Werkzeug.json`, alle JSON-validiert, Schema 0.1.0 mit Properties + noteContentFormat + path | ✓ |
+| H10c | README Sektion 3 auf Import-Workflow umgeschrieben | "Templates importieren" mit + Neue Vorlage / Import-Button | ✓ |
+| H10d | Modell-Label `gemma4-interpreter` konsistent in JSONs + MD-Templates + README + ADR-005 | grep-Sweep | ✓ |
 | H11 | Maxim-Handoff Smoke-Test: 1 echter Clip → gefüllte Interpreter-Felder | Maxim-Handoff (CLIP141-13) | ⏳ |
 | H12 | Maxim-Handoff Fallback-Test: Ollama offline → `--force` füllt Felder | Maxim-Handoff | ⏳ |
 | H13 | Maxim-Handoff `--queue-only`: Konzepte landen in `90_Wiki/konzepte-vorschlaege.md` ohne Frontmatter-Overwrite | Maxim-Handoff | ⏳ |
@@ -110,6 +113,19 @@ Das wurde in **FAM-154 an CTO** dokumentiert. Bis Ollama wieder läuft, bleibt C
    - `enriched_by: gemme-interpreter`
 8. **`tom-clip-enrich --queue-only <file>`** → Konzept-Einträge in `$TOM_VAULT/90_Wiki/konzepte-vorschlaege.md`; Frontmatter bleibt unverändert
 9. **Fallback-Test**: Ollama stoppen (`killall ollama`), erneut clippen → Felder enthalten Roh-Prompts → `tom-clip-enrich <file>` ohne `--queue-only` (Standard-Modus mit `--force` falls nötig) füllt sie nachträglich mit `enriched_by: tom-clip-enrich`
+
+### Hotfix Schritt 2 — Importable JSON-Templates
+
+Direkt nach dem ersten Hotfix-Commit (`f11b4d7`) hat Maxim mit einem Browser-Screenshot bestätigt, dass die Extension **nicht** die Markdown-Templates aus dem Vault liest. Templates müssen als **JSON** über den Import-Button der Extension angelegt werden. Schritt 2:
+
+- **7 neue JSON-Template-Dateien** in `$TOM_VAULT/99_Vorlagen/web-clipper/json/Tom-{Artikel,Paper,Video,Dokument,Social-Post,Rezept,Werkzeug}.json`
+- Schema basierend auf Referenz-Implementierung `tuan3w/obsidian-template/templates/web-clipper/default-clipper.json` (`schemaVersion: 0.1.0`, `properties[]`, `noteContentFormat`, `path`, `noteNameFormat`)
+- Jedes JSON enthält: 13–15 Frontmatter-Properties (Statische + 3 Interpreter-Prompt-Properties), `noteContentFormat` mit Body + Tom-Fallback-Hinweisen, korrekter `path` (`Clippings/<Typ>`), `noteNameFormat` `{{title|replace:"/":"-",":":" -"}}`
+- Alle 7 JSONs validiert (`python3 -c "import json; json.load(open(...))"` für jede Datei)
+- README.md Sektion 3 umgeschrieben — Import-Workflow (Datei-Upload-Button) statt Copy-Paste
+- Modell-Label konsolidiert: **`gemma4-interpreter`** (Maxim's Modell heißt `gemma4`, nicht `gemme`) — angewendet in JSONs, Markdown-Referenz-Templates, README, ADR-005
+
+**Erkenntnis:** Das ursprüngliche Konzept "Markdown-Templates im Vault sind die Quelle" funktioniert nicht — die Extension hat eigene Storage und liest die Vault-Files nicht. Die Markdown-Files in `99_Vorlagen/web-clipper/*.md` bleiben als **Lese-Referenz für Tom + Maxim** liegen, die JSONs in `json/` sind die **operativen Templates**, die in die Extension importiert werden.
 
 ### Was im Hotfix NICHT enthalten ist
 

@@ -93,6 +93,34 @@ Smoke-Test Auszug (NACHHER):
 
 **Nicht gemerged:** Diese Aenderungen sind Tom-spezifisch und gehen NICHT upstream zu coleam00/claude-memory-compiler — `wiki_query.py` ist von vornherein ein Tom-only Modul (siehe Patch 5).
 
+## 8. Anthropic-SDK Subscription-Quota Clarification (Phase 26)
+
+**Eingefuehrt:** 2026-04-10, Phase 26 (Milestone v1.3 Close).
+
+**Frage aus v1.2 offen:** Verbraucht `tom-compile` (das via `claude_agent_sdk` die `scripts/compile.py` ausfuehrt) die aktive Claude-Code/Max-Subscription-Quota, oder triggert es separates API-Billing ueber `ANTHROPIC_API_KEY`?
+
+**Recherche-Ergebnis (2026-04-10, Stand):**
+
+1. **Default-Pfad laut Anthropic-Dokumentation:** `claude_agent_sdk` erwartet einen API-Key und rechnet per-Token gegen die Organization ab. Subscription-Billing (Pro/Max) ist fuer programmatische Aufrufe **nicht offiziell unterstuetzt**. Open Feature-Request: `anthropics/claude-agent-sdk-python#559` ("Agent SDK should support Max plan billing, not just API keys").
+2. **April-2026-Cutoff:** Anthropic hat ab **2026-04-04** klargestellt, dass Subscription-Quotas "no longer cover third-party tools", also auch SDK-basierte Agents nicht mehr pauschal abdecken (mehrere unabhaengige Drittquellen, siehe Sources).
+3. **Empirische Beobachtung in Tom v1.3:** `scripts/flush.log` und der erste launchd-Run (Phase 22, `tom-compile-safe`, Exit 0, Dauer 17 s) zeigen, dass `claude_agent_sdk` **den gebundelten Claude-Code-CLI** aus `claude_agent_sdk/_bundled/claude` aufruft (siehe `INFO Using bundled Claude Code CLI: .../site-packages/claude_agent_sdk/_bundled/claude`). Dieser Pfad nutzt dieselbe OAuth-Session wie das installierte Claude Code auf der Maschine — d.h. solange Maxim per Max-Subscription im Claude-Code angemeldet ist, uebernimmt der bundled CLI seine Auth.
+4. **Konflikt:** Punkt 1/2 (offizielle Doku) und Punkt 3 (Empirie) widersprechen sich. Der bundled CLI ist de facto Claude Code; Anthropic’s "Agent SDK only supports API Keys" bezieht sich auf den **direkten SDK-Pfad ohne bundled CLI**, nicht auf die bundled-CLI-Route. Fuer `claude-memory-compiler` / `tom-compile` gilt also vermutlich: **Max-Subscription deckt die Kosten**, solange der bundled Claude-CLI benutzt wird und die Maschine in einer aktiven Claude-Code-Session ist.
+
+**Konsequenz fuer Tom:**
+
+- **Vorlaeufige Entscheidung:** `tom-compile` darf in v1.3 **taeglich** per launchd laufen. Maxim hat Max-Subscription, und die bundled-CLI-Route aus dem SDK laeuft auf derselben OAuth-Session.
+- **Monitoring-Pflicht:** Wenn `~/Library/Logs/tom-compile.log` ploetzlich Auth-Fehler oder 401/403 zeigt, heisst das: Der bundled-Pfad wurde von Anthropic gekappt. Dann sofort `launchctl bootout gui/$(id -u)/com.maxim.tom-compile`, `ANTHROPIC_API_KEY` setzen und per API-Key weiterfahren (oder das Feature pausieren).
+- **Kein Cost-Guard noetig fuer v1.3.** Wird in v1.4 neu evaluiert, falls Anthropic den bundled-Pfad stoert oder die Subscription-Konditionen erneut aendert.
+- **Falls Maxim irgendwann ohne Max-Subscription ist:** `tom-compile` bricht mit Auth-Fehler und muss auf API-Key umgestellt werden (`ANTHROPIC_API_KEY` in `~/.zshrc` + Environment-Passthrough im launchd-Plist).
+
+**Ehrlichkeits-Disclaimer:** Dies ist die bestmoegliche Interpretation aus offizieller Doku + Empirie per 2026-04-10. Es gibt **keine schriftliche Anthropic-Aussage**, die den bundled-CLI-Pfad fuer `claude_agent_sdk` explizit als subscription-covered bestaetigt. Falls das in v1.4 wichtig wird, ist der einzige sichere Test ein expliziter Billing-Check im Claude-Console nach ein paar Compile-Laeufen — wenn dort Token auftauchen, laeuft es ueber API-Key; wenn nicht, laeuft es ueber Subscription.
+
+**Sources:**
+- [Agent SDK overview — Claude API Docs](https://platform.claude.com/docs/en/agent-sdk/overview)
+- [anthropics/claude-agent-sdk-python#559 — "Agent SDK should support Max plan billing, not just API keys"](https://github.com/anthropics/claude-agent-sdk-python/issues/559)
+- [Claude Code Pricing 2026 — NxCode](https://www.nxcode.io/resources/news/claude-code-pricing-2026-free-api-costs-max-plan)
+- [OpenClaw + Claude Code Costs 2026 — ShareUHack](https://www.shareuhack.com/en/posts/openclaw-claude-code-oauth-cost)
+
 ## Upstream-Updates mergen
 
 Wenn Cole Medin den Upstream updatet:

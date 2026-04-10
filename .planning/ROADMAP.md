@@ -275,7 +275,7 @@ Commit-Trail siehe `MILESTONES.md`.
 
 ### Phases
 
-- [ ] **Phase 22: Compile-Automation** — launchd Daily-Job + fehlertoleranter `tom-compile-safe` Wrapper
+- [x] **Phase 22: Compile-Automation** — launchd Daily-Job + fehlertoleranter `tom-compile-safe` Wrapper (completed 2026-04-10)
 - [ ] **Phase 23: tom-wiki Quality-Pass** — stärkerer Prompt, Context-Filter, Quellen-Zitation
 - [ ] **Phase 24: Eval-Framework-Erweiterung** — Brain-Corpus + Side-by-Side-Vergleich tom-wiki vs tom-ask
 - [ ] **Phase 25: Doku + Schwellen-Update** — Karpathy-Schwelle 1500 in CLAUDE.md dokumentiert
@@ -285,7 +285,7 @@ Commit-Trail siehe `MILESTONES.md`.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 22. Compile-Automation | 1/2 | In Progress|  |
+| 22. Compile-Automation | 2/2 | Complete   | 2026-04-10 |
 | 23. tom-wiki Quality-Pass | 0/? | Not started | — |
 | 24. Eval-Framework-Erweiterung | 0/? | Not started | — |
 | 25. Doku + Schwellen-Update | 0/? | Not started | — |
@@ -310,7 +310,7 @@ Commit-Trail siehe `MILESTONES.md`.
 4. Manueller Trigger via `launchctl start com.maxim.tom-compile` läuft ohne Fehler durch
 5. Ein Maximus_OS-Issue an CTO dokumentiert launchd-Job, Plist-Pfad und Log-Location
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 - [ ] 22-01-PLAN.md — bin/tom-compile-safe Wrapper mit Preflight + Logging (CRON-02, CRON-03)
 - [ ] 22-02-PLAN.md — launchd-Plist, Registrierung, Smoke-Test, CLAUDE.md-Doku, Maximus_OS-Issue (CRON-01, CRON-04, CRON-05, CRON-06)
 

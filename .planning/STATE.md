@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Complete
 status: unknown
-last_updated: "2026-04-10T12:22:10.405Z"
+last_updated: "2026-04-10T12:28:02.615Z"
 progress:
   total_phases: 9
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # State: Tom v1.3
@@ -29,6 +29,8 @@ Plan: 2 of 2
 
 - **22-01:** `set -uo pipefail` statt `set -euo pipefail` in tom-compile-safe damit Exit-Code nach Lauf captured wird
 - **22-01:** SKIP+exit 0 fuer transiente Fehler (ollama down, iCloud unmounted), FAIL+exit 1 nur fuer Setup-Fehler (Konfigurationsproblem)
+- [Phase 22]: 18:00 Europe/Berlin als launchd-Trigger (statt 03:00) weil Laptop abends aktiv
+- [Phase 22]: RunAtLoad=false in Plist damit kein automatischer Lauf bei Bootstrap
 
 ## Progress
 

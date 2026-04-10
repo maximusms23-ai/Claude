@@ -103,4 +103,38 @@ Maxim hat zusätzlich 33 Community-Plugins in Obsidian installiert. Dokumentiert
 
 Siehe `.planning/ROADMAP.md` für Phasen-Details, `.planning/briefings/v1.4-CEO-Briefing.md` für Executive Summary.
 
+## v1.4.1 — Bridge-Patch (Complete)
+
+**Started:** 2026-04-10
+**Completed:** 2026-04-10
+**Goal:** Drei Vor-Arbeiten zwischen v1.4-Close und v1.5-Kickoff — Obsidian-Doku-Routine etablieren (Phase 33), Plugin-Audit der 17 zwischen v1.4-Close und v1.4.1 installierten Community-Plugins (Phase 34), typ-spezifische Web-Clipper-Templates mit Tom-konformem Frontmatter (Phase 35). Infrastruktur-Backfill vor Feature-Arbeit in v1.5.
+**Phases:** 33–35 (3 Phasen, 17 Requirements: 6 DOC141 + 5 OBPL141 + 6 CLIP141)
+**Status:** ✓ Shipped (mit 1 prepared-pending-maxim für Clipper-Smoke-Test CLIP141-04)
+
+**Commits:**
+- Phase 33 — `29a734e` docs(phase-33): Obsidian-Doku-Backfill + Arbeits-Routine
+- Phase 34 — `4e08696` docs(phase-34): Plugin-Audit + ADR-003/004 + CLAUDE.md-Update
+- Phase 35 — `3a3cff8` feat(phase-35): Web-Clipper-Template-System
+
+**Maximus_OS Audit-Trail:** FAM-153 (CEO Mini-Close-Issue, priority=medium, 2026-04-10)
+
+**Neue Werkzeuge / Artefakte:**
+- **Obsidian-Doku-Routine pro GSD-Phase** — neue CLAUDE.md-Sektion "Mandatory pro GSD-Phase" mit 4-Punkte-Checklist (Phase-Note / Journal / Entscheidungen / Dashboard)
+- **Tom-Meta-Struktur im Vault**: `30_Projekte/Tom/Phasen/`, `30_Projekte/Tom/Journal/`, `30_Projekte/Tom/Entscheidungen.md`, plus 2 Templates in `99_Vorlagen/` (`Tom-Phase.md`, `Tom-Journal.md`)
+- **`plugin-audit-v1.4.1.md`** — Audit-Dokument für 17 neue Plugins mit 4-Klassen-Klassifikation
+- **ADR-003** — `obsidian-ocr` Koexistenz mit `tom-doc`
+- **ADR-004** — `mcp-tools` als v1.5-Integrationskandidat
+- **Config-Backup-Stubs**: `eml-reader.json` + `obsidian-apple-reminders-plugin.json` (Status: `prepared-pending-maxim-activation`)
+- **Web-Clipper-Template-System**: 7 typ-spezifische Templates + README in `99_Vorlagen/web-clipper/`, 7 Ziel-Unterordner in `Clippings/`
+- **CLAUDE.md Plugin Landscape erweitert** von 35 auf 52 Plugins (+ neue Kategorien LLM-Alternativen, Email/Messaging, + Warning-Box obsidian-ocr, + Empfehlungs-Box mcp-tools)
+
+**Backfill:** Phase 33 legte retroaktiv 8 Phase-Notes im Vault an (v1.4 Phasen 27, 28, 29, 29-Hotfix, 30, 31, 32 + Phase 33 selbst als Dogfooding).
+
+**Maxim-Handoffs (bleiben offen nach v1.4.1):**
+- CLIP141-04 Clipper-Smoke-Test mit echtem Browser-Clip + `tom-clip-enrich`-Run
+- Setup der Plugin-Kandidaten `eml-reader` + `obsidian-apple-reminders-plugin` nach Maxim-Antworten auf 5 offene Fragen in `plugin-audit-v1.4.1.md`
+- OBPL-03 aus v1.4 (Smart Connections "TurboQuant"-Smoke-Test nach UI-Reconfig) bleibt weiterhin offen
+
+**Warum Patch statt v1.5-Phasen 33-35:** Klare Scope-Trennung. v1.5 macht Features (Lifecycle-State-Machine, Dataview-Dashboards, Templater-Frontmatter-Auto). v1.4.1 ist reines Infrastruktur-Backfill + Kompensation für Plugin-Installation zwischen v1.4-Close und jetzt. Kein eigenes CEO-Briefing, nur Mini-Close-Issue.
+
 Siehe `.planning/ROADMAP.md` für Phasen-Details.

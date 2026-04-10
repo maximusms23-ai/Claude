@@ -1,31 +1,32 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.4
+milestone: v1.4.1
 milestone_name: Complete
 status: complete
-last_updated: "2026-04-10T21:00:00.000Z"
+last_updated: "2026-04-10T22:30:00.000Z"
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 6
-  completed_plans: 6
+  total_phases: 3
+  completed_phases: 3
+  total_plans: 3
+  completed_plans: 3
 ---
 
-# State: Tom v1.4
+# State: Tom v1.4.1
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-04-10)
+See: `.planning/PROJECT.md` (updated 2026-04-10 after v1.4.1 close)
 
 **Core value:** Maxim hat eine einzige, vertrauenswürdige Ablage für alles — Tom weiß, wo was liegt.
-**Current focus:** Milestone v1.4 startet — Phase 27 (OCR-Toolkette + Archiv-Fundament)
+**Current focus:** v1.4.1 Bridge-Patch abgeschlossen — bereit für v1.5 Kickoff
 
 ## Current Position
 
-Phases: 27 ✓, 28 ✓, 29 ✓ (+ Hotfix), 30 ✓, 31 ✓, 32 ✓
-Next: v1.5 Kickoff (Lifecycle-State-Machine + Plugin-Integrationen)
-Status: v1.4 Shipped — alle 39 Requirements complete (37 original + 2 OBPL-06/07 aus Hotfix + 3 CLOSE14-08/09/10 Plugin-Landscape-Erweiterung)
-Last activity: 2026-04-10 — Phase 32 Milestone-Close shipped
+v1.4 Phases: 27 ✓, 28 ✓, 29 ✓ (+ Hotfix), 30 ✓, 31 ✓, 32 ✓
+v1.4.1 Phases: 33 ✓ (Doku-Routine), 34 ✓ (Plugin-Audit), 35 ✓ (Clipper-Templates, CLIP141-04 prepared-pending-maxim)
+Next: v1.5 Kickoff (Lifecycle-State-Machine + Plugin-Integrationen + mcp-tools-Integration)
+Status: v1.4.1 Shipped — 17 Requirements complete, 1 prepared-pending (CLIP141-04 Smoke-Test)
+Last activity: 2026-04-10 — Phase 35 Web-Clipper-Templates + v1.4.1 Mini-Close
 
 ## Progress
 

@@ -50,8 +50,15 @@ Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Lebe
   - `tom-lint --structural-only` als launchd-tauglicher Default in CLAUDE.md verankert
   - ADR-001 (`.scignore` nicht respektiert → UI-Exclude-Liste) + ADR-002 (Obsidian-Git deferred → v1.5/v1.6)
   - `CLAUDE.md` "Obsidian Plugin Landscape"-Sektion dokumentiert alle 35 Plugins mit Tom-Relevanz-Kategorisierung
+- ✓ Tom v1.4.1 — Bridge-Patch (Phasen 33–35):
+  - **Obsidian-Doku-Routine pro GSD-Phase** etabliert (`CLAUDE.md` "Mandatory pro GSD-Phase") — Backfill für v1.4 Phasen 27-32 + Hotfix im Vault sichtbar
+  - `30_Projekte/Tom/Phasen/`, `Journal/`, `Entscheidungen.md` als Tom-Meta-Struktur im Vault; `99_Vorlagen/Tom-Phase.md` + `Tom-Journal.md` Templates
+  - **Plugin-Audit** der 17 neu installierten Community-Plugins (`plugin-audit-v1.4.1.md`) — 4-Klassen-Klassifikation, 2 Setup-Kandidaten mit Config-Backup-Stubs (`eml-reader`, `obsidian-apple-reminders-plugin`)
+  - ADR-003 (`obsidian-ocr` Koexistenz mit `tom-doc`) + ADR-004 (`mcp-tools` als v1.5-Integrationskandidat)
+  - CLAUDE.md Plugin Landscape auf **52 Plugins** erweitert + neue Kategorien (LLM-Alternativen, Email/Messaging) + Warning/Empfehlungs-Boxen
+  - **Web-Clipper-Template-System**: 7 typ-spezifische Templates (Artikel, Paper, Video, Dokument, Social-Post, Rezept, Werkzeug) in `99_Vorlagen/web-clipper/` + 7 Ziel-Unterordner in `Clippings/`, `tom-clip-enrich` unverändert kompatibel
 
-**Active:** Tom v1.5 — TBD (Kickoff nach v1.4-Close)
+**Active:** Tom v1.5 — TBD (Kickoff nach v1.4.1-Close)
 
 ## Current Milestone: v1.4 — Aktive KI + Dokumenten-Fundament
 

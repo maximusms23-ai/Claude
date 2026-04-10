@@ -351,7 +351,10 @@ Commit-Trail siehe `MILESTONES.md`.
 4. Mindestens 5 Queries decken Wiki-Themen ab, mindestens 5 Brain-Themen
 5. Ein Maximus_OS-Issue an CTO dokumentiert Eval-Ergebnisse und Interpretation
 
-**Plans**: TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 24-01-PLAN.md — questions.yaml erweitern + run_eval.py Side-by-Side-Comparator + Baseline-Report + CTO-Issue (EVAL-01..05)
 
 ---
 

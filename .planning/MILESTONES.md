@@ -86,7 +86,7 @@
 - Phase 31 — `1df1dca` feat(tom-compile): Token-Spar-Lokalisierung via gemme
 - Phase 32 — (diesem folgend) docs: Tom v1.4 Abschluss-Doku + CLAUDE.md Plugin-Landscape
 
-**Maximus_OS Audit-Trail:** (wird in Phase 32 Close-Issue gesammelt — FAM-TBD)
+**Maximus_OS Audit-Trail:** FAM-149 (CEO, Phase 32 Close-Issue, priority=high) + phasenweise CTO/archivarius-Issues aus Phasen 27–31
 
 **Neue Werkzeuge:**
 - `bin/tom-doc` — CLI für SQLite-FTS5-Volltextsuche über OCR'd Archiv-PDFs (Subcommands: `index`, `search`, `list`, `show`)

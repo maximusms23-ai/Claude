@@ -19,7 +19,7 @@
 | 8 | CLAUDE.md Plugin Landscape | Neue Sektion mit 35 Plugins, 3 Kategorien, Warnings Linter + Git | ✓ |
 | 9 | CEO-Briefing Teil 7 | Vault-Infrastructure-Expansion mit Privacy-Incident + v1.5-Hooks | ✓ |
 | 10 | ADR-001 + ADR-002 | Beide in `.planning/obsidian-plugin-config/` angelegt | ✓ |
-| 11 | Maximus_OS Close-Issue | FAM-TBD an CEO priority=high | ⏳ (wird nach Commit versendet) |
+| 11 | Maximus_OS Close-Issue | FAM-149 an CEO priority=high | ✓ |
 
 ## Requirements
 
@@ -30,7 +30,7 @@
 | CLOSE14-03 | ✓ | v1.4-CEO-Briefing.md (7 Teile) |
 | CLOSE14-04 | ✓ | $TOM_VAULT/log.md |
 | CLOSE14-05 | ✓ | $TOM_VAULT/30_Projekte/Tom.md |
-| CLOSE14-06 | ⏳ | Close-Issue wird nach Commit versendet |
+| CLOSE14-06 | ✓ | FAM-149 (CEO, priority=high) |
 | CLOSE14-07 | ✓ | REQUIREMENTS.md alle v1.4 als [x] bzw. [~] mit Erklärung |
 | CLOSE14-08 | ✓ | CLAUDE.md "Obsidian Plugin Landscape"-Sektion |
 | CLOSE14-09 | ✓ | CEO-Briefing Teil 7 |
@@ -48,4 +48,4 @@
 - `~ $TOM_VAULT/log.md` (v1.4-Eintrag, außerhalb git)
 - `~ $TOM_VAULT/30_Projekte/Tom.md` (v1.4-Update, außerhalb git)
 
-## Status: ✓ COMPLETE (Close-Issue pending after commit)
+## Status: ✓ COMPLETE

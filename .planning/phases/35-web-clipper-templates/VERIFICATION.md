@@ -114,6 +114,27 @@ Das wurde in **FAM-154 an CTO** dokumentiert. Bis Ollama wieder läuft, bleibt C
 8. **`tom-clip-enrich --queue-only <file>`** → Konzept-Einträge in `$TOM_VAULT/90_Wiki/konzepte-vorschlaege.md`; Frontmatter bleibt unverändert
 9. **Fallback-Test**: Ollama stoppen (`killall ollama`), erneut clippen → Felder enthalten Roh-Prompts → `tom-clip-enrich <file>` ohne `--queue-only` (Standard-Modus mit `--force` falls nötig) füllt sie nachträglich mit `enriched_by: tom-clip-enrich`
 
+### Hotfix Schritt 3 — Direkter LevelDB-Import + Ollama-Models-Fix
+
+Maxim hat Tom angewiesen, die Browser-Setup-Schritte selbst durchzuführen ("du hast vollen Zugriff"). Schritt 3:
+
+1. **Ollama-Models-Path-Fix:** Symlink `~/.ollama/models` zeigte auf das leere Volume `/Volumes/Archiv/Ollama`. Tom hat `mdfind` nach `gemma4*` ausgeführt und das funktionierende Models-Dir unter `/Users/maxim/Ollama/` gefunden (enthält `gemma4`, `gemme`, `nomic-embed-text`). Symlink umgebogen: `~/.ollama/models → /Users/maxim/Ollama`. Original-`models_backup/` blieb unangetastet.
+2. **Ollama mit CORS gestartet:** `OLLAMA_ORIGINS="chrome-extension://*,moz-extension://*" ollama serve` als detached Background-Prozess. `gemma4`, `gemme`, `nomic-embed-text:latest` und `llama3.2` (4 Modelle) sind verfügbar. CORS-Preflight `curl -H "Origin: chrome-extension://cnjifjpddelmedmihgijeibhnjfabmlf" .../api/tags` antwortet mit `Access-Control-Allow-Origin: chrome-extension://cnjifjpddelmedmihgijeibhnjfabmlf` ✓
+3. **End-to-end Smoke-Call gegen `gemma4`:** Tom hat einen echten POST gegen `/api/chat` mit Browser-Extension-Origin und einem deutschen Test-Prompt geschickt. gemma4 lieferte eine korrekte deutsche Zusammenfassung zurück → Pipeline (Origin → CORS → Ollama → gemma4 → Antwort) verifiziert ✓
+4. **Direkter LevelDB-Import in Chrome-Extension-Storage:** Tom hat den Pfad `~/Library/Application Support/Google/Chrome/Default/Sync Extension Settings/cnjifjpddelmedmihgijeibhnjfabmlf` analysiert. Templates werden dort als `template_<id>` Keys gespeichert mit JSON-Array von LZ-String-UTF16-komprimierten Chunks. Tom hat:
+    - Chrome sauber via `osascript … quit` beendet (LevelDB-Lock freigegeben)
+    - Mit Node.js + `classic-level` + `lz-string` ein Import-Script gebaut (`/tmp/cliplev/import-templates.mjs`)
+    - 7 Tom-Templates mit IDs, Properties (jeweils mit Property-IDs), `noteContentFormat`, `path` (`Clippings/Artikel` etc.), `noteNameFormat` aus den JSONs in `99_Vorlagen/web-clipper/json/` gelesen
+    - Jedes Template via `LZString.compressToUTF16` komprimiert und als `template_<id>` Key in die LevelDB geschrieben
+    - `template_list` um die 7 neuen IDs erweitert (3 alte Templates "Standard"/"Neue Vorlage"/"Neue Vorlage 1" bleiben erhalten)
+    - **`vaults`-Eintrag** für Maxim's Obsidian-Vault `Obsidian_Zentralw` angelegt (war vorher leer `[]`!) + `lastSelectedVault` gesetzt
+    - Chrome wieder normal gestartet (`open -a "Google Chrome"`)
+5. **Verifikation:** Re-Read der LevelDB zeigt alle 7 Templates korrekt dekodiert mit Namen, Pfaden, Properties, Interpreter-Prompts.
+
+**Erkenntnis Schritt 3:** Die Browser-Extension speichert Templates in Chrome's `Sync Extension Settings`-LevelDB. Direkter Import via Node.js + classic-level ist möglich, solange Chrome zum Schreibzeitpunkt nicht läuft. Das ist deutlich schneller als 7-fach manueller GUI-Import.
+
+**Wichtig — `vaults` war leer:** Der Web Clipper kannte vorher keinen Obsidian-Vault. Das hätte die manuellen Imports auch nicht behoben — Maxim hätte zusätzlich Vault-Setup machen müssen. Tom hat das direkt mit erledigt.
+
 ### Hotfix Schritt 2 — Importable JSON-Templates
 
 Direkt nach dem ersten Hotfix-Commit (`f11b4d7`) hat Maxim mit einem Browser-Screenshot bestätigt, dass die Extension **nicht** die Markdown-Templates aus dem Vault liest. Templates müssen als **JSON** über den Import-Button der Extension angelegt werden. Schritt 2:

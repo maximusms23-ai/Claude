@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Complete
 status: unknown
-last_updated: "2026-04-10T12:35:16.781Z"
+last_updated: "2026-04-10T12:55:14.728Z"
 progress:
-  total_phases: 9
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 2
+  total_phases: 10
+  completed_phases: 2
+  total_plans: 4
+  completed_plans: 3
 ---
 
 # State: Tom v1.3
@@ -18,12 +18,12 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-10)
 
 **Core value:** Maxim hat eine einzige, vertrauenswürdige Ablage für alles — Tom weiß, wo was liegt.
-**Current focus:** Phase 22 — compile-automation
+**Current focus:** Phase 23 — tom-wiki-quality-pass
 
 ## Current Position
 
-Phase: 22 (compile-automation) — EXECUTING
-Plan: 2 of 2
+Phase: 23 (tom-wiki-quality-pass) — EXECUTING
+Plan: 1 of 1
 
 ## Decisions
 
@@ -31,6 +31,8 @@ Plan: 2 of 2
 - **22-01:** SKIP+exit 0 fuer transiente Fehler (ollama down, iCloud unmounted), FAIL+exit 1 nur fuer Setup-Fehler (Konfigurationsproblem)
 - [Phase 22]: 18:00 Europe/Berlin als launchd-Trigger (statt 03:00) weil Laptop abends aktiv
 - [Phase 22]: RunAtLoad=false in Plist damit kein automatischer Lauf bei Bootstrap
+- [Phase 23]: STOPWORDS manuell um 'gibt' erweitert fuer korrekte extract_keywords() Filterung
+- [Phase 23]: Maximus_OS-Issue FAM-129 an cto abgesetzt mit Before/After Smoke-Test
 
 ## Progress
 

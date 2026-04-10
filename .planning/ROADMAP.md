@@ -276,7 +276,7 @@ Commit-Trail siehe `MILESTONES.md`.
 ### Phases
 
 - [x] **Phase 22: Compile-Automation** — launchd Daily-Job + fehlertoleranter `tom-compile-safe` Wrapper (completed 2026-04-10)
-- [ ] **Phase 23: tom-wiki Quality-Pass** — stärkerer Prompt, Context-Filter, Quellen-Zitation
+- [x] **Phase 23: tom-wiki Quality-Pass** — stärkerer Prompt, Context-Filter, Quellen-Zitation (completed 2026-04-10)
 - [ ] **Phase 24: Eval-Framework-Erweiterung** — Brain-Corpus + Side-by-Side-Vergleich tom-wiki vs tom-ask
 - [ ] **Phase 25: Doku + Schwellen-Update** — Karpathy-Schwelle 1500 in CLAUDE.md dokumentiert
 - [ ] **Phase 26: SDK-Clarification + Milestone-Close** — Anthropic-SDK-Recherche + v1.3 formal abschließen
@@ -286,7 +286,7 @@ Commit-Trail siehe `MILESTONES.md`.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 22. Compile-Automation | 2/2 | Complete    | 2026-04-10 |
-| 23. tom-wiki Quality-Pass | 0/? | Not started | — |
+| 23. tom-wiki Quality-Pass | 1/1 | Complete   | 2026-04-10 |
 | 24. Eval-Framework-Erweiterung | 0/? | Not started | — |
 | 25. Doku + Schwellen-Update | 0/? | Not started | — |
 | 26. SDK-Clarification + Milestone-Close | 0/? | Not started | — |
@@ -331,7 +331,8 @@ Commit-Trail siehe `MILESTONES.md`.
 4. `claude-memory-compiler/TOM-PATCHES.md` dokumentiert den neuen System-Prompt + Filter-Logik
 5. Ein Maximus_OS-Issue an CTO dokumentiert Quality-Pass mit Before/After-Beispiel
 
-**Plans**: TBD
+**Plans:** 1/1 plans complete
+- [ ] 23-01-PLAN.md — wiki_query.py Quality-Pass: System-Prompt + Keyword-Filter + Top-K + TOM-PATCHES + Maximus_OS-Issue (QUAL-01..06)
 
 ---
 

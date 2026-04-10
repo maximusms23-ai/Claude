@@ -19,12 +19,12 @@ Requirements für Compile-Automation, `tom-wiki` Quality-Pass, Eval-Framework-Er
 
 ### tom-wiki Quality-Pass (QUAL)
 
-- [ ] **QUAL-01**: `claude-memory-compiler/tom_tools/wiki_query.py` hat neuen, stärkeren System-Prompt der präzise Antworten + Quellen-Zitation verlangt
-- [ ] **QUAL-02**: Context-Filter reduziert den an `gemme` übergebenen Kontext auf nur Index + relevante Artikel (statt alle) — per Keyword-Matching aus Query
-- [ ] **QUAL-03**: Antworten von `tom-wiki` zitieren mindestens eine Quell-Datei explizit per Wiki-Link oder Dateiname
-- [ ] **QUAL-04**: Smoke-Test: `tom-wiki "Was ist TurboQuant?"` liefert präzisere Antwort als Baseline (nicht generisch, verweist auf `turboquant.md`)
-- [ ] **QUAL-05**: Patches sind in `claude-memory-compiler/TOM-PATCHES.md` dokumentiert
-- [ ] **QUAL-06**: Maximus_OS-Issue an CTO dokumentiert Quality-Pass + Before/After-Beispiel
+- [x] **QUAL-01**: `claude-memory-compiler/tom_tools/wiki_query.py` hat neuen, stärkeren System-Prompt der präzise Antworten + Quellen-Zitation verlangt
+- [x] **QUAL-02**: Context-Filter reduziert den an `gemme` übergebenen Kontext auf nur Index + relevante Artikel (statt alle) — per Keyword-Matching aus Query
+- [x] **QUAL-03**: Antworten von `tom-wiki` zitieren mindestens eine Quell-Datei explizit per Wiki-Link oder Dateiname
+- [x] **QUAL-04**: Smoke-Test: `tom-wiki "Was ist TurboQuant?"` liefert präzisere Antwort als Baseline (nicht generisch, verweist auf `turboquant.md`)
+- [x] **QUAL-05**: Patches sind in `claude-memory-compiler/TOM-PATCHES.md` dokumentiert
+- [x] **QUAL-06**: Maximus_OS-Issue an CTO dokumentiert Quality-Pass + Before/After-Beispiel
 
 ### Eval-Framework-Erweiterung (EVAL)
 
@@ -218,12 +218,12 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | CRON-04 | Phase 22 | Complete |
 | CRON-05 | Phase 22 | Complete |
 | CRON-06 | Phase 22 | Complete |
-| QUAL-01 | Phase 23 | Pending |
-| QUAL-02 | Phase 23 | Pending |
-| QUAL-03 | Phase 23 | Pending |
-| QUAL-04 | Phase 23 | Pending |
-| QUAL-05 | Phase 23 | Pending |
-| QUAL-06 | Phase 23 | Pending |
+| QUAL-01 | Phase 23 | Complete |
+| QUAL-02 | Phase 23 | Complete |
+| QUAL-03 | Phase 23 | Complete |
+| QUAL-04 | Phase 23 | Complete |
+| QUAL-05 | Phase 23 | Complete |
+| QUAL-06 | Phase 23 | Complete |
 | EVAL-01 | Phase 24 | Pending |
 | EVAL-02 | Phase 24 | Pending |
 | EVAL-03 | Phase 24 | Pending |

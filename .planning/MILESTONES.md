@@ -115,8 +115,11 @@ Siehe `.planning/ROADMAP.md` für Phasen-Details, `.planning/briefings/v1.4-CEO-
 - Phase 33 — `29a734e` docs(phase-33): Obsidian-Doku-Backfill + Arbeits-Routine
 - Phase 34 — `4e08696` docs(phase-34): Plugin-Audit + ADR-003/004 + CLAUDE.md-Update
 - Phase 35 — `3a3cff8` feat(phase-35): Web-Clipper-Template-System
+- Phase 35-Hotfix — *(pending commit)* fix(phase-35-hotfix): Web-Clipper-Interpreter-Integration (Ollama/gemme)
 
-**Maximus_OS Audit-Trail:** FAM-153 (CEO Mini-Close-Issue, priority=medium, 2026-04-10)
+**Maximus_OS Audit-Trail:** FAM-153 (CEO Mini-Close-Issue, priority=medium, 2026-04-10), FAM-154 (CTO Hotfix + Ollama-Models-Blocker, priority=medium, 2026-04-10)
+
+**Phase 35-Hotfix — Web-Clipper-Interpreter:** Direkt nach Phase-35-Close hat Maxim festgestellt, dass das native Interpreter-Feature der Browser-Extension übersehen wurde. Hotfix führt Interpreter-basiertes Clip-Zeit-Enrichment ein (`summary`, `tags`, `konzepte_vorschlaege` direkt im Template via `{{"prompt"}}`-Blöcke → lokaler `gemme`-Call). CORS via `launchctl setenv OLLAMA_ORIGINS`. `tom-clip-enrich` bleibt als Fallback + Konzept-Queue-Writer (`--queue-only`). 7 neue Requirements (CLIP141-07..13), ADR-005, `clip_enrich.py`-Patch (Skip-if-present + `--queue-only`). Analog-Fall: Phase 29-Hotfix (`6ec745d`). Smoke-Test (CLIP141-13) bleibt Maxim-Handoff, blockiert durch separat entdeckten Ollama-Models-Path-Defekt (siehe FAM-154).
 
 **Neue Werkzeuge / Artefakte:**
 - **Obsidian-Doku-Routine pro GSD-Phase** — neue CLAUDE.md-Sektion "Mandatory pro GSD-Phase" mit 4-Punkte-Checklist (Phase-Note / Journal / Entscheidungen / Dashboard)

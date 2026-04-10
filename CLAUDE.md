@@ -155,16 +155,24 @@ Erst nach diesen 4 Schritten gilt die Phase als wirklich abgeschlossen. Die best
 5. Personen → `90_Wiki/personen/` (fachliche/öffentliche Personen, NICHT Familie — die liegen in `10_Personen/`)
 6. Alle Indizes aktualisieren
 
-### Web-Clipper-Flow (seit v1.4.1 Phase 35)
+### Web-Clipper-Flow (seit v1.4.1 Phase 35, überarbeitet in Phase 35-Hotfix)
 
-Für Browser-Clippings nutzt Maxim typ-spezifische Templates in `$TOM_VAULT/99_Vorlagen/web-clipper/` (7 Templates: Artikel, Paper, Video, Dokument, Social-Post, Rezept, Werkzeug). Jedes Template schreibt in seinen Ziel-Unterordner unter `Clippings/<Typ>/` mit Tom-konformem Frontmatter (`type`, `source`, `enriched: false`).
+Für Browser-Clippings nutzt Maxim typ-spezifische Templates in `$TOM_VAULT/99_Vorlagen/web-clipper/` (7 Templates: Artikel, Paper, Video, Dokument, Social-Post, Rezept, Werkzeug). Jedes Template schreibt in seinen Ziel-Unterordner unter `Clippings/<Typ>/` mit Tom-konformem Frontmatter.
 
-Nach dem Clip (manuell, on-demand):
+**Interpreter ist Primary (Phase 35-Hotfix, ADR-005):** Der Obsidian Web Clipper ruft beim Clippen 3 lokale `gemme`-Interpreter-Prompts pro Template auf (`summary`, zusätzliche `tags`, `konzepte_vorschlaege`) und schreibt die Ergebnisse direkt ins Frontmatter. Das Clip-Ergebnis ist sofort angereichert — kein manueller Shell-Call mehr im Normalfall.
+
+**Einmal-Setup:** `launchctl setenv OLLAMA_ORIGINS "chrome-extension://*,moz-extension://*"` + Ollama-Restart, damit die Browser-Extension den lokalen Endpoint erreichen darf. Interpreter-Provider in der Extension: Endpoint `http://127.0.0.1:11434/api/chat`, Model `gemme`. Full-Setup-Dokumentation in `$TOM_VAULT/99_Vorlagen/web-clipper/README.md`.
+
+**`tom-clip-enrich` bleibt als Fallback + Queue-Writer:**
 ```bash
-tom-clip-enrich "$TOM_VAULT/Clippings/Artikel/meine-datei.md"
+# Fallback (Interpreter war offline / CORS falsch → Felder enthalten Roh-Prompts)
+tom-clip-enrich "$TOM_VAULT/Clippings/Artikel/meine-datei.md" --force
+
+# Konzepte in 90_Wiki/konzepte-vorschlaege.md übernehmen ohne Frontmatter zu ändern
+tom-clip-enrich "$TOM_VAULT/Clippings/Artikel/meine-datei.md" --queue-only
 ```
 
-Das liefert Summary + Tags + Konzept-Vorschläge + Wiki-Kategorie-Vorschlag. Idempotent via `enriched: true` Flag. Details: `$TOM_VAULT/99_Vorlagen/web-clipper/README.md`.
+`enriched_by: gemme-interpreter | tom-clip-enrich` im Frontmatter unterscheidet die Herkunft. Idempotenz über `enriched in (clip-time | true | tom-clip-enrich)`. Details: ADR-005 in `.planning/obsidian-plugin-config/`.
 
 ## Wissens-Kaskade (seit v1.2)
 

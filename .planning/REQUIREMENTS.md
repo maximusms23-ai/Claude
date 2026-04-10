@@ -360,7 +360,7 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | DOC141-06 | Phase 33 | Complete |
 
 **Coverage:**
-- v1.4.1 requirements: DOC141-01..06 (Phase 33) + OBPL141-01..05 (Phase 34) + CLIP141-01..06 (Phase 35)
+- v1.4.1 requirements: DOC141-01..06 (Phase 33) + OBPL141-01..05 (Phase 34) + CLIP141-01..06 (Phase 35) + CLIP141-07..13 (Phase 35-Hotfix)
 - v1.4 requirements: 42 total (6 DOC14 + 7 TDOC + 7 OBPL inkl. Hotfix OBPL-06/07 + 8 CLIP + 4 LOCAL + 10 CLOSE14 inkl. Plugin-Landscape 08/09/10), mapped to phases: 42, unmapped: 0 ✓
 - v1.3 requirements: 30 total (shipped)
 - v1.2 requirements: 43 total (shipped)
@@ -391,9 +391,21 @@ Kleine Bridge-Phase zwischen v1.4-Close und v1.5-Kickoff. Drei Themen: Obsidian-
 - [x] **CLIP141-01**: `$TOM_VAULT/99_Vorlagen/web-clipper/` mit 7 Templates (Artikel, Paper, Video, Dokument, Social-Post, Rezept, Werkzeug) + README.md
 - [x] **CLIP141-02**: `$TOM_VAULT/Clippings/{Artikel,Paper,Videos,Dokumente,Social,Rezepte,Werkzeuge}/` Zielordner (mit README-Stubs)
 - [x] **CLIP141-03**: Browser-Extension-Konfigurations-Doku in `web-clipper/README.md`
-- [~] **CLIP141-04**: Smoke-Test (1 echter Clip + `tom-clip-enrich`-Lauf + Idempotenz-Check) — **Maxim-Handoff, prepared-pending**
+- [~] **CLIP141-04**: ~~Smoke-Test (1 echter Clip + `tom-clip-enrich`-Lauf + Idempotenz-Check)~~ **ersetzt durch CLIP141-13** im Phase-35-Hotfix (Interpreter-Pfad statt Post-hoc)
 - [x] **CLIP141-05**: `CLAUDE.md` "Ingesting New Sources" um Web-Clipper-Flow-Subsektion ergänzt
 - [x] **CLIP141-06**: `tom-clip-enrich`-Anleitung in `web-clipper/README.md` referenziert
+
+### Web-Clipper-Interpreter-Integration — Phase 35-Hotfix (CLIP141-07..13)
+
+- [x] **CLIP141-07**: `OLLAMA_ORIGINS` persistent via `launchctl setenv` auf `chrome-extension://*,moz-extension://*` gesetzt; CORS-Preflight im README dokumentiert
+- [x] **CLIP141-08**: Interpreter-Provider-Setup dokumentiert in `web-clipper/README.md` Abschnitt 2 (Endpoint `http://127.0.0.1:11434/api/chat`, Model `gemme`)
+- [x] **CLIP141-09**: Alle 7 Templates mit 3 Interpreter-Prompts (`summary`, `tags`-Ergänzung, `konzepte_vorschlaege`) refaktoriert inkl. typ-spezifischer Prompt-Formulierung und "Betrachte nur die ersten X Zeichen"-Hinweis
+- [x] **CLIP141-10**: ADR-005 `adr-005-web-clipper-interpreter-vs-clip-enrich.md` in `.planning/obsidian-plugin-config/` angelegt
+- [x] **CLIP141-11**: `web-clipper/README.md` überarbeitet — Interpreter-Setup als Primary, CORS-Troubleshooting, `tom-clip-enrich` auf Fallback-Rolle + `--queue-only` dokumentiert
+- [x] **CLIP141-12**: `CLAUDE.md` Web-Clipper-Flow-Sektion aktualisiert — Interpreter-Primary, `--queue-only` erwähnt, ADR-005-Verweis
+- [~] **CLIP141-13**: Smoke-Test mit echtem Clip über Interpreter-Pfad + Fallback-Test — **Maxim-Handoff, prepared-pending** (Voraussetzung: Ollama-Models-Path wiederhergestellt, siehe FAM-154)
+
+**Code-Patch (v1.4.1 Phase 35-Hotfix):** `claude-memory-compiler/tom_tools/clip_enrich.py` mit `--queue-only`-Flag + erweitertes Skip-Gate für `enriched in (clip-time | tom-clip-enrich)` + `enriched_by`-Feld im Standard-Pfad. Rückwärts-kompatibel zu Phase-30-Legacy-Clippings.
 
 ---
 *Requirements defined: 2026-04-10*

@@ -46,4 +46,75 @@ Um CLIP141-04 zu schließen, muss Maxim folgende Schritte manuell ausführen:
 ## Notes
 
 - Phase 35 folgt der neuen Dogfooding-Regel aus Phase 33: Phase-35-Note im Vault, Journal-Update, keine neuen Entscheidungen (reine Feature-Implementation).
-- `tom-clip-enrich` wird laut Phase-30-Summary nicht verändert — der Enricher akzeptiert bereits beliebige Pfade unter `Clippings/`, die neuen Unterordner funktionieren out-of-the-box.
+- `tom-clip-enrich` wird laut Phase-30-Summary nicht verändert — der Enricher akzeptiert bereits beliebige Pfade unter `Clippings/`, die neuen Unterordner funktionieren out-of-the-box. *(Nachtrag Phase 35-Hotfix: `--queue-only` Mode + `enriched_by` Feld hinzugefügt, siehe Addendum unten)*
+
+---
+
+## Phase 35-Hotfix Addendum — Web-Clipper-Interpreter-Integration
+
+**Hotfix-Date:** 2026-04-10
+**Hotfix-Commit:** *(wird nach Commit hier eingetragen)*
+**Trigger:** Maxim-Feststellung direkt nach Phase-35-Close: "Web Clipper wurde nicht angepasst, ich sehe keine Ollama-/Gemma4-Implementierung" — Phase 35 hatte das native Interpreter-Feature des Obsidian Web Clippers übersehen und nur den Post-hoc-Pfad über `tom-clip-enrich` gebaut.
+
+**Scope:** Korrektur einer unvollständigen Integration aus derselben Phase — analog Phase 29-Hotfix (Smart Connections Privacy-Leak). Kein neuer Milestone, kein neues Phasen-Verzeichnis.
+
+### Hotfix Success Criteria
+
+| # | Criterion | Evidence | Status |
+|---|-----------|----------|--------|
+| H1 | `OLLAMA_ORIGINS` persistent via `launchctl setenv` auf Browser-Extension-Scope | `launchctl getenv OLLAMA_ORIGINS` → `chrome-extension://*,moz-extension://*` | ✓ |
+| H2 | Alle 7 Templates mit ≥3 Interpreter-Prompts refaktoriert | `grep -c '{{"' Artikel.md Paper.md Video.md Dokument.md Social-Post.md Rezept.md Werkzeug.md` jeweils ≥ 3 | ✓ |
+| H3 | Typ-spezifische Prompt-Formulierungen pro Template | Code-Review der 7 Templates | ✓ |
+| H4 | `web-clipper/README.md` Interpreter-Setup-Sektion + CORS-Troubleshooting | Sektion 1 ("Ollama mit CORS-Origins") + Sektion 2 ("Interpreter-Provider") + erweitertes Troubleshooting | ✓ |
+| H5 | `clip_enrich.py --queue-only` Mode + Skip-if-present-Logik | Dry-Run-Tests: `queue-only` gibt Konzepte zurück; `enriched: clip-time` wird als skip erkannt | ✓ |
+| H6 | `enriched_by`-Feld wird von `clip_enrich.py` im Standard-Pfad gesetzt | Code-Review `enrich_file()` Zeile "new_fm['enriched_by'] = 'tom-clip-enrich'" | ✓ |
+| H7 | ADR-005 `.planning/obsidian-plugin-config/adr-005-web-clipper-interpreter-vs-clip-enrich.md` | Datei existiert, 4 Sektionen (Context, Decision, Consequences, Alternatives) | ✓ |
+| H8 | `CLAUDE.md` Web-Clipper-Flow-Sektion aktualisiert: "Interpreter ist Primary" | Sektion Zeilen 158-ff | ✓ |
+| H9 | REQUIREMENTS.md CLIP141-07..13 additiv | Zeilen 399+ | ✓ |
+| H10 | Vault-Doku-Routine (Phase-Note + Journal + Entscheidungen + index.md + log.md) | Alle 4 Punkte der "Mandatory pro GSD-Phase"-Checklist | ✓ |
+| H11 | Maxim-Handoff Smoke-Test: 1 echter Clip → gefüllte Interpreter-Felder | Maxim-Handoff (CLIP141-13) | ⏳ |
+| H12 | Maxim-Handoff Fallback-Test: Ollama offline → `--force` füllt Felder | Maxim-Handoff | ⏳ |
+| H13 | Maxim-Handoff `--queue-only`: Konzepte landen in `90_Wiki/konzepte-vorschlaege.md` ohne Frontmatter-Overwrite | Maxim-Handoff | ⏳ |
+
+### Hotfix Requirements
+
+| Req | Status | Evidence |
+|-----|--------|----------|
+| CLIP141-07 | ✓ | `launchctl getenv OLLAMA_ORIGINS` |
+| CLIP141-08 | ✓ | `web-clipper/README.md` Abschnitt 2 |
+| CLIP141-09 | ✓ | 7 Templates refaktoriert |
+| CLIP141-10 | ✓ | `adr-005-web-clipper-interpreter-vs-clip-enrich.md` |
+| CLIP141-11 | ✓ | `web-clipper/README.md` v2 |
+| CLIP141-12 | ✓ | `CLAUDE.md` Web-Clipper-Flow v2 |
+| CLIP141-13 | ⏳ | Maxim-Handoff Smoke-Test (prepared-pending) |
+
+### Dependencies / Blocker für Smoke-Test
+
+**Blocker für CLIP141-13:** Bei der Ausführung des Hotfix wurde entdeckt, dass der Ollama-Models-Symlink `/Users/maxim/.ollama/models → /Volumes/Archiv/Ollama` ins Leere zeigt (Volume gemounted, aber Ordner weg). `ollama serve` startet deshalb nicht sauber. `/Users/maxim/.ollama/models_backup/` existiert mit Blobs+Manifests und ist ein plausibler Wiederherstellungs-Kandidat — aber Tom hat das **nicht angefasst**, weil es außerhalb des Hotfix-Scopes liegt und Maxim entscheiden muss, ob die Models zurück auf das externe Volume kommen oder der Symlink auf `models_backup` umgebogen wird.
+
+Das wurde in **FAM-154 an CTO** dokumentiert. Bis Ollama wieder läuft, bleibt CLIP141-13 im Status `prepared-pending`.
+
+### Maxim-Handoff Steps (CLIP141-13)
+
+1. **Ollama-Models wiederherstellen** (siehe FAM-154)
+2. **Ollama neu starten**: Menüleisten-Icon → Quit → `open -a Ollama` → `pgrep -fl "ollama serve"` sollte Prozess zeigen
+3. **CORS-Preflight**: `curl -sI -H "Origin: chrome-extension://x" http://127.0.0.1:11434/api/tags | grep -i access-control`
+4. **Browser-Extension Settings → Interpreter**: Neuer Provider "Ollama" mit Endpoint `http://127.0.0.1:11434/api/chat`, Model `gemme`
+5. **Template im Editor öffnen** (z.B. `Tom-Artikel`) — Toggle "Interpreter enabled" aktivieren
+6. **Test-Clip** einer Wikipedia-Seite mit `Tom-Artikel`-Template → Datei in `Clippings/Artikel/`
+7. **Verifikation Frontmatter**:
+   - `summary`: 3–5 deutsche Sätze (keine Roh-Prompt mehr)
+   - `tags`: über die 2 Static-Tags hinaus 3–5 weitere
+   - `konzepte_vorschlaege`: Komma-Liste mit 2–4 Einträgen
+   - `enriched: clip-time`
+   - `enriched_by: gemme-interpreter`
+8. **`tom-clip-enrich --queue-only <file>`** → Konzept-Einträge in `$TOM_VAULT/90_Wiki/konzepte-vorschlaege.md`; Frontmatter bleibt unverändert
+9. **Fallback-Test**: Ollama stoppen (`killall ollama`), erneut clippen → Felder enthalten Roh-Prompts → `tom-clip-enrich <file>` ohne `--queue-only` (Standard-Modus mit `--force` falls nötig) füllt sie nachträglich mit `enriched_by: tom-clip-enrich`
+
+### Was im Hotfix NICHT enthalten ist
+
+- mcp-tools-Integration (v1.5-Kandidat, ADR-004)
+- marker-api OCR-Upgrade (v1.5+)
+- Ollama-Models-Path-Fix (out-of-scope, Maxim-Entscheidung via FAM-154)
+- Single-Prompt-JSON-Interpreter (v1.5+ Konsolidierung, wenn Extension-Feature klar ist)
+- Voll-Deprecation von `tom-clip-enrich`

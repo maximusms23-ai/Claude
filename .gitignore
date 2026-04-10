@@ -8,3 +8,11 @@ Obsidian/PROJEKTE.md
 # /Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw/
 # Lokaler Pfad darf nicht mehr mitkommen (v1.1 Phase 8).
 Obsidian_Zentralw/
+
+# claude-memory-compiler venv (regenerated via uv sync)
+claude-memory-compiler/.venv/
+claude-memory-compiler/scripts/state.json
+claude-memory-compiler/scripts/last-flush.json
+claude-memory-compiler/scripts/*.log
+claude-memory-compiler/scripts/session-flush-*
+claude-memory-compiler/scripts/flush-context-*

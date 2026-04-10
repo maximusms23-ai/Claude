@@ -49,7 +49,7 @@ v1.3: [ ] Phase 22  [ ] Phase 23  [ ] Phase 24  [ ] Phase 25  [ ] Phase 26
 - **Zwei Wissens-Räume**: `90_Wiki/` (public, MkDocs) und `95_Gehirn/` (privat, NIE publiziert)
 - **claude-memory-compiler als externes Tool** in `/Users/maxim/Claude/claude-memory-compiler/`, gepatcht auf `$TOM_VAULT/95_Gehirn/`, Patches in `TOM-PATCHES.md`
 - **Hooks projekt-lokal** in `/Users/maxim/Claude/.claude/settings.json`, merged mit globalen GSD+RTK Hooks
-- **Karpathy Index-first als Primary**: `tom-wiki` lädt Index + Artikel, `gemme` synthetisiert lokal. RAG als Fallback. **Schwelle v1.3: 1500 Artikel** (vorher 500)
+- **Karpathy Index-first als Primary**: `tom-wiki` lädt Index + Artikel, `gemme` synthetisiert lokal. RAG als Fallback. **Schwelle: 500 Artikel** (v1.3-Entscheidung: bleibt unverändert, keine Anhebung)
 - **RAG dritte Collection `gehirn`** additiv in `Gemma/rag/`
 - **Lokale Ollama statt Claude Agent SDK** für `tom-wiki` (Anthropic-SDK-Clarification in v1.3)
 
@@ -66,7 +66,7 @@ Phasen 22–26 in `.planning/ROADMAP.md` vollständig beschrieben.
 1. Phase 22: Compile-Automation via launchd + fehlertoleranter Wrapper `tom-compile-safe`
 2. Phase 23: `tom-wiki` Quality-Pass (Prompt + Context-Filter + Quellen-Zitation)
 3. Phase 24: Eval-Framework erweitert um Brain-Artikel + Side-by-Side-Vergleich
-4. Phase 25: Doku Karpathy-Schwelle 1500 + Umstiegspfad (reine Doku-Phase)
+4. Phase 25: Doku Karpathy-Schwelle 500 bestätigt + Skalierungs-Stufen (reine Doku-Phase)
 5. Phase 26: Anthropic-SDK-Clarification + Milestone-Close
 
 ## Open Questions (deferred)

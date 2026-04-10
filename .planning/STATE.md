@@ -6,9 +6,9 @@ status: executing
 last_updated: "2026-04-10T18:50:00.000Z"
 progress:
   total_phases: 6
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 4
+  total_plans: 4
+  completed_plans: 4
 ---
 
 # State: Tom v1.4
@@ -22,17 +22,19 @@ See: `.planning/PROJECT.md` (updated 2026-04-10)
 
 ## Current Position
 
-Phase: 28 — tom-doc CLI — ✓ COMPLETE
-Next: Phase 29 (Smart Connections) ‖ Phase 30 (Clipper Enrichment)
-Status: Ready for Wave 2 (29 + 30 parallelisierbar)
-Last activity: 2026-04-10 — Phase 28 shipped (TDOC-01..07)
+Phases: 27 ✓, 28 ✓, 29 ✓ (mit Maxim-UI-Handoff für Plugin-Aktivierung), 30 ✓
+Next: Phase 31 — Token-Spar-Lokalisierung
+Status: Wave 2 done, Phase 31 unabhängig
+Last activity: 2026-04-10 — Phase 29 + 30 shipped parallel
 
 ## Progress
 
 ```
-v1.4: [x] Phase 27  [x] Phase 28  [ ] Phase 29  [ ] Phase 30  [ ] Phase 31  [ ] Phase 32
-       33%                                                                              100%
+v1.4: [x] Phase 27  [x] Phase 28  [~] Phase 29  [x] Phase 30  [ ] Phase 31  [ ] Phase 32
+       67%                                                                              100%
 ```
+
+Phase 29 hat einen expliziten Maxim-UI-Handoff (Plugin-Aktivierung in Obsidian Settings) der separat verifiziert werden muss nach dem nächsten Obsidian-Start.
 
 ## Phase 27 Decisions
 

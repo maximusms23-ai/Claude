@@ -1,0 +1,53 @@
+{
+  "_meta": {
+    "description": "Smart Connections Plugin Config-Backup (Tom v1.4 Phase 29)",
+    "plugin_version": "4.3.0",
+    "vault_path": "$TOM_VAULT",
+    "backup_created": "2026-04-10",
+    "rationale": "Reproducibility bei Vault-Restore oder Plugin-Reinit. Die Ollama-Settings müssen nach Plugin-Aktivierung in Obsidian UI gesetzt werden (siehe activation_steps)."
+  },
+
+  "plugin_id": "smart-connections",
+  "enabled_in": ".obsidian/community-plugins.json",
+
+  "recommended_settings": {
+    "embed_model": {
+      "provider": "ollama",
+      "endpoint": "http://localhost:11434",
+      "model": "nomic-embed-text:latest",
+      "rationale": "Bereits in v1.2 via Gemma/rag/.venv installiert (Phase 18). Fast local embedding, 768-dim, deutsches Vokabular OK."
+    },
+    "chat_model": {
+      "provider": "ollama",
+      "endpoint": "http://localhost:11434",
+      "model": "gemme:latest",
+      "rationale": "Custom-Model aus v1.1 Phase 11, basiert auf gemma4:e4b, 8192 Kontext, temperature 0.7. Identisches Modell wie tom-wiki/tom-ask nutzen."
+    },
+    "privacy_exclude_file": ".scignore",
+    "privacy_exclude_rationale": "Nur 90_Wiki/ und 95_Gehirn/knowledge/ dürfen indiziert werden. Alle persönlichen Ordner (10_Personen, 20_Dokumente, 40_Aufgaben, 50_Gesundheit, 60_Finanzen, 70_Hardware, 80_Social_Media) sowie raw/Clippings/Archiv sind in .scignore ausgeschlossen."
+  },
+
+  "activation_steps": [
+    "1. Obsidian öffnen / neustarten",
+    "2. Settings → Community Plugins → 'Smart Connections' sollte sichtbar sein (bereits installiert via Files-Drop)",
+    "3. Plugin aktivieren (Toggle ON)",
+    "4. Settings → Smart Connections → Embed Model → Ollama → nomic-embed-text:latest",
+    "5. Settings → Smart Connections → Chat Model → Ollama → gemme:latest",
+    "6. Smart Connections Panel öffnen (Command: 'Smart Connections: Open Smart View' oder Sidebar-Icon)",
+    "7. Initial-Indexing abwarten (nur 90_Wiki/ + 95_Gehirn/knowledge/ dank .scignore)",
+    "8. Smoke-Test: Query 'TurboQuant' → sollte 90_Wiki/konzepte/turboquant.md finden"
+  ],
+
+  "fallback_plugin_if_smart_connections_unusable": {
+    "name": "Copilot",
+    "id": "copilot",
+    "url": "https://github.com/logancyang/obsidian-copilot",
+    "rationale": "Wenn Smart Connections mit Ollama-Backend Probleme macht (schlechtes UX, Index-Timeouts, falsche Modelle), ist Copilot die dokumentierte Alternative. Kann parallel installiert werden ohne Konflikt."
+  },
+
+  "observability": {
+    "index_location": ".smart-env/ (innerhalb des Vaults)",
+    "exclude_index_from_git": "$TOM_VAULT ist sowieso nicht in git — kein Extra-Aufwand",
+    "size_estimate": "Bei aktuell <100 Dateien in 90_Wiki/ + 95_Gehirn/knowledge/: wenige MB"
+  }
+}

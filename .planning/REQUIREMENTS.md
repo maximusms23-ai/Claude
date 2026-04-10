@@ -29,11 +29,11 @@ Requirements für Dokumenten-Volltext-Fundament, `tom-doc` CLI, Smart-Connection
 
 ### Gemma-in-Obsidian via Community-Plugin (OBPL)
 
-- [ ] **OBPL-01**: Smart Connections Plugin installiert + mit Ollama-Backend konfiguriert (Embedding: `nomic-embed-text`, Chat: `gemme`); Fallback-Option Obsidian Copilot dokumentiert
-- [ ] **OBPL-02**: Plugin-Settings als JSON-Backup in `.planning/obsidian-plugin-config/smart-connections.json`
-- [ ] **OBPL-03**: Smoke-Test: Semantic-Search findet `konzepte/turboquant.md` bei Query "TurboQuant"
-- [ ] **OBPL-04**: Smart Connections indexiert NUR `90_Wiki/` + `95_Gehirn/knowledge/` — NICHT `10_Personen/`, `20_Dokumente/`, `40_Aufgaben/`, `50_Gesundheit/`, `60_Finanzen/` (Privacy via `.scignore` oder Exclude-Liste)
-- [ ] **OBPL-05**: `CLAUDE.md` Wissens-Kaskade dokumentiert neue Option (6) "Ad-hoc im Editor → Smart Connections Panel"
+- [~] **OBPL-01**: Smart Connections Plugin v4.3.0 Files installiert + `.obsidian/community-plugins.json` enabled; **Ollama-Backend-Aktivierung + Smoke-Test muss Maxim im Obsidian UI machen** (Plugin-Toggle + Embed/Chat Model Selection); Fallback-Option Copilot dokumentiert
+- [x] **OBPL-02**: Plugin-Settings + Activation-Steps als JSON-Backup in `.planning/obsidian-plugin-config/smart-connections.json`
+- [~] **OBPL-03**: Smoke-Test: Semantic-Search findet `konzepte/turboquant.md` bei Query "TurboQuant" — **deferred bis Maxim Plugin in Obsidian UI aktiviert + konfiguriert hat**
+- [x] **OBPL-04**: `.scignore` im Vault-Root — nur `90_Wiki/` + `95_Gehirn/knowledge/` erlaubt, alle persönlichen Ordner ausgeschlossen
+- [x] **OBPL-05**: `CLAUDE.md` Wissens-Kaskade Punkt 6: "Ad-hoc im Editor → Smart Connections Panel"
 
 ### Clipper Auto-Enrichment (CLIP)
 
@@ -318,11 +318,11 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | TDOC-05 | Phase 28 | Complete |
 | TDOC-06 | Phase 28 | Complete |
 | TDOC-07 | Phase 28 | Complete |
-| OBPL-01 | Phase 29 | Pending |
-| OBPL-02 | Phase 29 | Pending |
-| OBPL-03 | Phase 29 | Pending |
-| OBPL-04 | Phase 29 | Pending |
-| OBPL-05 | Phase 29 | Pending |
+| OBPL-01 | Phase 29 | Files Installed (Maxim-Aktivierung pending) |
+| OBPL-02 | Phase 29 | Complete |
+| OBPL-03 | Phase 29 | Pending Smoke-Test (braucht Maxim UI-Aktivierung) |
+| OBPL-04 | Phase 29 | Complete |
+| OBPL-05 | Phase 29 | Complete |
 | CLIP-01 | Phase 30 | Complete |
 | CLIP-02 | Phase 30 | Complete |
 | CLIP-03 | Phase 30 | Complete |

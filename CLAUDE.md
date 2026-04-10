@@ -166,6 +166,11 @@ Bei jeder Wissensfrage nutze Tom **in dieser Reihenfolge**:
    - Subcommands: `index`, `search`, `list`, `show`
    - Für Arbeitsverträge, Arztberichte, Rechnungen, Verträge etc.
    - **Privacy**: Index bleibt lokal in `/Users/maxim/Claude/archivum/`, NIE im Wiki
+6. **Ad-hoc im Editor (Semantic-Search)** → Smart Connections Panel in Obsidian (seit v1.4)
+   - Community-Plugin mit Ollama-Backend (`nomic-embed-text` + `gemme`)
+   - Indiziert NUR `90_Wiki/` + `95_Gehirn/knowledge/` dank `.scignore`
+   - Für schnelle "verwandte Notizen"-Lookups beim Schreiben
+   - Fallback wenn aus Obsidian heraus keine CLI verfügbar ist
 
 Weitere Brain-Tools:
 - `tom-compile` — Kompiliert daily-logs → knowledge-Artikel (täglich oder manuell)

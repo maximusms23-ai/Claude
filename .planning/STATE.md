@@ -6,9 +6,9 @@ status: executing
 last_updated: "2026-04-10T18:50:00.000Z"
 progress:
   total_phases: 6
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
 ---
 
 # State: Tom v1.4
@@ -22,16 +22,16 @@ See: `.planning/PROJECT.md` (updated 2026-04-10)
 
 ## Current Position
 
-Phase: 27 — OCR-Toolkette + Archiv-Fundament — ✓ COMPLETE
-Next: Phase 28 — tom-doc CLI
-Status: Ready to plan next phase
-Last activity: 2026-04-10 — Phase 27 shipped (DOC14-01..06)
+Phase: 28 — tom-doc CLI — ✓ COMPLETE
+Next: Phase 29 (Smart Connections) ‖ Phase 30 (Clipper Enrichment)
+Status: Ready for Wave 2 (29 + 30 parallelisierbar)
+Last activity: 2026-04-10 — Phase 28 shipped (TDOC-01..07)
 
 ## Progress
 
 ```
-v1.4: [x] Phase 27  [ ] Phase 28  [ ] Phase 29  [ ] Phase 30  [ ] Phase 31  [ ] Phase 32
-       17%                                                                              100%
+v1.4: [x] Phase 27  [x] Phase 28  [ ] Phase 29  [ ] Phase 30  [ ] Phase 31  [ ] Phase 32
+       33%                                                                              100%
 ```
 
 ## Phase 27 Decisions

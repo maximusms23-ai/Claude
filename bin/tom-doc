@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+# tom-doc — Volltext-Zugriff auf Maxims Dokumenten-Archiv (15 Kategorien)
+#
+# Zweck: Tom/Maxim können Volltext-Fragen an persönliche Dokumente stellen —
+# Arbeitsverträge, Arztberichte, Rechnungen, Verträge etc. — ohne sie manuell
+# aufzublättern. Der Index ist SQLite FTS5 mit deutscher Diakritik-Normalisierung.
+#
+# Usage:
+#   tom-doc index [kategorie]       # Scant Archiv-Kategorie, OCR neuer PDFs
+#   tom-doc index --all             # Alle 15 Kategorien
+#   tom-doc index --file <pfad>     # Einzelnes PDF
+#   tom-doc search "query"          # FTS5-Query mit Snippets
+#   tom-doc list [kategorie]        # Liste indizierter Dokumente
+#   tom-doc show <id|pfad|datei>    # Metadaten + Text-Auszug eines Dokuments
+#
+# Beispiele:
+#   tom-doc index "07 Verträge"
+#   tom-doc search "Arbeitsvertrag"
+#   tom-doc list
+#   tom-doc show 1
+#
+# Unterschied zu tom-wiki / tom-ask:
+#   tom-wiki = Öffentliches Wiki (90_Wiki/) via Karpathy Index-first
+#   tom-ask  = Gemma RAG gegen Wiki + Clippings + Gehirn (fuzzy)
+#   tom-doc  = Persönliche Dokumente (Archiv) via SQLite FTS5 (Volltext)
+
+set -euo pipefail
+
+ARCHIVUM_DIR="/Users/maxim/Claude/archivum"
+PIPELINE="$ARCHIVUM_DIR/ocr_pipeline.py"
+
+if [[ ! -f "$PIPELINE" ]]; then
+  echo "error: ocr_pipeline.py nicht gefunden unter $PIPELINE" >&2
+  exit 1
+fi
+
+usage() {
+  cat <<EOF
+tom-doc — Volltext-Zugriff auf das Dokumenten-Archiv
+
+Commands:
+  tom-doc index [kategorie]       Scant Archiv-Kategorie, OCR neuer PDFs
+  tom-doc index --all             Alle 15 Kategorien
+  tom-doc index --file <pfad>     Einzelnes PDF indizieren
+  tom-doc search "query"          FTS5-Volltext-Suche mit Snippets
+  tom-doc list [kategorie]        Liste indizierter Dokumente
+  tom-doc show <id|pfad|datei>    Metadaten + Text-Auszug
+
+Optionen:
+  --limit N                       Trefferlimit für search (default 10)
+  --excerpt N                     Auszug-Länge für show in Zeichen (default 2000)
+
+Beispiele:
+  tom-doc index "07 Verträge"
+  tom-doc index --all
+  tom-doc search "Gehalt" --limit 5
+  tom-doc list "06 Arzt"
+  tom-doc show 1 --excerpt 500
+EOF
+}
+
+if [[ $# -eq 0 || "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
+cmd="$1"
+shift
+
+case "$cmd" in
+  index)
+    if [[ $# -eq 0 ]]; then
+      echo "error: 'index' braucht [kategorie] oder --all oder --file <pfad>" >&2
+      exit 1
+    fi
+    case "$1" in
+      --all)
+        exec python3 "$PIPELINE" --all
+        ;;
+      --file)
+        shift
+        [[ $# -ge 1 ]] || { echo "error: --file braucht einen Pfad" >&2; exit 1; }
+        exec python3 "$PIPELINE" --file "$1" "${@:2}"
+        ;;
+      *)
+        exec python3 "$PIPELINE" --category "$1"
+        ;;
+    esac
+    ;;
+
+  search)
+    [[ $# -ge 1 ]] || { echo "error: 'search' braucht eine Query" >&2; exit 1; }
+    query="$1"
+    shift
+    exec python3 "$PIPELINE" --search "$query" "$@"
+    ;;
+
+  list)
+    if [[ $# -eq 0 ]]; then
+      exec python3 "$PIPELINE" --list
+    else
+      exec python3 "$PIPELINE" --list "$1"
+    fi
+    ;;
+
+  show)
+    [[ $# -ge 1 ]] || { echo "error: 'show' braucht <id|pfad|datei|sha>" >&2; exit 1; }
+    ident="$1"
+    shift
+    exec python3 "$PIPELINE" --show "$ident" "$@"
+    ;;
+
+  -h|--help|help)
+    usage
+    ;;
+
+  *)
+    echo "error: unbekanntes Kommando '$cmd'" >&2
+    usage
+    exit 1
+    ;;
+esac

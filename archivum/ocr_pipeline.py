@@ -279,6 +279,58 @@ def search(query: str, limit: int = 10) -> list[dict]:
         conn.close()
 
 
+def list_documents(category: str | None = None) -> list[dict]:
+    conn = db_connect()
+    try:
+        if category:
+            rows = conn.execute(
+                "SELECT id, category, filename, path, pages, size_bytes, indexed_at "
+                "FROM documents WHERE category = ? ORDER BY filename",
+                (category,),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT id, category, filename, path, pages, size_bytes, indexed_at "
+                "FROM documents ORDER BY category, filename"
+            ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def show_document(identifier: str, excerpt_chars: int = 2000) -> dict | None:
+    """Identifier can be: numeric id, full path, filename, or sha256 prefix."""
+    conn = db_connect()
+    try:
+        row = None
+        if identifier.isdigit():
+            row = conn.execute("SELECT * FROM documents WHERE id=?", (int(identifier),)).fetchone()
+        if row is None:
+            row = conn.execute("SELECT * FROM documents WHERE path=?", (identifier,)).fetchone()
+        if row is None:
+            row = conn.execute(
+                "SELECT * FROM documents WHERE filename=? LIMIT 1", (identifier,),
+            ).fetchone()
+        if row is None and len(identifier) >= 6:
+            row = conn.execute(
+                "SELECT * FROM documents WHERE sha256 LIKE ? LIMIT 1", (identifier + "%",),
+            ).fetchone()
+        if row is None:
+            return None
+        doc = dict(row)
+        cache_file = OCR_CACHE / f"{doc['sha256']}.txt"
+        if cache_file.exists():
+            text = cache_file.read_text(errors="replace")
+            doc["excerpt"] = text[:excerpt_chars]
+            doc["total_chars"] = len(text)
+        else:
+            doc["excerpt"] = "(OCR cache missing)"
+            doc["total_chars"] = 0
+        return doc
+    finally:
+        conn.close()
+
+
 # ── CLI ─────────────────────────────────────────────────────────────────────
 
 
@@ -290,7 +342,11 @@ def main() -> int:
     g.add_argument("--category", type=str, help="Index all PDFs in an Archiv category")
     g.add_argument("--all", action="store_true", help="Index all Archiv categories")
     g.add_argument("--search", type=str, help="Search the FTS5 index")
+    g.add_argument("--list", dest="list_cat", nargs="?", const="", help="List indexed documents (optional: by category)")
+    g.add_argument("--show", type=str, help="Show metadata + excerpt for a document (id/path/filename/sha prefix)")
     p.add_argument("--category-name", type=str, default=None, help="Override derived category for --file")
+    p.add_argument("--limit", type=int, default=10, help="Limit search results (default 10)")
+    p.add_argument("--excerpt", type=int, default=2000, help="Excerpt size in chars for --show (default 2000)")
     args = p.parse_args()
 
     init_db()  # Always ensure schema exists
@@ -319,7 +375,7 @@ def main() -> int:
         return 0
 
     if args.search:
-        hits = search(args.search)
+        hits = search(args.search, limit=args.limit)
         if not hits:
             print(f"No matches for: {args.search}")
             return 0
@@ -328,6 +384,41 @@ def main() -> int:
             print(f"  {h['snippet']}")
             print(f"  → {h['path']}")
             print()
+        return 0
+
+    if args.list_cat is not None:
+        cat = args.list_cat or None
+        docs = list_documents(cat)
+        if not docs:
+            print(f"No documents indexed" + (f" in '{cat}'" if cat else ""))
+            return 0
+        header = f"Indexed documents" + (f" in '{cat}'" if cat else "") + f" ({len(docs)})"
+        print(header)
+        print("-" * len(header))
+        for d in docs:
+            size_kb = (d.get("size_bytes") or 0) // 1024
+            print(f"  [{d['id']:>3}] [{d['category'] or '?'}] {d['filename']}  ({d.get('pages') or '?'}p, {size_kb}KB)")
+        return 0
+
+    if args.show:
+        doc = show_document(args.show, excerpt_chars=args.excerpt)
+        if doc is None:
+            print(f"Not found: {args.show}", file=sys.stderr)
+            return 1
+        print(f"ID:         {doc['id']}")
+        print(f"Filename:   {doc['filename']}")
+        print(f"Category:   {doc['category']}")
+        print(f"Path:       {doc['path']}")
+        print(f"SHA256:     {doc['sha256']}")
+        print(f"Size:       {doc['size_bytes']} bytes")
+        print(f"Pages:      {doc['pages']}")
+        print(f"Indexed:    {doc['indexed_at']}")
+        print(f"Total text: {doc['total_chars']} chars")
+        print()
+        print("── Excerpt ──")
+        print(doc["excerpt"])
+        if doc["total_chars"] > len(doc["excerpt"]):
+            print(f"\n[… {doc['total_chars'] - len(doc['excerpt'])} more chars truncated]")
         return 0
 
     return 1

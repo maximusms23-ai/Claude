@@ -133,7 +133,7 @@ Wenn einer dieser Punkte ausgelassen wird, ist der Milestone **nicht** geschloss
 1. "was steht an?" / "woran arbeite ich?" → `40_Aufgaben/TODOS.md` + `PROJEKTE.md`
 2. "was ist mit Papa/Mama?" → `10_Personen/Eltern/Waldemar-Schmidt.md` bzw. `Nina-Schmidt.md` + `20_Dokumente/13_Betreuung.md`
 3. Wissensfragen → `90_Wiki/` → `raw/` → `Clippings/`, Ergebnis ins Wiki zurückschreiben
-4. Dokumenten-Fragen → passende `20_Dokumente/<kat>.md`, dann ggf. ins Archiv schauen
+4. **Dokumenten-Fragen (Volltext)** → `tom-doc search "query"` (SQLite FTS5 Volltext-Index über `~/Downloads/Archiv/` + `$TOM_VAULT/raw/`, seit v1.4). Fallback: `20_Dokumente/<kat>.md` (Metadaten) → Archiv-Ordner
 
 ## Ingesting New Sources (Wiki-Workflow bleibt)
 
@@ -161,6 +161,11 @@ Bei jeder Wissensfrage nutze Tom **in dieser Reihenfolge**:
 4. **Fuzzy oder unklar** → `tom-ask "Frage"` (Gemma RAG, drei Collections)
    - Cosine-Similarity über `wiki` + `clippings` + `gehirn`
    - Fallback wenn Index-first nichts findet
+5. **Persönliche Dokumente (Volltext)** → `tom-doc search "Frage"` (seit v1.4)
+   - SQLite FTS5 über OCR'd `~/Downloads/Archiv/` + `$TOM_VAULT/raw/`
+   - Subcommands: `index`, `search`, `list`, `show`
+   - Für Arbeitsverträge, Arztberichte, Rechnungen, Verträge etc.
+   - **Privacy**: Index bleibt lokal in `/Users/maxim/Claude/archivum/`, NIE im Wiki
 
 Weitere Brain-Tools:
 - `tom-compile` — Kompiliert daily-logs → knowledge-Artikel (täglich oder manuell)

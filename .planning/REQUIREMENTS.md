@@ -19,13 +19,13 @@ Requirements für Dokumenten-Volltext-Fundament, `tom-doc` CLI, Smart-Connection
 
 ### tom-doc CLI (TDOC)
 
-- [ ] **TDOC-01**: `bin/tom-doc` Wrapper mit Subcommands `index`, `search`, `list`, `show`
-- [ ] **TDOC-02**: `tom-doc index [kategorie]` — scant Archiv-Kategorie, OCR'd neue PDFs, aktualisiert FTS5-Index
-- [ ] **TDOC-03**: `tom-doc search "query"` — FTS5-Query mit Trefferliste `kategorie/dateiname + Snippet`
-- [ ] **TDOC-04**: `tom-doc show <pfad>` — zeigt Metadaten + OCR-Text-Auszug
-- [ ] **TDOC-05**: `tom-doc list [kategorie]` — listet alle indizierten Dokumente einer Kategorie
-- [ ] **TDOC-06**: Symlink in `~/bin/tom-doc` angelegt
-- [ ] **TDOC-07**: `CLAUDE.md` Wissens-Kaskade um Dokumenten-Fragen (`tom-doc search`) erweitert
+- [x] **TDOC-01**: `bin/tom-doc` Wrapper mit Subcommands `index`, `search`, `list`, `show`
+- [x] **TDOC-02**: `tom-doc index [kategorie]` — scant Archiv-Kategorie, OCR'd neue PDFs, aktualisiert FTS5-Index
+- [x] **TDOC-03**: `tom-doc search "query"` — FTS5-Query mit Trefferliste `kategorie/dateiname + Snippet`
+- [x] **TDOC-04**: `tom-doc show <id|pfad|datei|sha>` — zeigt Metadaten + OCR-Text-Auszug
+- [x] **TDOC-05**: `tom-doc list [kategorie]` — listet alle indizierten Dokumente einer Kategorie
+- [x] **TDOC-06**: Symlink in `~/bin/tom-doc` angelegt
+- [x] **TDOC-07**: `CLAUDE.md` Wissens-Kaskade-Punkt 4 und 5 um Dokumenten-Fragen (`tom-doc search`) erweitert
 
 ### Gemma-in-Obsidian via Community-Plugin (OBPL)
 
@@ -311,13 +311,13 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | DOC14-04 | Phase 27 | Complete |
 | DOC14-05 | Phase 27 | Complete |
 | DOC14-06 | Phase 27 | Complete |
-| TDOC-01 | Phase 28 | Pending |
-| TDOC-02 | Phase 28 | Pending |
-| TDOC-03 | Phase 28 | Pending |
-| TDOC-04 | Phase 28 | Pending |
-| TDOC-05 | Phase 28 | Pending |
-| TDOC-06 | Phase 28 | Pending |
-| TDOC-07 | Phase 28 | Pending |
+| TDOC-01 | Phase 28 | Complete |
+| TDOC-02 | Phase 28 | Complete |
+| TDOC-03 | Phase 28 | Complete |
+| TDOC-04 | Phase 28 | Complete |
+| TDOC-05 | Phase 28 | Complete |
+| TDOC-06 | Phase 28 | Complete |
+| TDOC-07 | Phase 28 | Complete |
 | OBPL-01 | Phase 29 | Pending |
 | OBPL-02 | Phase 29 | Pending |
 | OBPL-03 | Phase 29 | Pending |

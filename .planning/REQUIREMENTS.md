@@ -37,14 +37,14 @@ Requirements für Dokumenten-Volltext-Fundament, `tom-doc` CLI, Smart-Connection
 
 ### Clipper Auto-Enrichment (CLIP)
 
-- [ ] **CLIP-01**: `bin/tom-clip-enrich` liest Clipping-Datei, ruft `gemme` lokal, schreibt angereicherte Version zurück; idempotent via `enriched: true` Frontmatter-Flag
-- [ ] **CLIP-02**: Enrichment — **Summary**: 3–5 Sätze in Frontmatter-Feld `summary`
-- [ ] **CLIP-03**: Enrichment — **Auto-Tags**: 3–5 gemme-Tags an existierende `tags` appended (dedupliziert)
-- [ ] **CLIP-04**: Enrichment — **Konzept-Extraktion**: 2–4 Begriffe als Zeilen in `$TOM_VAULT/90_Wiki/konzepte-vorschlaege.md` (Review-Schleife, NICHT direkt als Stub-Pages)
-- [ ] **CLIP-05**: Enrichment — **Wiki-Kategorie-Vorschlag**: `gemme` wählt eine `90_Wiki/`-Subkategorie (themen/konzepte/personen/projekte/quellen) → Frontmatter-Feld `suggested_wiki_category`
-- [ ] **CLIP-06**: `tom-clip-enrich --watch` optional (deferrable) — `fswatch` auf `$TOM_VAULT/Clippings/`
-- [ ] **CLIP-07**: Smoke-Test mit `Mannheim – Wikipedia.md` — alle 4 Enrichment-Felder gefüllt, keine Halluzinationen
-- [ ] **CLIP-08**: `tom-clip-enrich` als Hook in `tom-compile-safe` ODER separater launchd-Job (Entscheidung in Phase 30)
+- [x] **CLIP-01**: `bin/tom-clip-enrich` liest Clipping-Datei, ruft `gemme` lokal, schreibt angereicherte Version zurück; idempotent via `enriched: true` Frontmatter-Flag
+- [x] **CLIP-02**: Enrichment — **Summary**: 3–5 Sätze in Frontmatter-Feld `summary`
+- [x] **CLIP-03**: Enrichment — **Auto-Tags**: 3–5 gemme-Tags an existierende `tags` appended (dedupliziert)
+- [x] **CLIP-04**: Enrichment — **Konzept-Extraktion**: 2–4 Begriffe als Zeilen in `$TOM_VAULT/90_Wiki/konzepte-vorschlaege.md` (Review-Schleife, NICHT direkt als Stub-Pages)
+- [x] **CLIP-05**: Enrichment — **Wiki-Kategorie-Vorschlag**: `gemme` wählt eine `90_Wiki/`-Subkategorie (themen/konzepte/personen/projekte/quellen) → Frontmatter-Feld `suggested_wiki_category`
+- [~] **CLIP-06**: `tom-clip-enrich --watch` — **deferred nach v1.5** (CLI on-demand reicht für v1.4)
+- [x] **CLIP-07**: Smoke-Test mit `Mannheim – Wikipedia.md` — Summary, 5 Tags, 4 Konzepte, Kategorie "themen", keine Halluzinationen, Idempotenz-Test grün
+- [x] **CLIP-08**: **Entscheidung dokumentiert**: NICHT als Hook in `tom-compile-safe` integriert. Begründung: Clipper-Enrichment ist opportunistisch (neue Clippings kommen unregelmäßig), während tom-compile täglich läuft. On-demand CLI reicht für v1.4. launchd-Integration offen für v1.5 bei Bedarf.
 
 ### Token-Spar-Lokalisierung (LOCAL)
 
@@ -323,14 +323,14 @@ Komplett shipped in v1.0 (Phases 1–7). Kategorien: IDENT, VAULT, PERS, DOC, TM
 | OBPL-03 | Phase 29 | Pending |
 | OBPL-04 | Phase 29 | Pending |
 | OBPL-05 | Phase 29 | Pending |
-| CLIP-01 | Phase 30 | Pending |
-| CLIP-02 | Phase 30 | Pending |
-| CLIP-03 | Phase 30 | Pending |
-| CLIP-04 | Phase 30 | Pending |
-| CLIP-05 | Phase 30 | Pending |
-| CLIP-06 | Phase 30 | Pending |
-| CLIP-07 | Phase 30 | Pending |
-| CLIP-08 | Phase 30 | Pending |
+| CLIP-01 | Phase 30 | Complete |
+| CLIP-02 | Phase 30 | Complete |
+| CLIP-03 | Phase 30 | Complete |
+| CLIP-04 | Phase 30 | Complete |
+| CLIP-05 | Phase 30 | Complete |
+| CLIP-06 | Phase 30 | Deferred v1.5 |
+| CLIP-07 | Phase 30 | Complete |
+| CLIP-08 | Phase 30 | Complete |
 | LOCAL-01 | Phase 31 | Pending |
 | LOCAL-02 | Phase 31 | Pending |
 | LOCAL-03 | Phase 31 | Pending |

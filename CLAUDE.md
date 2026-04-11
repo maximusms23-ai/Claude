@@ -248,6 +248,60 @@ tom-ask "Welche Gemma 4 Groessen gibt es?"
 
 **Setup-Dependency:** Braucht laufenden `ollama serve` + indexierte ChromaDB (`python3 Gemma/rag/index.py`). Bei Fehlern: `Gemma/README.md`.
 
+## Lokale Note-Injection via gemme — `tom-inject` (ad-hoc 2026-04-11)
+
+`bin/tom-inject` ist ein Terminal-Kommando, das `gemme` aufruft und die Response direkt in eine Obsidian-Note schreibt. Komplett lokal, ohne Cloud, ohne Subscription. Zero Dependencies (Python stdlib only, keine venv).
+
+**Zwei Modi:**
+
+- **Frontmatter** (default): Response landet als YAML-Key (`summary:`, `tags_suggested:`, etc.) oben in der Note. Idempotent via `injected_by: tom-inject` Flag.
+- **Append**: Response wird als neuer Body-Abschnitt ans Ende angehängt, mit `<!-- tom-inject -->` Marker + Timestamp-Header. Idempotent via Marker-Check.
+
+```bash
+# Summary ins Frontmatter
+tom-inject ~/Vault/20_Dokumente/meine-note.md "Fasse in 2 Sätzen"
+
+# Anderer Frontmatter-Key
+tom-inject note.md "Welche Schlagwörter passen?" --key tags_suggested
+
+# Body-Append statt Frontmatter
+tom-inject note.md "Liste 3 Key-Takeaways" --mode append
+
+# Dry-Run: gemme-Call zeigen, Note NICHT schreiben
+tom-inject note.md "Test" --dry-run
+
+# Überschreiben erzwingen (umgeht Idempotenz-Gate)
+tom-inject note.md "Neue Summary" --force
+```
+
+**System-Prompt im Script:** gemme wird als "Tom's lokaler Schreib-Assistent" konditioniert mit Hard-Limits: Deutsch, max 120 Wörter, kein Meta-Geschwafel, keine Markdown-Headings — nur Fließtext oder Bulletpoints. Body der Note wird auf 6000 Zeichen gekappt (Puffer unter dem 8192-Token-Context von gemme).
+
+**Unterschied zu `tom-ask` / `tom-wiki`:**
+
+- `tom-ask` / `tom-wiki` → **Read**: Query → Antwort im Terminal, Note bleibt unberührt
+- `tom-inject` → **Write**: Note wird gelesen + Response wird geschrieben (in Frontmatter oder Body)
+
+**Unterschied zu `tom-clip-enrich`:**
+
+- `tom-clip-enrich` → spezifisch für Clippings, fixe Felder (`summary`/`tags`/`konzepte_vorschlaege`), Batch-Style
+- `tom-inject` → beliebige Notes, beliebiger Prompt, beliebiger Frontmatter-Key oder Body-Append
+
+**Wann `tom-inject` nutzen:**
+
+- Ad-hoc Zusammenfassung einer bestehenden Note ins Frontmatter
+- Key-Takeaways als Body-Abschnitt an eine gelesene Paper-Note anhängen
+- Wiki-Kategorie-Vorschlag für eine einzelne Note (`--key suggested_wiki_category`)
+- Tag-Vorschläge als separater Frontmatter-Key, ohne bestehende Tags zu überschreiben
+
+**Wann NICHT:**
+
+- Für Batch-Verarbeitung aller Clippings → `tom-clip-enrich`
+- Für reine Q&A ohne Note-Modifikation → `tom-ask` / `tom-wiki`
+- Für Content-Generierung ohne Obsidian-Ziel → direkt `ollama run gemme`
+- Für agentische Tasks (Multi-Step, Tool-Use) → Cloud-Claude (tom-inject ist Single-Shot-Chat)
+
+**Verhältnis zu Phase 39 (MCP-Bridge):** `tom-inject` ist die CLI-Vorarbeit für die geplante MCP-Bridge. Phase 39 wird denselben Injection-Flow via `mcp-tools`-Plugin direkt aus dem Obsidian-Editor heraus verfügbar machen. Die beiden koexistieren — Terminal für Maxim, Editor-Panel für flow-state-Arbeit.
+
 ## Lokaler Ollama-Modus für Claude Code (seit v1.5 Phase 36)
 
 Maxim kann Claude Code (CLI) per Shell-Kommando auf lokales Ollama umleiten. Default bleibt Cloud — der Switch ist **opt-in** und **nur für die aktuelle Shell** aktiv.

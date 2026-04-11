@@ -1,0 +1,228 @@
+#!/usr/bin/env python3
+"""
+tom-inject — gemme injiziert Content in eine Obsidian-Note.
+
+Zweck: Maxim sagt "injeziere <prompt> in <note>", gemme generiert Response,
+Script schreibt die Response entweder in Frontmatter oder hängt sie als
+neuen Body-Abschnitt an. Alles lokal, ohne Cloud, ohne Subscription.
+
+Usage:
+  tom-inject <note-path> "<prompt>" [--mode frontmatter|append] [--key summary] [--force]
+
+Modi:
+  frontmatter  → setzt Frontmatter-Key mit Response (default)
+                 Idempotent: skip wenn Key schon gesetzt (außer --force)
+  append       → hängt Response als neuen Abschnitt am Ende an
+                 Idempotent: skip wenn <!-- tom-inject --> Marker schon da
+
+Beispiele:
+  tom-inject ~/Vault/note.md "Fasse den Inhalt in 2 Sätzen zusammen"
+  tom-inject note.md "Welche Konzepte sind zentral?" --mode append
+  tom-inject note.md "Neue Summary" --mode frontmatter --key summary --force
+
+Dependencies: Python 3.8+ stdlib only (keine venv, keine Installation).
+Ollama muss laufen (http://127.0.0.1:11434), Modell `gemme` muss gepullt sein.
+
+ADR: .planning/obsidian-plugin-config/ (Phase 39 MCP-Bridge ist verwandt,
+aber tom-inject ist der schnelle CLI-Weg ohne Editor-Integration).
+"""
+
+import argparse
+import json
+import sys
+import urllib.request
+from datetime import datetime
+from pathlib import Path
+
+OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
+MODEL = "gemme"
+SYSTEM_PROMPT = (
+    "Du bist Tom's lokaler Schreib-Assistent für Obsidian-Notes. "
+    "Antworte auf Deutsch, prägnant, ohne Meta-Geschwafel und ohne Einleitung. "
+    "Direkt die Antwort. Maximal 120 Wörter. "
+    "Keine Markdown-Headings — nur Fließtext oder Bulletpoints."
+)
+
+BODY_MAX_CHARS = 6000  # gemme num_ctx ≈ 8192 tokens ≈ 24000 chars, lass Puffer
+MARKER_APPEND = "<!-- tom-inject -->"
+
+
+def call_gemme(body: str, prompt: str) -> str:
+    """Ruft Ollama /api/chat mit gemme auf, liefert Response-Text."""
+    payload = {
+        "model": MODEL,
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {
+                "role": "user",
+                "content": (
+                    f"Note-Body:\n---\n{body[:BODY_MAX_CHARS]}\n---\n\n"
+                    f"Aufgabe: {prompt}"
+                ),
+            },
+        ],
+        "stream": False,
+    }
+    req = urllib.request.Request(
+        OLLAMA_URL,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=180) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    return data["message"]["content"].strip()
+
+
+def split_frontmatter(text: str) -> tuple[list[str], str]:
+    """Minimal YAML-Frontmatter-Split. Frontmatter bleibt als Zeilen-Liste,
+    damit bestehende Reihenfolge + Formatierung erhalten bleiben."""
+    if not text.startswith("---\n"):
+        return [], text
+    try:
+        end = text.index("\n---\n", 4)
+    except ValueError:
+        return [], text
+    fm_lines = text[4:end].splitlines()
+    body = text[end + 5:]
+    return fm_lines, body
+
+
+def fm_has_key(fm_lines: list[str], key: str) -> bool:
+    for line in fm_lines:
+        stripped = line.lstrip()
+        if stripped.startswith(f"{key}:") and not stripped.startswith("#"):
+            return True
+    return False
+
+
+def fm_set_key(fm_lines: list[str], key: str, value: str) -> list[str]:
+    """Setzt oder ersetzt einen Frontmatter-Key. Value wird YAML-safe escaped."""
+    yaml_value = value.replace("\n", " ").replace('"', '\\"').strip()
+    new_line = f'{key}: "{yaml_value}"'
+    updated = False
+    out = []
+    for line in fm_lines:
+        stripped = line.lstrip()
+        if stripped.startswith(f"{key}:") and not stripped.startswith("#"):
+            out.append(new_line)
+            updated = True
+        else:
+            out.append(line)
+    if not updated:
+        out.append(new_line)
+    return out
+
+
+def rebuild(fm_lines: list[str], body: str) -> str:
+    if not fm_lines:
+        return body
+    return "---\n" + "\n".join(fm_lines) + "\n---\n" + body
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(
+        description="gemme injiziert in eine Obsidian-Note (lokal, ohne Cloud)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
+    ap.add_argument("note", type=Path, help="Pfad zur Obsidian .md-Datei")
+    ap.add_argument("prompt", help="Aufgabe an gemme (Anführungszeichen!)")
+    ap.add_argument(
+        "--mode",
+        choices=["frontmatter", "append"],
+        default="frontmatter",
+        help="frontmatter (default): setze Frontmatter-Key. append: hänge an Body an",
+    )
+    ap.add_argument(
+        "--key",
+        default="summary",
+        help="Frontmatter-Key (nur bei --mode frontmatter, default: summary)",
+    )
+    ap.add_argument(
+        "--force",
+        action="store_true",
+        help="Bestehenden Key/Marker überschreiben statt skip",
+    )
+    ap.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="gemme aufrufen + Response zeigen, aber Note NICHT schreiben",
+    )
+    args = ap.parse_args()
+
+    if not args.note.exists():
+        print(f"✗ Note nicht gefunden: {args.note}", file=sys.stderr)
+        return 1
+    if args.note.suffix != ".md":
+        print(f"⚠  Keine .md-Datei: {args.note}", file=sys.stderr)
+
+    text = args.note.read_text(encoding="utf-8")
+    fm_lines, body = split_frontmatter(text)
+
+    # Idempotenz-Gate
+    if not args.force:
+        if args.mode == "frontmatter" and fm_has_key(fm_lines, args.key):
+            print(
+                f"✓ {args.key} bereits gesetzt in {args.note.name} — skip "
+                "(--force zum Überschreiben)",
+                file=sys.stderr,
+            )
+            return 0
+        if args.mode == "append" and MARKER_APPEND in body:
+            print(
+                f"✓ {args.note.name} bereits via tom-inject angehängt — skip "
+                "(--force zum Überschreiben)",
+                file=sys.stderr,
+            )
+            return 0
+
+    print(f"… gemme denkt nach: {args.prompt[:70]}…", file=sys.stderr)
+    try:
+        response = call_gemme(body, args.prompt)
+    except urllib.error.URLError as e:
+        print(f"✗ Ollama nicht erreichbar: {e.reason}", file=sys.stderr)
+        print("  Fix: ollama serve + ollama pull gemme", file=sys.stderr)
+        return 2
+    except Exception as e:
+        print(f"✗ gemme-Call fehlgeschlagen: {e}", file=sys.stderr)
+        return 3
+
+    if args.dry_run:
+        print("--- DRY RUN: gemme-Response ---")
+        print(response)
+        print("--- (Note wurde NICHT geschrieben) ---")
+        return 0
+
+    if args.mode == "frontmatter":
+        fm_lines = fm_set_key(fm_lines, args.key, response)
+        if not fm_has_key(fm_lines, "injected_by"):
+            fm_lines.append("injected_by: tom-inject")
+        if not fm_has_key(fm_lines, "injected_at"):
+            fm_lines.append(f"injected_at: {datetime.now().strftime('%Y-%m-%d')}")
+        new_text = rebuild(fm_lines, body)
+        args.note.write_text(new_text, encoding="utf-8")
+        print(f"✓ {args.key} injiziert in {args.note.name}", file=sys.stderr)
+        return 0
+
+    if args.mode == "append":
+        # entferne existierenden Marker-Block wenn --force
+        if args.force and MARKER_APPEND in body:
+            idx = body.find(MARKER_APPEND)
+            body = body[:idx].rstrip() + "\n"
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+        new_body = (
+            body.rstrip()
+            + f"\n\n{MARKER_APPEND}\n## tom-inject ({timestamp})\n\n"
+            + response
+            + "\n"
+        )
+        new_text = rebuild(fm_lines, new_body)
+        args.note.write_text(new_text, encoding="utf-8")
+        print(f"✓ Body-Append injiziert in {args.note.name}", file=sys.stderr)
+        return 0
+
+    return 99  # unreachable
+
+
+if __name__ == "__main__":
+    sys.exit(main())

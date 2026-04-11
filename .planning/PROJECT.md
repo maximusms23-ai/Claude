@@ -58,26 +58,29 @@ Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Lebe
   - CLAUDE.md Plugin Landscape auf **52 Plugins** erweitert + neue Kategorien (LLM-Alternativen, Email/Messaging) + Warning/Empfehlungs-Boxen
   - **Web-Clipper-Template-System**: 7 typ-spezifische Templates (Artikel, Paper, Video, Dokument, Social-Post, Rezept, Werkzeug) in `99_Vorlagen/web-clipper/` + 7 Ziel-Unterordner in `Clippings/`, `tom-clip-enrich` unverändert kompatibel
 
-**Active:** Tom v1.5 — TBD (Kickoff nach v1.4.1-Close)
+**Active:** Tom v1.5 — Lifecycle + Integration
 
-## Current Milestone: v1.4 — Aktive KI + Dokumenten-Fundament
+## Current Milestone: v1.5 — Lifecycle + Integration
 
-**Goal:** Tom bekommt (1) ein Volltext-Dokumenten-Fundament für die 15 Archiv-Kategorien via OCR + SQLite-FTS5, (2) eine Obsidian-native aktive-KI-Integration via Smart-Connections-Plugin mit Ollama-Backend, (3) automatisches Clipper-Enrichment (Summary/Tags/Konzepte/Wiki-Kategorie-Vorschlag) und (4) einen dokumentierten Token-Spar-Pfad für `tom-compile`/`tom-lint`. Die Document-Lifecycle-State-Machine wird bewusst nach v1.5 deferred.
+**Goal:** Tom bekommt (1) eine projekt-übergreifende **Lebens-State-Machine** für seine 6 Bereiche (Dokumente, Aufgaben, Termine, Projekte, Finanzen, Social Media), (2) eine Obsidian-native **MCP-Bridge** für die wichtigsten Tom-CLIs (`tom-doc`/`tom-wiki`/`tom-ask`/`tom-clip-enrich`) im Editor, (3) einen **lokalen Claude-Code-Modus mit funktionierendem Tool-Use** (Phase 36 retroaktiv + besseres Modell), und (4) eine vorgeschaltete **Vault-Hygiene-Phase**, die alle prepared-pending Handoffs aus v1.4/v1.4.1 schließt.
 
 **Target features:**
-- OCR-Toolkette (`tesseract`, `ocrmypdf` + `deu`) + `archivum/` mit SQLite FTS5 + OCR-Cache
-- `bin/tom-doc` CLI (index/search/list/show) gegen Volltext-Index
-- Smart Connections Obsidian-Plugin mit `gemme`/`nomic-embed-text` Backend, Privacy-Exclude für 10_–60_
-- `bin/tom-clip-enrich` — Summary + Auto-Tags + Konzept-Vorschläge + Wiki-Kategorie-Vorschlag, idempotent
-- `tom-compile --local` + Eval-Vergleich (`claude_agent_sdk` bleibt Default)
-- `tom-lint --structural-only` als launchd-tauglicher Default dokumentiert
-- Close-Checklist nach v1.3-Schema (6 Doku-Kanäle)
+
+- **Phase 36 retroaktiv**: Lokaler Ollama-Switch (`nutze-ollama`/`tom-local`) — bereits shipped als out-of-band Opener am 2026-04-11, Chat-Only-Modus dokumentiert
+- **Vault-Hygiene-Phase**: Smart Connections Repair, 6 unused LLM-Plugins disablen, eml-reader + apple-reminders Setup, OLLAMA_ORIGINS dauerhaft via launchctl, CLIP141-04 + CLIP141-13 + OBPL-03 abschließen
+- **Local Tool-Use Modell-Upgrade**: qwen3-coder oder glm-4.5-air pullen, CCR-Config umstellen, Tool-Use-Gate retesten — wenn PASS, wird Phase 36 zum vollwertigen lokalen Agentic-Modus
+- **mcp-tools Integration**: 4 Tom-CLIs (tom-doc/tom-wiki/tom-ask/tom-clip-enrich) als MCP-Tools direkt im Obsidian-Editor erreichbar, Privacy-Boundaries definiert
+- **Lifecycle-Foundation Dokumente**: State-Field-Schema für 20_Dokumente (Eingang/In-Bearbeitung/Antwort-formuliert/Warte/Erledigt), Templater-Integration, Dataview-View, Beispiel mit Eltern-Betreuung
+- **Lifecycle Aufgaben & Termine**: 40_Aufgaben States (Open/Doing/Blocked/Done) + 50_Gesundheit Termin-States (Geplant/Heute/Verpasst), Frist-Auto-Highlight via Dataview
+- **Lifecycle Projekte / Finanzen / Social**: 30_Projekte (aktiv/pausiert/abgeschlossen) + 60_Finanzen (Vertrag-Frist-States) + 80_Social_Media (Draft/Geplant/Live)
+- **Lifecycle Dashboards + Auto-Routing**: Vault-weite Dataview-Dashboards, automatische State-Transitions wo möglich, Notifications via Apple-Reminders-Plugin
+- **Milestone-Close v1.5**: 6 Doku-Kanäle nach v1.3-Schema + CEO-Briefing
 
 ### Active
 
-<!-- Milestone v1.4 scope. -->
+<!-- Milestone v1.5 scope. -->
 
-Siehe `.planning/REQUIREMENTS.md` (Milestone v1.4).
+Siehe `.planning/REQUIREMENTS.md` (Milestone v1.5).
 
 ### Out of Scope
 
@@ -115,4 +118,4 @@ Siehe `.planning/REQUIREMENTS.md` (Milestone v1.4).
 | 00_Inbox → 99_Vorlagen Nummerierungsschema | Ordnet sich auto-sortiert, Trennung persönlich/wiki bleibt visuell | — Pending |
 
 ---
-*Last updated: 2026-04-10 after Tom v1.4 milestone start*
+*Last updated: 2026-04-11 after Tom v1.5 milestone start*

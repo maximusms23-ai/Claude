@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# tom-local — Ausführung im lokalen Ollama-Modus ohne current shell zu berühren
+#
+# Usage:
+#   tom-local             → spawnt interactive Subshell mit ANTHROPIC_*-env gesetzt
+#   tom-local claude      → startet claude einmalig im lokalen Modus
+#   tom-local <cmd> ...   → beliebiges Kommando im lokalen Modus ausführen
+#
+# Unterschied zu `nutze-ollama`:
+#   - `nutze-ollama` modifiziert die AKTUELLE Shell (nur als sourced Funktion)
+#   - `tom-local` spawnt eine NEUE Subshell — aktuelle Shell bleibt unberührt
+#
+# Bei `exit` (aus Subshell) oder Kommando-Ende ist der Lokal-Modus weg.
+#
+# Dependencies: ccr, ollama, bin/nutze-ollama.sh (für Preflight)
+# ADR: /Users/maxim/Claude/.planning/phases/36-ollama-switch/36-01-PLAN.md
+
+set -uo pipefail
+
+NUTZE_OLLAMA_LIB="/Users/maxim/Claude/bin/nutze-ollama.sh"
+
+if [ ! -f "$NUTZE_OLLAMA_LIB" ]; then
+  echo "✗ Library nicht gefunden: $NUTZE_OLLAMA_LIB" >&2
+  exit 1
+fi
+
+# Preflight via sourced Library-Funktion
+# shellcheck disable=SC1090
+source "$NUTZE_OLLAMA_LIB"
+
+if ! _tom_ollama_preflight; then
+  echo "✗ Preflight fehlgeschlagen" >&2
+  exit 2
+fi
+
+# CCR env abgreifen
+CCR_ENV=$(ccr activate 2>/dev/null)
+if [ -z "$CCR_ENV" ]; then
+  echo "✗ 'ccr activate' lieferte keine Ausgabe" >&2
+  exit 3
+fi
+
+# Env-Vars extrahieren (ccr activate emittiert 'export KEY="VALUE"'-Zeilen)
+eval "$CCR_ENV"
+
+if [ $# -eq 0 ]; then
+  # Kein Argument → interactive Subshell spawnen
+  cat >&2 <<EOF
+⚠  Subshell im lokalen Ollama-Modus gestartet
+   /model opus  → qwen2.5-coder  (Tool-Use)
+   /model haiku → gemme          (Chat)
+   Rückkehr zur Original-Shell: exit
+EOF
+  exec "${SHELL:-zsh}" -i
+else
+  # Argumente → einmaliges Kommando
+  exec "$@"
+fi

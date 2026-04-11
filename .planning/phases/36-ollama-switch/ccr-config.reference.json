@@ -1,0 +1,24 @@
+{
+  "_comment": "Reference copy of ~/.claude-code-router/config.json for Phase 36. Aktive Kopie liegt unter ~/.claude-code-router/config.json (machine-local, nicht in Git). Bei Wiederherstellung: cp diese Datei → ~/.claude-code-router/config.json",
+  "LOG": false,
+  "API_TIMEOUT_MS": 600000,
+  "Providers": [
+    {
+      "name": "ollama",
+      "api_base_url": "http://localhost:11434/v1/chat/completions",
+      "api_key": "ollama",
+      "models": [
+        "qwen2.5-coder:latest",
+        "gemme:latest"
+      ]
+    }
+  ],
+  "Router": {
+    "default": "ollama,qwen2.5-coder:latest",
+    "background": "ollama,gemme:latest",
+    "think": "ollama,qwen2.5-coder:latest",
+    "longContext": "ollama,qwen2.5-coder:latest",
+    "longContextThreshold": 60000,
+    "webSearch": "ollama,qwen2.5-coder:latest"
+  }
+}

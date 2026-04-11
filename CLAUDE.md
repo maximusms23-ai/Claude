@@ -248,6 +248,93 @@ tom-ask "Welche Gemma 4 Groessen gibt es?"
 
 **Setup-Dependency:** Braucht laufenden `ollama serve` + indexierte ChromaDB (`python3 Gemma/rag/index.py`). Bei Fehlern: `Gemma/README.md`.
 
+## Lokaler Ollama-Modus für Claude Code (seit v1.5 Phase 36)
+
+Maxim kann Claude Code (CLI) per Shell-Kommando auf lokales Ollama umleiten. Default bleibt Cloud — der Switch ist **opt-in** und **nur für die aktuelle Shell** aktiv.
+
+**Vorsicht — Chat-Only-Modus:** Der lokale Modus ist nach Phase-36-Verification **nicht für agentisches Arbeiten** geeignet. Tool-Use (Edit/Bash/LS/Multi-Step) scheitert, weil qwen2.5-coder über Claude Code Router die Tool-Calls als Text-Strings statt als `tool_use`-Blöcke zurückgibt. Praktisch heißt das: **nur Chat-Queries, keine Code-Edits, keine GSD-Phasen, keine Superpowers-Skills im Lokal-Modus.**
+
+### Kommandos (Shell-Funktionen, gesourced aus `bin/nutze-ollama.sh`)
+
+```bash
+nutze-ollama     # Aktuelle Shell auf lokales CCR umschalten
+nutze-claude     # Zurück zu echter Anthropic Cloud
+ollama-status    # Aktueller Modus + Ollama-Health + CCR-Daemon + Modelle
+
+tom-local        # Subshell spawnen mit Lokal-Modus (original Shell unberührt)
+tom-local <cmd>  # Einmalig <cmd> im Lokal-Modus ausführen
+```
+
+### Aliasing (Claude Code Router)
+
+Claude Code's `/model`-Picker ist hardcoded auf Anthropic-Namen. CCR bildet ab:
+
+- `/model opus`   → `qwen2.5-coder:latest` (4.7 GB, Tool-Use-**Versuch**)
+- `/model haiku`  → `gemme:latest` (9.6 GB, Chat)
+
+### Architektur
+
+```text
+User-Shell
+   │
+   ├─ nutze-ollama  →  exports ANTHROPIC_BASE_URL=http://127.0.0.1:3456
+   │                              ANTHROPIC_AUTH_TOKEN=test
+   │                              NO_PROXY=127.0.0.1
+   │                              DISABLE_TELEMETRY=true
+   │
+   └─ claude / ccr code  →  CCR-Daemon (port 3456)
+                                │
+                                └─  Ollama (port 11434)
+                                      ├─ qwen2.5-coder:latest
+                                      └─ gemme:latest
+```
+
+### Setup-Dependencies
+
+- **Node.js** (v25+ getestet) für `npm install -g @musistudio/claude-code-router`
+- **Ollama** ≥ v0.14 (v0.20.5 getestet) mit Modellen `gemme:latest` und `qwen2.5-coder:latest`
+- **`~/.claude-code-router/config.json`** — Reference-Copy in `.planning/phases/36-ollama-switch/ccr-config.reference.json`
+- **`~/.zshrc`** sourced `bin/nutze-ollama.sh` (eine Zeile, guarded)
+
+### Bekannte Einschränkungen
+
+1. **Tool-Use scheitert auf qwen2.5-coder** — qwen gibt Function-Calls als Text-Content zurück, CCRs `tooluse`-Transformer fixt das nicht. Claude Code erkennt keine Tool-Calls → Edit/Bash/Multi-Step brechen. **Use-Case bleibt Chat-Only.**
+2. **Gemma4 Tool-Use ist fundamental broken** ([ollama#15402](https://github.com/ollama/ollama/issues/15402)) — deswegen gemme nur als Haiku-Alias für Chat.
+3. **`/model`-Picker zeigt Anthropic-Namen** (Opus/Sonnet/Haiku), nicht die lokalen Modelle. Aliasing macht das transparent, aber es ist Konvention, kein Display-Feature.
+4. **CCR-Daemon läuft persistent im Hintergrund** (~50-100 MB RAM, Port 3456). Stop via `ccr stop`.
+5. **GSD-Workflows, Superpowers-Skills, Hooks, tom-compile dürfen NICHT im Lokal-Modus laufen** — sie erwarten Claude-Niveau. Default bleibt Cloud, Lokal ist Opt-in für spezifische Chat-Aufgaben.
+
+### Rollback
+
+```bash
+nutze-claude                                    # Current shell zurück zu Cloud
+ccr stop                                        # CCR-Daemon beenden
+# ~/.zshrc: Zeile '[[ -f $HOME/Claude/bin/nutze-ollama.sh ]] ...' löschen
+ollama rm qwen2.5-coder                         # Modell wieder freigeben (4.7 GB)
+npm uninstall -g @musistudio/claude-code-router # CCR deinstallieren
+```
+
+### Wann den Lokal-Modus nutzen?
+
+- ✅ Wiki-Queries die sowieso besser in `tom-wiki` / `tom-ask` gehören, aber per Claude-Code-UI bequemer sind
+- ✅ Brainstorming-Chats zu Tom-Themen ohne Token-Verbrauch
+- ✅ Privacy-kritische Fragen die nicht zu Anthropic gehen sollen
+- ❌ Code-Writing oder -Editing
+- ❌ Multi-Step-Debugging
+- ❌ Jede Form von Tool-Use
+- ❌ GSD-Phasen, Superpowers-Skills, Milestone-Arbeit
+
+### VSCode Ollama Extension (koexistent, orthogonal)
+
+Zusätzlich hat Maxim `warm3snow.vscode-ollama-1.2.1` (Chat-Panel-Extension) installiert. Diese Extension:
+
+- Spricht direkt mit `http://127.0.0.1:11434` (Ollama-native), **nicht** mit CCR
+- Ist reines Chat-Panel (`Ollama: Open Chat`, `Ollama: Settings`) — **kein File-I/O, keine Vault-Indexierung**
+- Koexistiert konfliktfrei mit `nutze-ollama` (unterschiedliche Ports, kein geteiltes env)
+- Config-Path: `~/.vscode/extensions/warm3snow.vscode-ollama-1.2.1/`
+- Setting `vscode-ollama.model` sollte auf `gemme` gesetzt werden für konsistente Tom-Experience
+- **Kein Privacy-Risiko** — Extension hat per Architektur keinen Vault-Zugriff
+
 ## Claude-Code Hooks (seit v1.2 Phase 16)
 
 Dieses Projekt hat projekt-lokale Claude-Code-Hooks in `/Users/maxim/Claude/.claude/settings.json`, die in den **claude-memory-compiler** (`/Users/maxim/Claude/claude-memory-compiler/`) zeigen:

@@ -1,7 +1,7 @@
 # Requirements: Tom — Persönlicher Lebens-Assistent
 
 **Defined:** 2026-04-10
-**Current Milestone:** v1.4 — Aktive KI + Dokumenten-Fundament
+**Current Milestone:** v1.5 — Lifecycle + Integration
 **Core Value:** Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Leben wichtig ist — Tom weiß, wo was liegt, und unterstützt proaktiv.
 
 ## v1.4 Requirements (Current)
@@ -413,5 +413,101 @@ Kleine Bridge-Phase zwischen v1.4-Close und v1.5-Kickoff. Drei Themen: Obsidian-
 **Code-Patch (v1.4.1 Phase 35-Hotfix):** `claude-memory-compiler/tom_tools/clip_enrich.py` mit `--queue-only`-Flag + erweitertes Skip-Gate für `enriched in (clip-time | tom-clip-enrich)` + `enriched_by`-Feld im Standard-Pfad. Rückwärts-kompatibel zu Phase-30-Legacy-Clippings.
 
 ---
+
+## v1.5 Requirements (Current)
+
+Requirements für die v1.5 "Lifecycle + Integration"-Phase: Lokaler Claude-Code-Modus mit funktionierendem Tool-Use, Vault-Hygiene-Cleanup, MCP-Bridge für Tom-CLIs in Obsidian, projekt-übergreifende Lebens-State-Machine für 6 Lebens-Bereiche, Milestone-Close. Phasen 36–44 (Phase 36 ist out-of-band-shipped am 2026-04-11 als Opener und wird retroaktiv aufgenommen).
+
+### Lokaler Claude-Code-Modus — Phase 36 (LOCAL-05) — out-of-band shipped
+
+- [x] **LOCAL-05-01**: Claude Code Router (`@musistudio/claude-code-router`) installiert via `npm -g`, `~/.claude-code-router/config.json` mit Ollama-Provider + Model-Aliasing (`opus → qwen2.5-coder`, `background/haiku → gemme`), CCR-Daemon läuft auf Port 3456
+- [x] **LOCAL-05-02**: `bin/nutze-ollama.sh` Sourced Shell-Library mit Funktionen `nutze-ollama` / `nutze-claude` / `ollama-status`, Preflight für ollama+ccr+modelle, `eval $(ccr activate)`-Pattern statt Hardcoding
+- [x] **LOCAL-05-03**: `bin/tom-local` Wrapper-Script (Subshell-Spawn ohne Argument, One-Shot mit Argument), `~/bin/tom-local`-Symlink analog `tom-*`-Konvention
+- [x] **LOCAL-05-04**: `~/.zshrc` enthält guarded Source-Line `[[ -f "$HOME/Claude/bin/nutze-ollama.sh" ]] && source ...`, Funktionen sind in jeder neuen Shell verfügbar
+- [x] **LOCAL-05-05**: `CLAUDE.md` neue Sektion "Lokaler Ollama-Modus für Claude Code (seit v1.5 Phase 36)" mit Kommando-Referenz, Architektur-Diagramm, prominentem Chat-Only-Warning, Use-Cases-Tabelle, Rollback-Anleitung, VSCode-Extension-Koexistenz
+- [x] **LOCAL-05-06**: VSCode Ollama Extension `warm3snow.vscode-ollama-1.2.1` identifiziert (reines Chat-Panel, kein File-I/O, kein Privacy-Risiko) + dokumentiert in CLAUDE.md
+- [x] **LOCAL-05-07**: 7-stufige Smoke-Tests durchgeführt: Cloud-Default ✓, Switch ✓, Status ✓, Reset ✓, CCR-Endpoint Chat ✓, tom-local Subshell+One-Shot ✓ — Tool-Use-Gate als expected-fail dokumentiert (qwen2.5-coder liefert Tool-Calls als Text-String, CCR `tooluse`-Transformer fixt das nicht)
+
+### Vault-Hygiene & Cleanup — Phase 37 (HYG)
+
+- [ ] **HYG-01**: Smart Connections `data.json`-Defekt repariert (war 62 Bytes, Phase-29-Playbook re-anwenden, UI-Exclude-Liste verifiziert nach ADR-001)
+- [ ] **HYG-02**: 6 unused LLM-Plugins (`cao`, `tars`, `large-language-models`, `llm-summary`, `llm-test-gen`, `ai-latex-generator`) in `community-plugins.json` disabled, in CLAUDE.md Plugin-Landscape als "disabled" markiert
+- [ ] **HYG-03**: `OLLAMA_ORIGINS` dauerhaft via `launchctl setenv` auf `chrome-extension://*,moz-extension://*,safari-web-extension://*` gesetzt, persistent über Reboot, dokumentiert in CLAUDE.md
+- [ ] **HYG-04**: `eml-reader` Plugin konfiguriert, Smoke-Test mit `.eml`-Test-Datei in `20_Dokumente/13_Betreuung/` (Preview öffnet sich in Obsidian)
+- [ ] **HYG-05**: `obsidian-apple-reminders-plugin` konfiguriert mit Apple-Reminders.app, erste bidirektionale Sync-Probe (1 Reminder rein, 1 raus), Privacy-Boundary dokumentiert
+- [ ] **HYG-06**: 5 offene Plugin-Audit-Fragen (Q1–Q5 aus `plugin-audit-v1.4.1.md`) beantwortet, Audit-Doc auf Stand "answered" gebracht
+- [ ] **HYG-07**: CLIP141-04 Web-Clipper-Smoke-Test durchgeführt mit echtem Browser-Clip und Frontmatter-Verifikation (carryover aus v1.4.1)
+- [ ] **HYG-08**: CLIP141-13c Phase-35-Hotfix Interpreter-Smoke-Test durchgeführt ODER Ollama-Models-Path-Defekt (FAM-154) als Blocker gefixt (carryover aus v1.4.1)
+- [ ] **HYG-09**: OBPL-03 Smart Connections "TurboQuant"-Smoke-Test nach UI-Reconfig + Re-Index durchgeführt (carryover aus v1.4)
+
+### Local Tool-Use Modell-Upgrade — Phase 38 (LOCAL-06)
+
+- [ ] **LOCAL-06-01**: Tool-Use-fähiges Ollama-Modell installiert (1st choice: `qwen3-coder` falls verfügbar, sonst `glm-4.5-air`, sonst Recherche-best-of), Ollama-Pull erfolgreich
+- [ ] **LOCAL-06-02**: `~/.claude-code-router/config.json` aktualisiert mit neuem Modell als `default`/`opus`-Alias + ggf. neuer Transformer; Reference-Copy in `.planning/phases/<n>-local-toolupgrade/ccr-config.reference.json`
+- [ ] **LOCAL-06-03**: Tool-Use-Gate retest (curl gegen `/v1/messages` mit Tool-Schema → Response muss `content[].type == "tool_use"` enthalten, NICHT text) PASS
+- [ ] **LOCAL-06-04**: Real-Use-Test in echter Claude-Code-Session: `tom-local claude` → `/model opus` → "Liste die Dateien in /tmp" → echter LS-Tool-Call (nicht Text-String)
+- [ ] **LOCAL-06-05**: Phase 36 SUMMARY/VERIFICATION + CLAUDE.md "Lokaler Ollama-Modus" Limitations-Sektion auf neuen Stand (FAIL → PASS, Use-Cases-Tabelle erweitert um agentisches Arbeiten)
+- [ ] **LOCAL-06-06**: `tom-compile --local` Eval gegen das neue Modell als Sanity-Check (Phase-31-Baseline-Regression-Catch), Ergebnis in `Gemma/eval/results/v1.5-local-toolupgrade.md`
+
+### MCP-Bridge für Tom-CLIs — Phase 39 (MCP)
+
+- [ ] **MCP-01**: MCP-Server-Architektur entschieden + dokumentiert (FastMCP-Python in `mcp-server/` vs stdio-shell-wrap), ADR-006 in `.planning/obsidian-plugin-config/`
+- [ ] **MCP-02**: MCP-Server `tom-doc` als Tool exposed (Subcommands `search`/`list`/`show` als 3 separate Tools oder 1 mit Parameter), JSON-Schema definiert
+- [ ] **MCP-03**: MCP-Server `tom-wiki` als Tool exposed (Karpathy-Query mit Frage als Argument, Quellen-Liste in Response)
+- [ ] **MCP-04**: MCP-Server `tom-ask` als Tool exposed (RAG-Query mit Collection-Auswahl wiki/clippings/gehirn)
+- [ ] **MCP-05**: MCP-Server `tom-clip-enrich` als Tool exposed (auf aktuelle Note in Obsidian anwendbar, idempotent via existierendes `enriched`-Flag)
+- [ ] **MCP-06**: Privacy-Boundary explizit definiert pro Tool: Read-Only-Default, persönliche Ordner-Zugriff dokumentiert (`tom-doc` darf `~/Downloads/Archiv/` lesen, `tom-ask` darf nur indizierte Collections, `tom-clip-enrich` darf nur Clippings/-Dateien schreiben)
+- [ ] **MCP-07**: `mcp-tools`-Plugin (v0.2.27) im Obsidian konfiguriert mit Tom-MCP-Server-Connection, Daemon-Start-Mechanismus dokumentiert (launchd vs Plugin-managed vs manual)
+- [ ] **MCP-08**: End-to-End-Test in Obsidian: User klickt auf MCP-Tool-Panel, ruft `tom-doc-search` für "Arbeitsvertrag" auf, Ergebnis erscheint im Editor mit Quellen-Liste
+- [ ] **MCP-09**: `CLAUDE.md` neue Sektion "MCP-Bridge für Tom-CLIs (seit v1.5 Phase 39)" mit Use-Cases, Privacy-Boundary-Tabelle, Daemon-Lifecycle, Troubleshooting
+
+### Lifecycle Foundation — Dokumente — Phase 40 (LCY-01..06)
+
+- [ ] **LCY-01**: `state`-Frontmatter-Schema definiert mit 5 Werten für Dokumente (`Eingang`, `In-Bearbeitung`, `Antwort-formuliert`, `Warte-auf-Rückmeldung`, `Erledigt`), dokumentiert in CLAUDE.md + `99_Vorlagen/state-schema.md`
+- [ ] **LCY-02**: `99_Vorlagen/Dokument.md` Template um `state: Eingang` Default + Templater-Snippet `<% tp.date.now("YYYY-MM-DD") %>` für `state_changed` erweitert
+- [ ] **LCY-03**: Templater-Transition-Snippet (`99_Vorlagen/Snippets/state-next-dokument.md`) — User klickt Templater-Button, Dropdown wählt nächsten State, Frontmatter wird aktualisiert + `state_changed`-Datum gesetzt
+- [ ] **LCY-04**: Dataview-View `20_Dokumente/Dashboard.md` mit TABLE gruppiert nach `state`, sortiert nach `state_changed` desc, Frist-Spalte highlightet wenn `due_date < today + 14d`
+- [ ] **LCY-05**: Erstes echtes Beispiel in `20_Dokumente/13_Betreuung.md` (Eltern-Betreuung Waldemar/Nina) mit 3 Eingang-Dokumenten + state-tracking — End-to-End-Beweis dass das Schema funktioniert
+- [ ] **LCY-06**: Schema-Migration für existierende `20_Dokumente/`-Notes ohne `state`-Field — Default-Inserter-Script (`bin/tom-state migrate-dokumente`) ODER explizite Skip-Marker `state: stateless`, Idempotenz garantiert
+
+### Lifecycle — Aufgaben & Termine — Phase 41 (LCY-07..12)
+
+- [ ] **LCY-07**: `state`-Schema für `40_Aufgaben/` definiert (`Open`, `Doing`, `Blocked`, `Done`) + `99_Vorlagen/Aufgabe.md` Template entsprechend angepasst
+- [ ] **LCY-08**: `state`-Schema für `50_Gesundheit/` Termine definiert (`Geplant`, `Heute`, `Wahrgenommen`, `Verpasst`) + `99_Vorlagen/Arzttermin.md` Template angepasst
+- [ ] **LCY-09**: Frist-Auto-Highlight via Dataview Universal-Snippet (`due_date < today + 14d → "🔥 Frist naht"-Markierung`), wiederverwendbar in allen Bereichen
+- [ ] **LCY-10**: Templater-Transitions für Aufgaben (`Open → Doing → Done`) und Termine (`Geplant → Heute → Wahrgenommen/Verpasst`)
+- [ ] **LCY-11**: Dataview-View `40_Aufgaben/Heute.md` zeigt Aufgaben mit `state == Doing` ODER `due_date <= today + 1d`
+- [ ] **LCY-12**: Dataview-View `50_Gesundheit/Heute.md` zeigt Termine mit `date == today` ODER `state == Heute`
+
+### Lifecycle — Projekte / Finanzen / Social Media — Phase 42 (LCY-13..18)
+
+- [ ] **LCY-13**: `state`-Schema für `30_Projekte/` formalisiert (`aktiv`, `pausiert`, `abgeschlossen`) — bestehende `PROJEKTE.md`-Struktur kompatibel halten, Migration-Hinweise
+- [ ] **LCY-14**: `state`-Schema für `60_Finanzen/` definiert (`Vertrag-aktiv`, `Frist-naht`, `Verlängert`, `Gekündigt`, `Versäumt`) — Frist-driven, mit `kuendigungsfrist`-Field für Auto-Transition
+- [ ] **LCY-15**: `state`-Schema für `80_Social_Media/` definiert (`Draft`, `Geplant`, `Live`, `Archiv`) — Pipeline-Style
+- [ ] **LCY-16**: `99_Vorlagen` um 3 neue Templates erweitert (`Projekt.md`, `Vertrag.md`, `Social-Post.md`) mit state-Defaults
+- [ ] **LCY-17**: Dataview-Views in den 3 Bereichen (`30_Projekte/Aktive.md`, `60_Finanzen/Fristen.md`, `80_Social_Media/Pipeline.md`)
+- [ ] **LCY-18**: Cross-Area-Verlinkung dokumentiert + 1 echtes Beispiel: ein Vertrag in `60_Finanzen` verlinkt auf einen Frist-Termin in `50_Gesundheit` oder `40_Aufgaben`
+
+### Lifecycle Dashboards + Auto-Routing — Phase 43 (LCY-19..25)
+
+- [ ] **LCY-19**: `$TOM_VAULT/index.md` Tom-Hub erweitert um "Heute"-Sektion mit Dataview-Aggregation across alle 6 Bereiche (Dokumente, Aufgaben, Termine, Projekte, Finanzen, Social)
+- [ ] **LCY-20**: Vault-weites "Was-steht-an?"-Dashboard `$TOM_VAULT/Heute.md` mit Sortierung nach Frist/Priorität, Filter pro State (Doing/Heute/Frist-naht)
+- [ ] **LCY-21**: launchd-Job `com.maxim.tom-state-transitions` für tägliche state-Auto-Transitions (z.B. Termin `Geplant → Heute` am Termin-Tag, Vertrag `Vertrag-aktiv → Frist-naht` 14d vor Kündigungsfrist), Plist + Wrapper-Script `bin/tom-state-safe`
+- [ ] **LCY-22**: Apple-Reminders-Plugin bidirektional sync für Aufgaben mit `state == Doing` ODER Termine mit `state == Heute` — Konfiguration dokumentiert
+- [ ] **LCY-23**: Notification-Pfad Apple-Reminders → macOS-Notification-Center Smoke-Test (1 Reminder erstellt, Notification erscheint)
+- [ ] **LCY-24**: `bin/tom-status` (oder Erweiterung von `tom-doc`/`tom-wiki`) zeigt "Was steht heute an" aus Terminal — aggregiert across alle 6 Bereiche
+- [ ] **LCY-25**: Idempotenz-Verifikation: Auto-Transition-Job kann beliebig oft re-gerunnt werden ohne doppelte State-Bumps oder doppelte Reminder-Erstellungen
+
+### Milestone-Close v1.5 — Phase 44 (CLOSE15)
+
+- [ ] **CLOSE15-01**: `.planning/MILESTONES.md` enthält v1.5-Eintrag nach v1.4-Schema (Start/Ende/Phasen 36–44/Commits/Status/FAMs)
+- [ ] **CLOSE15-02**: `.planning/PROJECT.md` Validated-Sektion enthält v1.5-Deliverables, `Active:` auf v1.6 oder `—`
+- [ ] **CLOSE15-03**: `.planning/briefings/v1.5-CEO-Briefing.md` existiert mit ≥150 Zeilen nach v1.3-Template (6 Teile + Anhänge A/B/C)
+- [ ] **CLOSE15-04**: `$TOM_VAULT/log.md` enthält datierten v1.5-Abschluss-Eintrag nach v1.3-Schema
+- [ ] **CLOSE15-05**: `$TOM_VAULT/30_Projekte/Tom.md` aktualisiert (Current Milestone, Werkzeug-Liste mit `nutze-ollama`/`tom-local`/MCP-Server/`tom-state`/`tom-status`, Milestones-Kurz-Historie)
+- [ ] **CLOSE15-06**: Maximus_OS Close-Issue an CEO-Agent (`priority=high`) mit Link auf v1.5-CEO-Briefing und Phasen-Commits
+- [ ] **CLOSE15-07**: Alle v1.5-Requirements in REQUIREMENTS.md als `[x]` markiert (HYG-01..09, LOCAL-06-01..06, MCP-01..09, LCY-01..25)
+
+---
 *Requirements defined: 2026-04-10*
-*Last updated: 2026-04-10 after v1.4.1 Phase 33 (Obsidian-Doku-Routine)*
+*Last updated: 2026-04-11 after v1.5 milestone start (56 new + 7 retroaktive Phase-36-Reqs = 63 v1.5-Requirements)*

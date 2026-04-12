@@ -9,6 +9,7 @@ werden uebersprungen.
 Usage:
   tom-state migrate-dokumente [--dry-run]
   tom-state migrate-dokumente-v2 [--dry-run]
+  tom-state migrate-dokumente-v3 [--dry-run]
   tom-state migrate-aufgaben [--dry-run]
   tom-state migrate-termine [--dry-run]
 
@@ -20,8 +21,9 @@ Dependencies: Python 3.8+ stdlib only.
 
 import argparse
 import os
+import re
 import sys
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 
@@ -54,6 +56,31 @@ def has_field(frontmatter: str, field: str) -> bool:
         if stripped.startswith(f"{field}:"):
             return True
     return False
+
+
+def get_field(frontmatter: str, field: str) -> str:
+    for line in frontmatter.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(f"{field}:"):
+            val = stripped[len(field) + 1:].strip().strip('"').strip("'")
+            return val
+    return ""
+
+
+def set_field(frontmatter: str, field: str, value: str) -> str:
+    lines = frontmatter.splitlines()
+    new_lines = []
+    found = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith(f"{field}:"):
+            new_lines.append(f"{field}: {value}")
+            found = True
+        else:
+            new_lines.append(line)
+    if not found:
+        new_lines.append(f"{field}: {value}")
+    return "\n".join(new_lines)
 
 
 def inject_fields(text: str, fields_yaml: str) -> str:
@@ -215,6 +242,85 @@ def migrate_dokumente_v2(dry_run: bool = False):
         print(f"  Fehler:    {errors}")
 
 
+def migrate_dokumente_v3(dry_run: bool = False):
+    """Add v3 fields (Relevanz, Archiv-/Antwort-Pfad) to documents."""
+    target_dir = Path(TOM_VAULT) / "20_Dokumente"
+    if not target_dir.is_dir():
+        print(f"FEHLER: {target_dir} existiert nicht.", file=sys.stderr)
+        sys.exit(1)
+
+    v3_fields = {
+        "antwort_pfad": '""',
+        "kv_relevant": "false",
+        "kv_details": '""',
+        "rente_relevant": "false",
+        "rente_details": '""',
+        "finanzen_relevant": "false",
+        "finanzen_betrag": '""',
+        "finanzen_faelligkeit": '""',
+        "finanzen_budgetiert": "false",
+        "finanzen_details": '""',
+        "ki_zusammenfassung": '""',
+    }
+
+    md_files = sorted(target_dir.rglob("*.md"))
+    total = 0
+    migrated = 0
+    skipped = 0
+    errors = 0
+
+    for path in md_files:
+        if path.name in SKIP_FILES:
+            continue
+        total += 1
+
+        try:
+            text = path.read_text(encoding="utf-8")
+        except Exception as e:
+            print(f"  FEHLER: {path.name} — {e}")
+            errors += 1
+            continue
+
+        fm, body, has_fm = parse_frontmatter(text)
+        if not has_fm:
+            skipped += 1
+            continue
+
+        missing = []
+        for field, default in v3_fields.items():
+            if not has_field(fm, field):
+                missing.append(f"{field}: {default}")
+
+        if not missing:
+            skipped += 1
+            continue
+
+        if dry_run:
+            print(f"  WUERDE ERGAENZEN ({len(missing)} Felder): "
+                  f"{path.relative_to(target_dir)}")
+            migrated += 1
+            continue
+
+        new_fm = fm + "\n" + "\n".join(missing)
+        new_text = f"---\n{new_fm}\n---{body}"
+        try:
+            path.write_text(new_text, encoding="utf-8")
+            print(f"  ERGAENZT ({len(missing)} Felder): "
+                  f"{path.relative_to(target_dir)}")
+            migrated += 1
+        except Exception as e:
+            print(f"  FEHLER beim Schreiben: {path.name} — {e}")
+            errors += 1
+
+    mode = "DRY-RUN" if dry_run else "LIVE"
+    print(f"\n--- tom-state migrate-dokumente-v3 ({mode}) ---")
+    print(f"  Gesamt:    {total}")
+    print(f"  Ergaenzt:  {migrated}")
+    print(f"  Uebersprungen (komplett): {skipped}")
+    if errors:
+        print(f"  Fehler:    {errors}")
+
+
 def migrate_aufgaben(dry_run: bool = False):
     fields = f"""\
 state: Offen
@@ -244,6 +350,224 @@ due_date: ""\
                           f"migrate-termine ({folder})", dry_run)
 
 
+APP_LINK_MAP = {
+    "arzt": ("Doctolib", "https://www.doctolib.de"),
+    "auto": ("ADAC Services", "https://www.adac.de/services/"),
+    "amt": ("Behoerdenfinder", "https://www.behoerdenfinder.de"),
+    "steuer": ("Elster", "https://www.elster.de"),
+}
+
+
+def build_verpasst_block(fm: str, termin_date: str) -> str:
+    telefon = get_field(fm, "telefon")
+    ansprechperson = get_field(fm, "ansprechperson") or "Praxis/Stelle"
+    kategorie = get_field(fm, "termin_kategorie")
+    morgen = (date.today() + timedelta(days=1)).isoformat()
+
+    tel_line = (
+        f"- Anrufen: [tel:{telefon}](tel:{telefon}) ({ansprechperson})"
+        if telefon
+        else f"- Anrufen: _(Telefonnummer nicht hinterlegt — bitte im Frontmatter `telefon` ergaenzen)_"
+    )
+
+    app_name, app_url = APP_LINK_MAP.get(kategorie, ("", ""))
+    app_line = (
+        f"- Online buchen: [{app_name}]({app_url})"
+        if app_name
+        else "- Online buchen: _(keine App fuer diese Kategorie hinterlegt)_"
+    )
+
+    phone_plain = (
+        f"- Telefonnummer: {telefon}"
+        if telefon
+        else ""
+    )
+
+    lines = [
+        "<!-- verpasst-empfehlung -->",
+        "## Handlungsempfehlung (Termin verpasst)",
+        "",
+        f"> Dieser Termin ({termin_date}) wurde verpasst. Bitte neuen Termin vereinbaren.",
+        "",
+        "**Neuen Termin buchen:**",
+        tel_line,
+        app_line,
+    ]
+    if phone_plain:
+        lines.append(phone_plain)
+    lines += [
+        "",
+        f"- [ ] Neuen Termin vereinbaren (@{morgen})",
+    ]
+    return "\n".join(lines)
+
+
+def auto_transition(dry_run: bool = False):
+    vault = Path(TOM_VAULT)
+    today_date = date.today()
+    today_str = today_date.isoformat()
+    soon_14 = today_date + timedelta(days=14)
+
+    scan_dirs_termine = ["50_Gesundheit", "30_Projekte", "00_Inbox"]
+    scan_dirs_vertraege = ["60_Finanzen", "20_Dokumente"]
+
+    transitions = 0
+    skipped = 0
+    errors = 0
+
+    print(f"=== tom-state auto-transition {'(DRY-RUN)' if dry_run else '(LIVE)'} — {today_str} ===\n")
+
+    # --- Termine ---
+    for folder in scan_dirs_termine:
+        target = vault / folder
+        if not target.is_dir():
+            continue
+        for path in sorted(target.rglob("*.md")):
+            if path.name in SKIP_FILES:
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except Exception as e:
+                print(f"  FEHLER: {path.name} — {e}")
+                errors += 1
+                continue
+
+            fm, body, has_fm = parse_frontmatter(text)
+            if not has_fm:
+                continue
+
+            note_type = get_field(fm, "type")
+            if note_type != "termin":
+                continue
+
+            current_state = get_field(fm, "state")
+            datum_str = get_field(fm, "datum")
+            if not datum_str:
+                continue
+
+            try:
+                termin_date = date.fromisoformat(datum_str)
+            except ValueError:
+                continue
+
+            new_state = None
+            inject_verpasst = False
+
+            if current_state in ("Planung", "Bestaetigt") and termin_date == today_date:
+                new_state = "Heute"
+            elif current_state == "Heute" and termin_date < today_date:
+                new_state = "Verpasst"
+                inject_verpasst = True
+            elif current_state in ("Planung", "Bestaetigt") and termin_date < today_date:
+                new_state = "Verpasst"
+                inject_verpasst = True
+
+            if not new_state:
+                skipped += 1
+                continue
+
+            rel = path.relative_to(vault)
+            if dry_run:
+                print(f"  WUERDE: {rel} — {current_state} -> {new_state}")
+                if inject_verpasst:
+                    print(f"          + Handlungsempfehlung injizieren")
+                transitions += 1
+                continue
+
+            new_fm = set_field(fm, "state", new_state)
+            new_fm = set_field(new_fm, "state_changed", today_str)
+            new_text = f"---\n{new_fm}\n---{body}"
+
+            if inject_verpasst and "<!-- verpasst-empfehlung -->" not in body:
+                verpasst_block = build_verpasst_block(fm, datum_str)
+                insert_marker = "## Ergebnis / Nachbereitung"
+                if insert_marker in new_text:
+                    new_text = new_text.replace(
+                        insert_marker,
+                        verpasst_block + "\n\n" + insert_marker,
+                    )
+                else:
+                    new_text = new_text.rstrip() + "\n\n" + verpasst_block + "\n"
+
+            try:
+                path.write_text(new_text, encoding="utf-8")
+                print(f"  TRANSITION: {rel} — {current_state} -> {new_state}")
+                if inject_verpasst:
+                    print(f"              + Handlungsempfehlung injiziert")
+                transitions += 1
+            except Exception as e:
+                print(f"  FEHLER: {path.name} — {e}")
+                errors += 1
+
+    # --- Vertraege ---
+    for folder in scan_dirs_vertraege:
+        target = vault / folder
+        if not target.is_dir():
+            continue
+        for path in sorted(target.rglob("*.md")):
+            if path.name in SKIP_FILES:
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except Exception as e:
+                print(f"  FEHLER: {path.name} — {e}")
+                errors += 1
+                continue
+
+            fm, body, has_fm = parse_frontmatter(text)
+            if not has_fm:
+                continue
+
+            note_type = get_field(fm, "type")
+            if note_type != "vertrag":
+                continue
+
+            current_state = get_field(fm, "state")
+            frist_str = get_field(fm, "kuendigungsfrist_datum")
+            if not frist_str:
+                continue
+
+            try:
+                frist_date = date.fromisoformat(frist_str)
+            except ValueError:
+                continue
+
+            new_state = None
+
+            if current_state == "aktiv" and frist_date <= soon_14:
+                new_state = "Frist-naht"
+            elif current_state == "Frist-naht" and frist_date < today_date:
+                new_state = "Versaeumt"
+
+            if not new_state:
+                skipped += 1
+                continue
+
+            rel = path.relative_to(vault)
+            if dry_run:
+                print(f"  WUERDE: {rel} — {current_state} -> {new_state}")
+                transitions += 1
+                continue
+
+            new_fm = set_field(fm, "state", new_state)
+            new_fm = set_field(new_fm, "state_changed", today_str)
+            new_text = f"---\n{new_fm}\n---{body}"
+
+            try:
+                path.write_text(new_text, encoding="utf-8")
+                print(f"  TRANSITION: {rel} — {current_state} -> {new_state}")
+                transitions += 1
+            except Exception as e:
+                print(f"  FEHLER: {path.name} — {e}")
+                errors += 1
+
+    print(f"\n--- Ergebnis ---")
+    print(f"  Transitionen: {transitions}")
+    print(f"  Uebersprungen: {skipped}")
+    if errors:
+        print(f"  Fehler: {errors}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Tom Lifecycle-State-Migration"
@@ -251,7 +575,9 @@ def main():
     sub = parser.add_subparsers(dest="command")
 
     for cmd in ["migrate-dokumente", "migrate-dokumente-v2",
-                "migrate-aufgaben", "migrate-termine"]:
+                "migrate-dokumente-v3",
+                "migrate-aufgaben", "migrate-termine",
+                "auto-transition"]:
         p = sub.add_parser(cmd)
         p.add_argument("--dry-run", action="store_true",
                        help="Nur anzeigen, nichts schreiben")
@@ -261,8 +587,10 @@ def main():
     dispatch = {
         "migrate-dokumente": lambda: migrate_dokumente(args.dry_run),
         "migrate-dokumente-v2": lambda: migrate_dokumente_v2(args.dry_run),
+        "migrate-dokumente-v3": lambda: migrate_dokumente_v3(args.dry_run),
         "migrate-aufgaben": lambda: migrate_aufgaben(args.dry_run),
         "migrate-termine": lambda: migrate_termine(args.dry_run),
+        "auto-transition": lambda: auto_transition(args.dry_run),
     }
 
     if args.command in dispatch:

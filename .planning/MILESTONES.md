@@ -141,3 +141,57 @@ Siehe `.planning/ROADMAP.md` für Phasen-Details, `.planning/briefings/v1.4-CEO-
 **Warum Patch statt v1.5-Phasen 33-35:** Klare Scope-Trennung. v1.5 macht Features (Lifecycle-State-Machine, Dataview-Dashboards, Templater-Frontmatter-Auto). v1.4.1 ist reines Infrastruktur-Backfill + Kompensation für Plugin-Installation zwischen v1.4-Close und jetzt. Kein eigenes CEO-Briefing, nur Mini-Close-Issue.
 
 Siehe `.planning/ROADMAP.md` für Phasen-Details.
+
+## v1.5 — Lifecycle + Integration (Complete)
+
+**Started:** 2026-04-11
+**Completed:** 2026-04-12
+**Goal:** Tom bekommt (1) einen lokalen Ollama-Switch für Claude Code, (2) eine Lifecycle-State-Machine für alle Vault-Bereiche (Dokumente, Aufgaben, Termine, Projekte, Finanzen, Social Media), (3) eine MCP-Bridge für Tom-CLIs in Cursor, (4) KI-gestützte Dokument-Aufnahme und Triage, (5) automatische State-Transitions mit Verpasst-Handling und Dashboards. Die Document-Lifecycle-State-Machine, die in v1.4 deferred wurde, ist jetzt das Herzstück des Milestones.
+**Phases:** 36–44 (9 Phasen, 63 Requirements inkl. 6 Known Gaps / Maxim-Handoffs)
+**Status:** ✓ Shipped (6 HYG-Requirements als Known Gaps offen — erfordern Obsidian-UI/Browser-Interaktion durch Maxim)
+
+**Commits:**
+- Phase 36 — `f842a63` feat(phase-36-ollama-switch): nutze-ollama.sh + tom-local wrapper (retroaktiv, pre-v1.5-Start)
+- Phase 36 — `67f4d80` docs(phase-36-ollama-switch): CLAUDE.md Ollama-Modus section
+- Phase 36 — `11a6ffc` feat(phase-36-ollama-switch): SUMMARY + VERIFICATION
+- Phase 37 — `219ef3c` feat(phase-37): Vault-Hygiene — 6 LLM-Plugins disabled, OLLAMA_ORIGINS, Plugin-Audit Q1-Q5
+- Phase 38 — `d10a2df` feat(phase-38): Local Tool-Use — qwen2.5:3b native tool_calls via CCR
+- Phase 39 — `300959b` feat(phase-39): MCP-Bridge — FastMCP v3, 5 Read-only-Tools fuer Cursor
+- Phase 40 — `37604cb` feat(phase-40): Lifecycle Foundation — Meta Bind Buttons, Dataview Dashboard, tom-state
+- Phase 41a — `661622d` feat(phase-41a): universelle Lifecycle-Engine — 4 Modelle, 22 Button Templates, 3 Dashboards
+- Phase 41b — `695d53f` feat(phase-41b): KI-Intake + Triage — tom-doc-intake, 5 Templates, QuickAdd AI, Book-Chunking
+- Phase 42 — `44607d1` feat(phase-42): Lifecycle Projekte/Finanzen/Social — 3 Dashboards, Cross-Backlinks
+- Phase 43 — `ee2cce2` feat(phase-43): Dashboards & Auto-Routing — Heute.md, auto-transition, tom-status
+- Phase 44 — docs(phase-44): Milestone-Close v1.5
+
+**Maximus_OS Audit-Trail:** CEO-Close-Issue aus Phase 44 (priority=high)
+
+**Neue Werkzeuge:**
+- `nutze-ollama` / `nutze-claude` / `ollama-status` — Shell-Funktionen für lokalen Ollama-Switch
+- `tom-local` — Subshell-Wrapper für Lokal-Modus
+- MCP-Server `mcp-server/tom_mcp.py` — FastMCP v3, 5 Read-only-Tools (tom_doc_search, tom_doc_list, tom_doc_show, tom_wiki_query, tom_ask)
+- `tom-state` — Lifecycle-State-Machine CLI (migrate-dokumente, auto-transition)
+- `tom-state-safe` — Preflight-Wrapper für launchd-Job (taeglich 07:00)
+- `tom-status` — Vault-weite Zusammenfassung mit Top-5 dringend
+- `tom-doc-intake` — KI-gestützte Dokument-Aufnahme via Ollama/Pydantic-Schema
+- `tom-brain-lint` — Multi-Backend Brain Lint (claude, codex, ollama, apple)
+- `tom-archiv-migrate` — Archiv-Migrations-Tool
+- `tom-clipper-status` — Web-Clipper-Status-Übersicht
+- `tom-raw-inject --book` — Book-Chunking via PyPDF2 Bookmark-Erkennung
+
+**Architektur-Änderungen:**
+- **Lifecycle-State-Machine**: 6 Bereiche (Dokumente 5 States, Aufgaben 4, Termine 5, Projekte 3, Verträge 5, Social 4) mit Meta Bind Buttons für atomare Transitions
+- **MCP-Bridge**: stdio-basierter FastMCP-Server in Cursor, kein HTTP-Daemon
+- **Claude Code Router (CCR)**: Lokaler Proxy Port 3456, Ollama-Aliasing für /model-Picker
+- **launchd-Automation**: 3 Jobs (tom-compile 18:00, tom-state-transitions 07:00, ollama-origins)
+- **7 Dataview-Dashboards**: Dokumente, Aufgaben, Termine, Projekte, Finanzen, Social, Morgen-Briefing
+
+**Known Gaps (6 HYG — Maxim-Handoff):**
+- HYG-01: Smart Connections data.json-Defekt (Obsidian-UI)
+- HYG-04: eml-reader Plugin-Konfiguration (Obsidian-UI)
+- HYG-05: Apple-Reminders-Plugin Sync-Probe (Obsidian-UI + Apple Reminders)
+- HYG-07: Web-Clipper-Smoke-Test (Browser)
+- HYG-08: Interpreter-Smoke-Test (Browser + Ollama)
+- HYG-09: Smart Connections TurboQuant-Smoke-Test (Obsidian-UI)
+
+Siehe `.planning/ROADMAP.md` für Phasen-Details, `.planning/briefings/v1.5-CEO-Briefing.md` für Executive Summary.

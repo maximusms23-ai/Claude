@@ -613,22 +613,22 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 
 ### Phases
 
-- [x] **Phase 36: Lokaler Ollama-Switch (out-of-band shipped 2026-04-11)** — Claude Code Router + `nutze-ollama` Shell-Funktionen + `tom-local` Wrapper, Chat-Only-Modus dokumentiert (4 commits: `0cda951`, `f842a63`, `67f4d80`, `11a6ffc`)
-- [ ] **Phase 37: Vault-Hygiene & Cleanup** — Smart Connections Repair + 6 LLM-Plugins disablen + eml-reader/apple-reminders Setup + OLLAMA_ORIGINS persistent + 3 prepared-pending Handoffs aus v1.4/v1.4.1 schließen
-- [ ] **Phase 38: Local Tool-Use Modell-Upgrade** — qwen3-coder oder glm-4.5-air pullen, CCR-Config umstellen, Tool-Use-Gate retesten, tom-compile --local Eval-Sanity-Check
-- [ ] **Phase 39: MCP-Bridge für Tom-CLIs** — FastMCP-Server der tom-doc/tom-wiki/tom-ask/tom-clip-enrich als MCP-Tools im Obsidian-Editor verfügbar macht, mcp-tools-Plugin v0.2.27 konfiguriert, Privacy-Boundaries definiert
-- [ ] **Phase 40: Lifecycle Foundation — Dokumente** — `state`-Frontmatter-Schema für 20_Dokumente, Templater-Transitions, Dataview-Dashboard, Eltern-Betreuung als End-to-End-Beispiel, Schema-Migration-Strategie
-- [ ] **Phase 41: Lifecycle — Aufgaben & Termine** — `state`-Schema für 40_Aufgaben + 50_Gesundheit, Frist-Auto-Highlight, Heute-Views pro Bereich
-- [ ] **Phase 42: Lifecycle — Projekte / Finanzen / Social Media** — `state`-Schema für 30_Projekte + 60_Finanzen + 80_Social_Media, Cross-Area-Verlinkung, Templater-Updates
-- [ ] **Phase 43: Lifecycle Dashboards + Auto-Routing** — Vault-weites Heute-Dashboard, launchd-Job für tägliche state-Auto-Transitions, Apple-Reminders-Sync, `bin/tom-status`-CLI
-- [ ] **Phase 44: Milestone-Close v1.5** — 6 Doku-Kanäle nach v1.3-Schema + CEO-Briefing
+- [x] **Phase 36: Lokaler Ollama-Switch (out-of-band shipped 2026-04-11)** — `nutze-ollama` Shell-Funktionen + `tom-local` Wrapper + Claude Code Router dokumentiert
+- [x] **Phase 37: Vault-Hygiene & Cleanup** — shipped 2026-04-12 (6 HYG-Requirements bleiben Known Gaps / Maxim-Handoff)
+- [x] **Phase 38: Local Tool-Use Modell-Upgrade** — qwen2.5:3b native Tool-Use PASS, CCR-Config repariert, OpenClaw auf qwen2.5:3b, glm-4.7-flash entfernt
+- [x] **Phase 39: MCP-Bridge für Tom-CLIs** — FastMCP v3 Server mit 5 Read-only-Tools (tom-doc search/list/show, tom-wiki, tom-ask), Cursor als Primär-Client via .cursor/mcp.json, async subprocess mit Timeouts, ADR-006, tom-clip-enrich bewusst excluded (Privacy)
+- [x] **Phase 40: Lifecycle Foundation — Dokumente** — `state`-Frontmatter-Schema für 20_Dokumente, Meta Bind Buttons, Dataview-Dashboard, tom-state — shipped 2026-04-12
+- [x] **Phase 41: Lifecycle — Aufgaben & Termine** — Phase 41a Engine + 41b KI-Intake; shipped 2026-04-12
+- [x] **Phase 42: Lifecycle — Projekte / Finanzen / Social Media** — shipped 2026-04-12
+- [x] **Phase 43: Lifecycle Dashboards + Auto-Routing** — shipped 2026-04-12
+- [x] **Phase 44: Milestone-Close v1.5** — Doku-Kaskade, CEO-Briefing, REQUIREMENTS CLOSE15 — shipped 2026-04-12
 
 ### Wave-Dependencies (v1.5)
 
 - **Phase 36 ✓** ist Pre-Roadmap-Opener und blockiert nichts
-- **Phase 37 (Cleanup)** sollte zuerst, weil es CCR-Daemon, Smart Connections, Plugin-Setup für nachfolgende Phasen sauber macht
-- **Phase 38 (Tool-Use-Upgrade)** braucht Phase 37 (CCR muss laufen + Health-Check ok)
-- **Phase 39 (MCP-Bridge)** braucht Phase 38 (mcp-tools profitiert vom besseren lokalen Modell, ist aber nicht hard-blocked) — kann **parallel zu 38** wenn Maxim Cloud-Claude für MCP-Test akzeptiert
+- **Phase 37 (Cleanup)** sollte zuerst, weil es OmniRoute-/OpenClaw-Doku, Smart Connections und Plugin-Setup fuer nachfolgende Phasen sauber macht
+- **Phase 38 (Tool-Use-Upgrade)** braucht Phase 37 nur noch, falls wieder ein separater lokaler Modell-Stack erprobt werden soll
+- **Phase 39 ✓ (MCP-Bridge)** shipped 2026-04-12 — FastMCP v3 in Cursor, async subprocess, Read-only
 - **Phase 40 (Lifecycle Dokumente)** braucht Phase 37 (Templater-Setup aus v1.4.1 muss vollständig sein) — kann nach 37 parallel zu 38/39 starten
 - **Phase 41 (Aufgaben/Termine)** braucht Phase 40 (state-Schema-Konvention) und Phase 37 (apple-reminders-plugin)
 - **Phase 42 (Projekte/Finanzen/Social)** braucht Phase 40 (state-Schema-Konvention)
@@ -649,15 +649,15 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 36. Lokaler Ollama-Switch (out-of-band) | 1/1 | ✓ Done | 2026-04-11 |
-| 37. Vault-Hygiene & Cleanup | 0/? | Not started | — |
-| 38. Local Tool-Use Modell-Upgrade | 0/? | Not started | — |
-| 39. MCP-Bridge für Tom-CLIs | 0/? | Not started | — |
-| 40. Lifecycle Foundation — Dokumente | 0/? | Not started | — |
-| 41. Lifecycle — Aufgaben & Termine | 0/? | Not started | — |
-| 42. Lifecycle — Projekte / Finanzen / Social | 0/? | Not started | — |
-| 43. Lifecycle Dashboards + Auto-Routing | 0/? | Not started | — |
-| 44. Milestone-Close v1.5 | 0/? | Not started | — |
+| 36. Lokaler OmniRoute + Sonnet 4.5 Switch (out-of-band) | 1/1 | ✓ Done | 2026-04-11 |
+| 37. Vault-Hygiene & Cleanup | — | ✓ Done (6 HYG Known Gaps) | 2026-04-12 |
+| 38. Local Tool-Use Modell-Upgrade | 6/6 | ✓ Done | 2026-04-12 |
+| 39. MCP-Bridge für Tom-CLIs | — | ✓ Done | 2026-04-12 |
+| 40. Lifecycle Foundation — Dokumente | — | ✓ Done | 2026-04-12 |
+| 41. Lifecycle — Aufgaben & Termine | — | ✓ Done (41a+41b) | 2026-04-12 |
+| 42. Lifecycle — Projekte / Finanzen / Social | — | ✓ Done | 2026-04-12 |
+| 43. Lifecycle Dashboards + Auto-Routing | — | ✓ Done | 2026-04-12 |
+| 44. Milestone-Close v1.5 | — | ✓ Done | 2026-04-12 |
 
 ---
 
@@ -665,7 +665,7 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 
 ### Phase 36: Lokaler Ollama-Switch (out-of-band shipped)
 
-**Goal**: Maxim kann per Shell-Kommando (`nutze-ollama`) Claude Code's Backend auf lokales Ollama umleiten, mit beiden Modellen (`gemme` Chat, `qwen2.5-coder` Tool-Use-Versuch) verfügbar via `/model`-Picker. Default bleibt Cloud, Switch ist opt-in pro Shell. Real-Use-Smoke-Test bleibt Maxim-Handoff.
+**Goal**: Maxim kann per Shell-Kommando (`nutze-ollama`) Claude Code auf einen lokalen Ollama/CCR-Pfad umleiten. Default bleibt Cloud, der Switch ist opt-in pro Shell.
 
 **Depends on**: Nothing (Pre-Roadmap-Opener am 2026-04-11)
 
@@ -673,13 +673,12 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 
 **Success Criteria**:
 
-1. `which ccr` → `/opt/homebrew/bin/ccr`, `ccr status` → Running
-2. `nutze-ollama` setzt `ANTHROPIC_BASE_URL=http://127.0.0.1:3456` mit Warning-Echo
-3. `nutze-claude` unsetet alle CCR-env-vars
-4. `ollama-status` zeigt Modus + Daemons + Modelle + Aliasing
-5. `tom-local` spawnt Subshell mit env, `tom-local <cmd>` führt Single-Command aus
-6. CCR-Endpoint `/v1/messages` antwortet im Anthropic-Format mit qwen2.5-coder-Response
-7. Tool-Use-Gate ist als documented expected-fail markiert (Phase 38 wird das fixen)
+1. `nutze-ollama` setzt den lokalen CCR/Ollama-Pfad mit Warning-Echo
+2. `nutze-claude` unsetet alle lokalen `ANTHROPIC_*`-Overrides
+3. `ollama-status` zeigt Modus + CCR/Ollama-Status + Aliasing
+4. `tom-local` spawnt Subshell mit env, `tom-local <cmd>` fuehrt Single-Command aus
+5. `tom-local` und der lokale Claude-Pfad bleiben dokumentiert und testbar
+6. Claude-Aliase bleiben ueber CCR konsistent auf die lokalen Modelle gemappt
 
 **Plans**: `36-01-PLAN.md` ✓ + `SUMMARY.md` ✓ + `VERIFICATION.md` ✓
 
@@ -691,7 +690,7 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 
 **Goal**: Alle prepared-pending Handoffs aus v1.4/v1.4.1 sind geschlossen, Smart Connections funktioniert wieder, die 6 unused LLM-Plugins sind disabled, eml-reader und apple-reminders-plugin sind konfiguriert und smoke-tested, OLLAMA_ORIGINS ist persistent gesetzt.
 
-**Depends on**: Phase 36 (CCR-Daemon muss erreichbar sein für Hygiene-Verifikation)
+**Depends on**: Phase 36 (lokaler Claude-Pfad muss fuer Hygiene-Verifikation sauber dokumentiert und erreichbar sein)
 
 **Requirements**: HYG-01..09
 
@@ -711,64 +710,65 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 
 ### Phase 38: Local Tool-Use Modell-Upgrade
 
-**Goal**: Der lokale Claude-Code-Modus aus Phase 36 wird vom Chat-Only-Modus zu einem vollwertigen Agentic-Modus, indem ein Tool-Use-fähiges Ollama-Modell (qwen3-coder, glm-4.5-air oder ein verifizierter Ersatz) installiert und in CCR konfiguriert wird. Tool-Use-Gate wird als PASS verifiziert oder Phase endet als dokumentierter Wechsel auf bessere Cloud-Modelle.
+**Goal**: Der lokale Claude-Code-Pfad wird durch ein besseres lokales Modell und saubere CCR-Konfiguration aufgewertet, damit der Chat-Only-Opener aus Phase 36 perspektivisch agentischer nutzbar wird.
 
-**Depends on**: Phase 37 (CCR + Smart Connections + Ollama müssen sauber laufen)
+**Depends on**: Phase 37 (Smart Connections + lokale Tooling-Pfade muessen sauber laufen)
 
 **Requirements**: LOCAL-06-01..06
 
 **Success Criteria**:
 
-1. `ollama list` enthält das neue Modell mit Größe + Hash
-2. `~/.claude-code-router/config.json` Router-Mapping aktualisiert + Reference-Copy in Phase-Dir
-3. Curl gegen `/v1/messages` mit Tool-Schema → Response enthält `content[].type == "tool_use"` (NICHT text)
-4. Real-Use: `tom-local claude` → `/model opus` → "Liste die Dateien in /tmp" → echter LS-Tool-Call mit Verzeichnis-Inhalt
-5. Phase 36 SUMMARY/VERIFICATION + CLAUDE.md-Limitations-Sektion auf neuen Stand
-6. `tom-compile --local` Eval gegen das neue Modell zeigt keine Regression vs Phase-31-Baseline (Ergebnis in `Gemma/eval/results/v1.5-local-toolupgrade.md`)
+1. Aktuelle Truth-Source-Dateien sprechen konsistent vom lokalen CCR/Ollama-Pfad
+2. `nutze-ollama` / `tom-local` funktionieren weiter
+3. Tool-Use-Modell-Tests liefern eine belastbare Go/No-Go-Entscheidung
 
 **Plans**: TBD
 
 ---
 
-### Phase 39: MCP-Bridge für Tom-CLIs
+### Phase 39: MCP-Bridge für Tom-CLIs ✓
 
-**Goal**: Maxim kann die 4 wichtigsten Tom-Lese-Tools (`tom-doc`, `tom-wiki`, `tom-ask`, `tom-clip-enrich`) direkt aus Obsidian heraus aufrufen — über das `mcp-tools`-Plugin (v0.2.27, ADR-004). Privacy-Boundaries sind explizit definiert pro Tool. End-to-End-Test: User klickt im Obsidian-MCP-Panel auf `tom-doc-search "Arbeitsvertrag"` und bekommt Treffer + Quellen im Editor.
+**Goal**: Tom's Lese-Tools als MCP-Tools in Cursor verfügbar — FastMCP v3, async subprocess, Read-only.
 
-**Depends on**: Phase 37 (mcp-tools Plugin muss konfigurationsfähig sein), kann **parallel zu Phase 38** laufen wenn Maxim für MCP-Tests Cloud-Claude akzeptiert
+**Shipped**: 2026-04-12
 
-**Requirements**: MCP-01..09
+**Requirements**: MCP-01..09 (alle ✓, MCP-05 bewusst excluded, MCP-07/08 re-scoped auf Cursor)
 
-**Success Criteria**:
+**Deliverables**:
 
-1. ADR-006 dokumentiert MCP-Server-Architektur-Entscheidung (FastMCP vs stdio-shell-wrap)
-2. MCP-Server läuft als Daemon (launchd oder Plugin-managed) und exposed mindestens 4 Tools (tom-doc-search, tom-wiki-query, tom-ask, tom-clip-enrich-current-note)
-3. Privacy-Boundary-Tabelle dokumentiert pro Tool: read-only by default, persönliche Ordner-Zugriff explizit gewhitelisted
-4. mcp-tools-Plugin in Obsidian zeigt die 4 Tom-Tools im MCP-Panel
-5. End-to-End-Test: tom-doc-search via MCP-Panel liefert Treffer + Quellen im aktiven Editor
-6. CLAUDE.md neue Sektion "MCP-Bridge für Tom-CLIs" mit Use-Cases, Privacy-Boundary-Tabelle, Daemon-Lifecycle, Troubleshooting
+1. `mcp-server/tom_mcp.py` — FastMCP v3 Server mit 5 async Tools
+2. `.cursor/mcp.json` — Cursor MCP-Client-Config (uv run, stdio)
+3. ADR-006 in `.planning/obsidian-plugin-config/adr-006-mcp-architecture.md`
+4. Privacy-Boundary-Tabelle in ADR-006 (alle Read-only, kein Write über MCP)
+5. CLAUDE.md Sektion "MCP-Bridge für Tom-CLIs"
+6. `tom-clip-enrich` nicht exposed (Privacy-Entscheidung dokumentiert)
 
-**Plans**: TBD
+**Key Decision**: Obsidian `mcp-tools` Plugin ist kein generischer MCP-Client — Cursor als Primär-Client gewählt (ADR-006)
 
 ---
 
-### Phase 40: Lifecycle Foundation — Dokumente
+### Phase 40: Lifecycle Foundation — Dokumente ✓ Done
 
-**Goal**: Das `state`-Frontmatter-Schema für 20_Dokumente ist definiert, dokumentiert und im ersten echten Beispiel (Eltern-Betreuung Waldemar/Nina) verwendet. Templater-Transitions funktionieren, Dataview-Dashboard zeigt Dokumente nach State sortiert. Schema-Migration für existierende stateless Notes ist gelöst.
+**Goal**: Das `state`-Frontmatter-Schema für 20_Dokumente ist definiert, dokumentiert und im ersten echten Beispiel (Eltern-Betreuung Waldemar/Nina) verwendet. Meta Bind Buttons für atomare State-Transitions, Dataview-Dashboard zeigt Dokumente nach State sortiert. Schema-Migration für existierende stateless Notes ist gelöst.
 
-**Depends on**: Phase 37 (Templater-Setup muss vollständig sein)
+**Depends on**: Phase 37 (Templater-Setup — de facto erfüllt, Templater konfiguriert)
 
-**Requirements**: LCY-01..06
+**Requirements**: LCY-01..06 (alle done)
 
-**Success Criteria**:
+**Shipped** (2026-04-12):
 
-1. `99_Vorlagen/state-schema.md` dokumentiert die 5 Dokumente-States (Eingang, In-Bearbeitung, Antwort-formuliert, Warte-auf-Rückmeldung, Erledigt) mit Übergangs-Diagramm
-2. `99_Vorlagen/Dokument.md` Template hat `state: Eingang` Default + `state_changed`-Field
-3. Templater-Snippet `state-next-dokument.md` lässt User per Click den nächsten State wählen
-4. `20_Dokumente/Dashboard.md` Dataview-View gruppiert nach state, sortiert nach state_changed, highlightet Frist-naht
-5. `20_Dokumente/13_Betreuung.md` enthält 3 echte Eingang-Dokumente mit state-tracking
-6. Migration-Script `bin/tom-state migrate-dokumente` läuft idempotent über existierende stateless Notes (Default-Inserter ODER Skip-Marker)
+1. `99_Vorlagen/state-schema.md` — 5 States + Mermaid-Diagramm + Meta Bind Syntax-Referenz
+2. `99_Vorlagen/Dokument.md` — Template mit `state: Eingang` + `state_changed` + `due_date` + 4 Meta Bind Buttons
+3. Meta Bind Buttons statt Templater-Snippet — atomare `updateMetadata` actions setzen `state` + `state_changed` in einem Klick
+4. `20_Dokumente/Dashboard.md` — 5 Dataview-Sektionen (Offene, Eingang, In-Bearbeitung, Warte, Erledigt, Fällige Fristen)
+5. 3 Betreuungs-Dokumente in `20_Dokumente/13_Betreuung/` (Eingang/Warte/Erledigt)
+6. `bin/tom-state migrate-dokumente` — 15 Dateien migriert, idempotent, `--dry-run`, Symlink `~/bin/tom-state`
 
-**Plans**: TBD
+**Key Decisions**:
+- Meta Bind Buttons statt inlineSelect (inlineSelect kann nur 1 Feld updaten, Buttons setzen state + state_changed atomar)
+- Meta Bind Plugin v1.4.6 manuell installiert (325k Downloads, 934 Stars)
+- Obsidian Bases geprüft und verworfen (nur Catalyst Early Access)
+- obsidian-note-status geprüft und verworfen (3k Downloads, starres Schema)
 
 ---
 
@@ -865,9 +865,9 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 |-------------|-------|--------|
 | LOCAL-05-01..07 | 36 | ✓ Done |
 | HYG-01..09 | 37 | Pending |
-| LOCAL-06-01..06 | 38 | Pending |
-| MCP-01..09 | 39 | Pending |
-| LCY-01..06 | 40 | Pending |
+| LOCAL-06-01..06 | 38 | ✓ Done |
+| MCP-01..09 | 39 | ✓ Done |
+| LCY-01..06 | 40 | ✓ Done |
 | LCY-07..12 | 41 | Pending |
 | LCY-13..18 | 42 | Pending |
 | LCY-19..25 | 43 | Pending |

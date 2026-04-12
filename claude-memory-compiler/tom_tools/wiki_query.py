@@ -1,8 +1,8 @@
-"""Tom Wiki Query — Karpathy Index-first Retrieval über lokales Gemme.
+"""Tom Wiki Query — Karpathy Index-first Retrieval ueber lokales Qwen.
 
 Liest den Karpathy-Index-Gerüst einer Wiki-Quelle (default 90_Wiki/, optional
 95_Gehirn/ via --brain), injiziert Index + per Keyword gefilterte Top-K-Artikel
-in den Prompt, und lässt das lokale Ollama-Modell (`gemme`) synthetisieren.
+in den Prompt, und laesst das lokale Ollama-Modell (`qwen2.5:3b`) synthetisieren.
 Kein RAG, keine Embeddings — bei 20–500 Artikeln präziser als Cosine-Similarity.
 
 Usage:
@@ -26,8 +26,8 @@ except ImportError:
     sys.exit(1)
 
 
-MODEL = "gemme"
-MAX_CONTEXT_CHARS = 100_000  # gemma4:e4b kann 128k, wir halten Puffer
+MODEL = os.environ.get("TOM_WIKI_MODEL", "qwen2.5:3b")
+MAX_CONTEXT_CHARS = 100_000
 
 TOP_K = 5  # max. Anzahl Artikel zusaetzlich zum Index in den Prompt
 MIN_KEYWORD_LEN = 3  # zu kurze Tokens (de, an, in) ignorieren

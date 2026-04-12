@@ -12,8 +12,8 @@
 #   tom-wiki --root /pfad/zu/wiki "F"  # expliziter Wiki-Root
 #
 # Unterschied zu tom-ask:
-#   tom-ask  = Gemma RAG (Cosine-Similarity, 3 Collections)   — Fuzzy-Queries
-#   tom-wiki = Index-first Reasoning über gemme               — bekannte Themen
+#   tom-ask  = Qwen RAG (Cosine-Similarity, 3 Collections)    — Fuzzy-Queries
+#   tom-wiki = Index-first Reasoning über qwen2.5:3b          — bekannte Themen
 
 set -euo pipefail
 

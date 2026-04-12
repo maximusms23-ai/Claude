@@ -1,0 +1,276 @@
+#!/usr/bin/env python3
+"""
+tom-state — Lifecycle-State-Migration fuer Tom-Vault.
+
+Scannt verschiedene Vault-Ordner und fuegt fehlende Lifecycle-Felder
+ins Frontmatter ein. Idempotent: Notes mit bestehendem state-Feld
+werden uebersprungen.
+
+Usage:
+  tom-state migrate-dokumente [--dry-run]
+  tom-state migrate-dokumente-v2 [--dry-run]
+  tom-state migrate-aufgaben [--dry-run]
+  tom-state migrate-termine [--dry-run]
+
+Flags:
+  --dry-run   Zeigt was geaendert wuerde, schreibt nichts.
+
+Dependencies: Python 3.8+ stdlib only.
+"""
+
+import argparse
+import os
+import sys
+from datetime import date
+from pathlib import Path
+
+
+TOM_VAULT = os.environ.get(
+    "TOM_VAULT",
+    "/Users/maxim/Library/Mobile Documents/"
+    "com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw",
+)
+
+TODAY = date.today().isoformat()
+
+SKIP_FILES = {"Dashboard.md", "Heute.md", "README.md"}
+
+
+def parse_frontmatter(text: str):
+    if not text.startswith("---"):
+        return "", text, False
+    end = text.find("\n---", 3)
+    if end == -1:
+        return "", text, False
+    fm_end = end + 4
+    fm = text[4:end]
+    body = text[fm_end:]
+    return fm.strip(), body, True
+
+
+def has_field(frontmatter: str, field: str) -> bool:
+    for line in frontmatter.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(f"{field}:"):
+            return True
+    return False
+
+
+def inject_fields(text: str, fields_yaml: str) -> str:
+    fm, body, has_fm = parse_frontmatter(text)
+    if not has_fm:
+        return f"---\n{fields_yaml}\n---\n{text}"
+    new_fm = fm + "\n" + fields_yaml
+    return f"---\n{new_fm}\n---{body}"
+
+
+def run_migration(target_dir: Path, fields_yaml: str, check_field: str,
+                  label: str, dry_run: bool = False):
+    if not target_dir.is_dir():
+        print(f"FEHLER: {target_dir} existiert nicht.", file=sys.stderr)
+        sys.exit(1)
+
+    md_files = sorted(target_dir.rglob("*.md"))
+    total = 0
+    migrated = 0
+    skipped = 0
+    errors = 0
+
+    for path in md_files:
+        if path.name in SKIP_FILES:
+            continue
+        total += 1
+
+        try:
+            text = path.read_text(encoding="utf-8")
+        except Exception as e:
+            print(f"  FEHLER: {path.name} — {e}")
+            errors += 1
+            continue
+
+        fm, _, has_fm = parse_frontmatter(text)
+
+        if has_field(fm, check_field):
+            skipped += 1
+            continue
+
+        if dry_run:
+            print(f"  WUERDE MIGRIEREN: {path.relative_to(target_dir)}")
+            migrated += 1
+            continue
+
+        new_text = inject_fields(text, fields_yaml)
+        try:
+            path.write_text(new_text, encoding="utf-8")
+            print(f"  MIGRIERT: {path.relative_to(target_dir)}")
+            migrated += 1
+        except Exception as e:
+            print(f"  FEHLER beim Schreiben: {path.name} — {e}")
+            errors += 1
+
+    mode = "DRY-RUN" if dry_run else "LIVE"
+    print(f"\n--- tom-state {label} ({mode}) ---")
+    print(f"  Gesamt:    {total}")
+    print(f"  Migriert:  {migrated}")
+    print(f"  Uebersprungen (hat {check_field}): {skipped}")
+    if errors:
+        print(f"  Fehler:    {errors}")
+
+
+def migrate_dokumente(dry_run: bool = False):
+    fields = f"""\
+state: Eingang
+state_changed: {TODAY}
+due_date: ""\
+"""
+    run_migration(
+        Path(TOM_VAULT) / "20_Dokumente",
+        fields, "state", "migrate-dokumente", dry_run,
+    )
+
+
+def migrate_dokumente_v2(dry_run: bool = False):
+    """Add v2 fields to documents that already have state but lack new fields."""
+    target_dir = Path(TOM_VAULT) / "20_Dokumente"
+    if not target_dir.is_dir():
+        print(f"FEHLER: {target_dir} existiert nicht.", file=sys.stderr)
+        sys.exit(1)
+
+    v2_fields = {
+        "betreff_kurz": '""',
+        "absender": '""',
+        "empfaenger": "[]",
+        "empfangsdatum": '""',
+        "dokument_datum": '""',
+        "eingepflegt_am": '""',
+        "antwortfrist": '""',
+        "uebermittlung_art": '""',
+        "aufbewahrung_bis": '""',
+        "email_ref": '""',
+        "email_betreff": '""',
+        "ansprechperson": '""',
+        "abhaengigkeiten": "[]",
+        "steuer_relevant": "false",
+        "ki_init_at": '""',
+        "ki_init_version": "0",
+        "ki_aktualitaet": '""',
+        "ki_relevanz": '""',
+    }
+
+    md_files = sorted(target_dir.rglob("*.md"))
+    total = 0
+    migrated = 0
+    skipped = 0
+    errors = 0
+
+    for path in md_files:
+        if path.name in SKIP_FILES:
+            continue
+        total += 1
+
+        try:
+            text = path.read_text(encoding="utf-8")
+        except Exception as e:
+            print(f"  FEHLER: {path.name} — {e}")
+            errors += 1
+            continue
+
+        fm, body, has_fm = parse_frontmatter(text)
+        if not has_fm:
+            skipped += 1
+            continue
+
+        missing = []
+        for field, default in v2_fields.items():
+            if not has_field(fm, field):
+                missing.append(f"{field}: {default}")
+
+        if not missing:
+            skipped += 1
+            continue
+
+        if dry_run:
+            print(f"  WUERDE ERGAENZEN ({len(missing)} Felder): "
+                  f"{path.relative_to(target_dir)}")
+            migrated += 1
+            continue
+
+        new_fm = fm + "\n" + "\n".join(missing)
+        new_text = f"---\n{new_fm}\n---{body}"
+        try:
+            path.write_text(new_text, encoding="utf-8")
+            print(f"  ERGAENZT ({len(missing)} Felder): "
+                  f"{path.relative_to(target_dir)}")
+            migrated += 1
+        except Exception as e:
+            print(f"  FEHLER beim Schreiben: {path.name} — {e}")
+            errors += 1
+
+    mode = "DRY-RUN" if dry_run else "LIVE"
+    print(f"\n--- tom-state migrate-dokumente-v2 ({mode}) ---")
+    print(f"  Gesamt:    {total}")
+    print(f"  Ergaenzt:  {migrated}")
+    print(f"  Uebersprungen (komplett): {skipped}")
+    if errors:
+        print(f"  Fehler:    {errors}")
+
+
+def migrate_aufgaben(dry_run: bool = False):
+    fields = f"""\
+state: Offen
+state_changed: {TODAY}
+due_date: ""
+priority: ""\
+"""
+    run_migration(
+        Path(TOM_VAULT) / "40_Aufgaben",
+        fields, "state", "migrate-aufgaben", dry_run,
+    )
+
+
+def migrate_termine(dry_run: bool = False):
+    """Migrate notes in 50_Gesundheit/ and any termin-type notes."""
+    fields = f"""\
+state: Planung
+state_changed: {TODAY}
+termin_kategorie: ""
+naechster_termin: ""
+due_date: ""\
+"""
+    for folder in ["50_Gesundheit"]:
+        target = Path(TOM_VAULT) / folder
+        if target.is_dir():
+            run_migration(target, fields, "state",
+                          f"migrate-termine ({folder})", dry_run)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Tom Lifecycle-State-Migration"
+    )
+    sub = parser.add_subparsers(dest="command")
+
+    for cmd in ["migrate-dokumente", "migrate-dokumente-v2",
+                "migrate-aufgaben", "migrate-termine"]:
+        p = sub.add_parser(cmd)
+        p.add_argument("--dry-run", action="store_true",
+                       help="Nur anzeigen, nichts schreiben")
+
+    args = parser.parse_args()
+
+    dispatch = {
+        "migrate-dokumente": lambda: migrate_dokumente(args.dry_run),
+        "migrate-dokumente-v2": lambda: migrate_dokumente_v2(args.dry_run),
+        "migrate-aufgaben": lambda: migrate_aufgaben(args.dry_run),
+        "migrate-termine": lambda: migrate_termine(args.dry_run),
+    }
+
+    if args.command in dispatch:
+        dispatch[args.command]()
+    else:
+        parser.print_help()
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

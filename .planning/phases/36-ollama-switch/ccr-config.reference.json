@@ -8,17 +8,16 @@
       "api_base_url": "http://localhost:11434/v1/chat/completions",
       "api_key": "ollama",
       "models": [
-        "qwen2.5-coder:latest",
-        "gemme:latest"
+        "qwen2.5:3b"
       ]
     }
   ],
   "Router": {
-    "default": "ollama,qwen2.5-coder:latest",
-    "background": "ollama,gemme:latest",
-    "think": "ollama,qwen2.5-coder:latest",
-    "longContext": "ollama,qwen2.5-coder:latest",
+    "default": "ollama,qwen2.5:3b",
+    "background": "ollama,qwen2.5:3b",
+    "think": "ollama,qwen2.5:3b",
+    "longContext": "ollama,qwen2.5:3b",
     "longContextThreshold": 60000,
-    "webSearch": "ollama,qwen2.5-coder:latest"
+    "webSearch": "ollama,qwen2.5:3b"
   }
 }

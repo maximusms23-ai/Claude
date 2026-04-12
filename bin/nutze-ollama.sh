@@ -16,7 +16,7 @@
 # Design-Notes:
 #   - Kein `set -e` in sourced Lib, sonst killt Fehler die Parent-Shell
 #   - Preflight ist idempotent: CCR-Daemon wird auto-gestartet wenn tot
-#   - Model-Aliasing passiert im CCR-Config (Opus→qwen2.5-coder, Haiku→gemme)
+#   - Model-Aliasing passiert im CCR-Config (Opus/Haiku→qwen2.5:3b)
 #   - ADR: siehe /Users/maxim/Claude/.planning/phases/36-ollama-switch/36-01-PLAN.md
 
 # --- Konstanten ---
@@ -69,12 +69,9 @@ _tom_ollama_preflight() {
   # Modelle vorhanden?
   local models
   models=$(ollama list 2>/dev/null | awk 'NR>1 {print $1}')
-  if ! echo "$models" | grep -q "^gemme"; then
-    echo "⚠ gemme:latest nicht gefunden — tom-ask/tom-wiki wird brechen" >&2
-  fi
-  if ! echo "$models" | grep -q "^qwen2.5-coder"; then
-    echo "⚠ qwen2.5-coder:latest nicht gefunden — Tool-Use wird brechen" >&2
-    echo "  Fix: ollama pull qwen2.5-coder" >&2
+  if ! echo "$models" | grep -q "^qwen2.5:3b"; then
+    echo "⚠ qwen2.5:3b nicht gefunden — lokaler Qwen-Stack wird brechen" >&2
+    echo "  Fix: ollama pull qwen2.5:3b" >&2
   fi
   return 0
 }
@@ -102,9 +99,9 @@ nutze-ollama() {
 ⚠  Lokaler Ollama-Modus aktiv
    ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-?}
    Modell-Aliasing (CCR-Router):
-     /model opus   →  qwen2.5-coder:latest  (Tool-Use, Edit/Bash)
-     /model haiku  →  gemme:latest          (Chat, Wiki, Brainstorming)
-   GSD-Workflows/Superpowers/Multi-Step sind im lokalen Modus degradiert.
+     /model opus   →  qwen2.5:3b  (Chat, Wiki, Research)
+     /model haiku  →  qwen2.5:3b  (Chat, Wiki, Research)
+   GSD-Workflows/Superpowers/Multi-Step bleiben im lokalen Modus eingeschraenkt.
    Rückkehr zu Cloud: nutze-claude
 EOF
   _tom_ollama_log "OK nutze-ollama activated"
@@ -156,8 +153,8 @@ Installierte Ollama-Modelle:
 $models
 
 Aliasing (im Lokal-Modus):
-  /model opus   →  qwen2.5-coder:latest  (Tool-Use)
-  /model haiku  →  gemme:latest          (Chat)
+  /model opus   →  qwen2.5:3b  (Chat/Research)
+  /model haiku  →  qwen2.5:3b  (Chat/Research)
 
 Kommandos:
   nutze-ollama   → in Lokal-Modus wechseln

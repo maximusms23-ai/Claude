@@ -1,6 +1,6 @@
 # Technology Stack
 
-**Analysis Date:** 2026-04-08
+**Analysis Date:** 2026-04-12
 
 ## Languages
 
@@ -29,8 +29,10 @@
   - Material theme - Modern responsive documentation theme
   - roamlinks plugin - Obsidian-style wikilink support for cross-references
 - Ollama - Local LLM runtime and inference engine
-  - Runs Gemma 4 8B (Q4_K_M quantization) as base model
-  - nomic-embed-text - Embedding model for RAG semantic search
+  - Runs `qwen2.5:3b` as the active local chat/research model
+- LangChain - Orchestration layer for local chat and embeddings
+- sentence-transformers - Local embedding runtime for semantic search
+- Open WebUI - Local UI and web-search/RAG surface over Ollama
 
 **Testing:**
 - Not detected
@@ -43,7 +45,9 @@
 **Critical:**
 - chromadb - Vector database for RAG semantic search and retrieval (`/Users/maxim/Claude/Gemma/rag/`)
   - Persistent storage in `/Users/maxim/Claude/Gemma/rag/chroma_db/`
-- ollama - Python SDK for local LLM inference and embeddings
+- langchain-ollama - LangChain adapter for Ollama chat/inference
+- langchain-huggingface - LangChain adapter for Hugging Face embeddings
+- sentence-transformers - Local embeddings via `BAAI/bge-small-en-v1.5`
 - pyyaml - YAML parsing for frontmatter extraction in wiki indexing
 - mkdocs-material - Material Design theme for MkDocs
 - mkdocs-roamlinks-plugin - Wikilink plugin for Obsidian-style cross-references
@@ -55,8 +59,10 @@
 ## Configuration
 
 **Environment:**
-- No detected environment variables in use
-- All paths configured relative to repo structure in `config.py`
+- `TOM_LOCAL_MODEL=qwen2.5:3b`
+- `TOM_RAG_EMBED_MODEL=BAAI/bge-small-en-v1.5`
+- `OLLAMA_BASE_URL=http://127.0.0.1:11434`
+- Open WebUI uses env-based configuration in `openwebui/.env.example`
 
 **Build:**
 - MkDocs config: `/Users/maxim/Claude/Obsidian/mkdocs.yml`
@@ -65,9 +71,9 @@
   - Theme: Material with dark/light mode toggle
   - Plugins: search, roamlinks
 - Ollama modelfile: `/Users/maxim/Claude/Gemma/modelfile/Modelfile`
-  - Base model: gemma4:latest (Gemma 4 8B)
-  - Context window: 8192 tokens
-  - Temperature: 0.7
+  - Base model: `qwen2.5:3b`
+  - Context window: 16384 tokens
+  - Temperature: 0.2
 - GitHub Actions workflow: `/Users/maxim/Claude/Obsidian/.github/workflows/deploy.yml`
   - Python 3.12
   - Auto-deploys to GitHub Pages on main branch push
@@ -79,12 +85,14 @@
 - Mac Mini M4 with 16 GB unified memory (per `/Users/maxim/Claude/Gemma/README.md`)
 - Ollama installed and running locally
 - Python 3.13+ with pip
+- Apple Silicon friendly local model/runtime path (`qwen2.5:3b`, Ollama, optional MLX follow-up)
 
 **Production:**
 - GitHub Pages (static hosting for wiki)
 - Python 3.12+ environment for RAG pipeline (if deployed remotely)
-- Ollama installation with gemma4:latest and nomic-embed-text models
+- Ollama installation with `qwen2.5:3b`
+- Local embedding assets for `BAAI/bge-small-en-v1.5`
 
 ---
 
-*Stack analysis: 2026-04-08*
+*Stack analysis: 2026-04-12*

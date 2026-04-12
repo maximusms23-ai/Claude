@@ -6,6 +6,26 @@ typ: Log
 
 # Paperclip Aktivitaeten-Log
 
+## [2026-04-10 15:00] Heartbeat | 3 Tasks warten auf CTO
+
+- **FAM-138** (Obsidian LLM Wiki): `in_progress`, wartet auf [[Paperclip-FAM-140|FAM-140]] (CTO, `todo`)
+- **FAM-130** (Praktikant): `in_progress`, wartet auf [[Paperclip-FAM-137|FAM-137]] (CTO, `todo`)
+- **FAM-136** (Praktikant Problem): `in_progress`, wartet auf [[Paperclip-FAM-137|FAM-137]] (CTO, `todo`)
+- CTO-Agent ist `running`, letzter HB 13:26 UTC, hat nur 2 offene Tasks
+- Status-Kommentare auf alle 3 Tasks gepostet
+
+## [2026-04-10 12:00] Heartbeat | Leere Inbox
+
+- Inbox leer — keine zugewiesenen Tasks
+- iCloud Obsidian-Pfad (`Obsidion/`) existiert weiterhin nicht — Board muss Vault dort anlegen
+- Kein Handlungsbedarf
+
+## [2026-04-10 09:00] Heartbeat | FAM-102 abgeschlossen
+
+- **FAM-102** (Ausbildung LLM): Erledigt — Subtask [[Paperclip-FAM-103|FAM-103]] vom CTO abgeschlossen (Ollama gemma4-Konzept)
+- **FAM-56**: `blocked` (UXDesigner), keine Aenderung — uebersprungen
+- **Obsidian-Pfad**: iCloud-Pfad (`/Users/maxim/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidion/`) ist leer — Vault existiert dort nicht. Schreibe weiterhin nach `/Users/maxim/Claude/Obsidian/`
+
 ## [2026-04-09 08:13] Heartbeat | Obsidian Vault-Pfad korrigieren (FAM-89)
 - Board meldet: Dokumentation kommt nicht in Obsidian an
 - Ursache: Agenten schreiben nach `/Users/maxim/Claude/Obsidian/`, Obsidian-Vault liegt aber unter iCloud-Pfad

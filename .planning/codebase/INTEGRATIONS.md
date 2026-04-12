@@ -1,15 +1,29 @@
 # External Integrations
 
-**Analysis Date:** 2026-04-08
+**Analysis Date:** 2026-04-12
 
 ## APIs & External Services
 
 **Local LLM Runtime:**
 - Ollama - Local LLM inference engine
-  - SDK/Client: `ollama` Python package
-  - Purpose: Model execution (Gemma 4 8B), embeddings generation (nomic-embed-text)
+  - SDK/Client: `langchain-ollama` for active RAG/query flows
+  - Purpose: Model execution for `qwen2.5:3b`
   - Communication: Local HTTP API (default port 11434)
-  - Used in: `index.py` for embeddings, `query.py` for inference
+  - Used in: `query.py`, `langchain_stack.py`, OpenClaw/Open WebUI local runtime
+
+**Local Embeddings:**
+- SentenceTransformers / Hugging Face
+  - SDK/Client: `langchain-huggingface`, `sentence-transformers`
+  - Purpose: Embeddings generation via `BAAI/bge-small-en-v1.5`
+  - Used in: `index.py` and `query.py` through `Gemma/rag/langchain_stack.py`
+
+**Local Research Surfaces:**
+- Open WebUI
+  - Purpose: Stable local chat plus optional web search/RAG over Ollama
+  - Config: `openwebui/.env.example`
+- OpenClaw
+  - Purpose: Local search/fetch-enabled assistant path over Ollama
+  - Config: `openclaw/config/*.reference.json`
 
 **Web Content Integration:**
 - Obsidian Web Clipper - Browser extension for capturing web articles
@@ -36,6 +50,7 @@
 
 **Caching:**
 - ChromaDB embeddings cache - Persistent vector embeddings in chroma_db directory
+- Hugging Face / SentenceTransformers local model cache for `BAAI/bge-small-en-v1.5`
 
 ## Authentication & Identity
 
@@ -78,7 +93,10 @@
 ## Environment Configuration
 
 **Required env vars:**
-- None detected - All configuration is file-based
+- `TOM_LOCAL_MODEL`
+- `TOM_RAG_EMBED_MODEL`
+- `OLLAMA_BASE_URL`
+- Open WebUI search vars such as `WEB_SEARCH_ENGINE` and provider API keys when external search is enabled
 
 **Secrets location:**
 - No secret management detected
@@ -105,6 +123,10 @@
   - `python3 Gemma/rag/index.py` - Index wiki into ChromaDB
   - `python3 Gemma/rag/query.py "question"` - Query via RAG
 
+**Research Workflow:**
+- `openclaw models status` - Validate local OpenClaw model wiring
+- Open WebUI - Run local chat/RAG/search against the same Ollama base model
+
 ---
 
-*Integration audit: 2026-04-08*
+*Integration audit: 2026-04-12*

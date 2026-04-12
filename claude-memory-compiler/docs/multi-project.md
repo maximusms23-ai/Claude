@@ -12,11 +12,11 @@ Füge in die `CLAUDE.md` deines Projekts folgende Sektion ein:
 Dieses Projekt teilt den Wissensstand mit Tom (`~/Claude`). Bei Wissensfragen
 die nicht projekt-spezifisch sind, nutze diese Tools:
 
-**Primary (Index-first, lokal via gemme — kostenlos)**:
+**Primary (Index-first, lokal via `qwen2.5:3b` — kostenlos)**:
 - `tom-wiki "Frage"` — liest `$TOM_VAULT/90_Wiki/` und synthetisiert
 - `tom-wiki --brain "Frage"` — liest `$TOM_VAULT/95_Gehirn/` (wenn privates Konversations-Wissen relevant ist)
 
-**Fallback (Gemma RAG, langsamer)**:
+**Fallback (Qwen RAG, langsamer)**:
 - `tom-ask "Frage"` — Cosine-Similarity über alle indizierten Chunks
 
 **Pfade**:

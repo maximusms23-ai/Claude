@@ -292,3 +292,17 @@ Maxim-Klick-Sequenz:
 - Ollama-Models-Path-Fix (out-of-scope, Maxim-Entscheidung via FAM-154)
 - Single-Prompt-JSON-Interpreter (v1.5+ Konsolidierung, wenn Extension-Feature klar ist)
 - Voll-Deprecation von `tom-clip-enrich`
+
+---
+
+## Addendum — Hybrid Tom + tuan3w (2026-04-11)
+
+| # | Criterion | Evidence |
+|---|-----------|----------|
+| H1b | `OLLAMA_ORIGINS` inkl. `safari-web-extension://*` in [CLAUDE.md](../../../CLAUDE.md) Web-Clipper-Setup + Vault-README `launchctl`-Zeile | ✓ |
+| H2b | `Tom-Artikel.json` / `Tom-Paper.json`: zusätzlicher Body-Interpreter für strukturierte Notizen (deutsch), valides JSON | ✓ |
+| H3b | Markdown-Referenz `Artikel.md` / `Paper.md` synchron zu JSON-Prompts | ✓ |
+| H4b | ADR-005 Abschnitt „Hybrid-Templates“ + Upstream-Link zu tuan3w | ✓ |
+| H5b | REQUIREMENTS **HYG-03** erledigt (Doku + launchctl-Anweisung) | ✓ |
+
+**Hinweis:** Nach `launchctl setenv` muss der Nutzer Ollama neu starten; CORS-Smoke-Test gegen Safari-Origin setzt laufenden `ollama serve` mit geerbter Env voraus.

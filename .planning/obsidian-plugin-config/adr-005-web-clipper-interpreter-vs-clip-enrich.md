@@ -76,11 +76,23 @@ Alle 7 Clipper-Templates in `$TOM_VAULT/99_Vorlagen/web-clipper/*.md` nutzen ab 
 
 Mitigation: Ollama `keep_alive=5m` (Default) hält `gemme` nach erstem Call im RAM, Folge-Clips sind schneller.
 
+### Standard-Interpreter-Kontext (Interpreter → Erweitert)
+
+In den Extension-Einstellungen (**Interpreter → Erweitert → Standard-Interpreter-Kontext**) sollte der Kontext **`{{content}}`** stehen (extrahierter Artikel als Markdown), nicht **`{{fullHtml}}`** (gesamte Roh-HTML-Seite: oft zu groß, langsamer, riskant für Ollamas Default-`num_ctx`). Optional: `{{title}}` / `{{url}}` davor; bei sehr langen Seiten Filter wie `{{content|slice:0,N}}`. Siehe [Obsidian Web Clipper — Interpret web pages](https://github.com/obsidianmd/obsidian-clipper/blob/main/docs/Interpret%20web%20pages.md) (Abschnitt *Context*).
+
+**Ops-Check (lokal):** `curl -s http://127.0.0.1:11434/api/tags` liefert JSON, wenn Ollama läuft. `launchctl getenv OLLAMA_ORIGINS` soll die Extension-Origins zeigen; ist die Variable leer, `launchctl setenv` wie unter Privacy setzen und **Ollama neu starten**. 403 vom Browser: CORS/Origins. Nutzloser Modell-Output trotz Erfolg: Kontext zu lang → `num_ctx` in Ollama erhöhen oder Kontext kürzen (`{{content}}`, `slice`).
+
 ### Privacy
 
-- `OLLAMA_ORIGINS` wird persistent via `launchctl setenv` gesetzt auf `chrome-extension://*,moz-extension://*` — **nur** Browser-Extensions, nicht beliebige Web-Origins
+- `OLLAMA_ORIGINS` wird persistent via `launchctl setenv` gesetzt auf `chrome-extension://*,moz-extension://*,safari-web-extension://*` — **nur** Browser-Extensions, nicht beliebige Web-Origins
 - Alle Interpreter-Calls bleiben 100 % lokal (Ollama läuft auf Maxim's Maschine, `gemme` ist Custom-Modell auf `gemma4:e4b`)
 - Beim Clip schickt die Extension den `{{content}}`-Body an Ollama — lokal, aber Maxim entscheidet pro Clip, ob er auf privaten Seiten clippt
+
+## Hybrid-Templates (Tom + tuan3w-Inspiration) — 2026-04-11
+
+Die importierbaren JSON-Templates (`Tom-*.json`) folgen weiterhin dem **Tom-Schema** (7 Typen, Pfade unter `Clippings/`, deutschsprachige Frontmatter-Felder `summary` / `tags` / `konzepte_vorschlaege`). Zusätzlich enthalten **Tom-Artikel** und **Tom-Paper** im `noteContentFormat` einen vierten Interpreter-Block mit **strukturierten Stichpunkten und optionalen Zitaten** — angelehnt an die Idee der langen Inhaltsauszüge in [tuan3w/obsidian-template `default-clipper.json`](https://github.com/tuan3w/obsidian-template/blob/master/templates/web-clipper/default-clipper.json), aber **auf Deutsch** und ohne die fremde Ordnerstruktur (`notes/clippings`) zu übernehmen. Upstream-Repo ist nicht mehr aktiv maintained und dient nur als Referenz für Prompt-Stil, nicht als Laufzeit-Abhängigkeit.
+
+**2026-04-11 (Erweiterung):** Alle sieben `Tom-*.json`-Templates enthalten im `noteContentFormat` den Abschnitt **„Bewertung (Gemma 4 | Zettelkasten)"** — ein zusätzlicher `{{"…"}}`-Interpreter-Prompt, der `gemme` als **Bewerter** einsetzt (Behaltenswert 1–5, Qualität, nächste Schritte), textlich an Zettelkasten-/Smart-Notes-Arbeit angelehnt und mit [groepl/Obsidian-Templates](https://github.com/groepl/Obsidian-Templates) als **Workflow-Referenz** (nicht als Plugin-Bundle) dokumentiert im Vault-README. `tom-clip-enrich` füllt diesen Body-Block nicht nach; bei fehlendem Interpret-Klick erscheint der Roh-Prompt im exportierten Markdown.
 
 ## Alternatives Considered
 
@@ -127,3 +139,4 @@ Ein einziger Interpreter-Prompt, der JSON zurückliefert (`{"summary": …, "tag
 - Templates: `$TOM_VAULT/99_Vorlagen/web-clipper/*.md`
 - Related ADRs: ADR-001 (Smart Connections Privacy), ADR-003 (obsidian-ocr Koexistenz)
 - Obsidian Web Clipper: https://github.com/obsidianmd/obsidian-clipper
+- tuan3w Obsidian-Template (Web-Clipper-Referenz, Hybrid-Prompt-Ideen): https://github.com/tuan3w/obsidian-template

@@ -1,16 +1,17 @@
 # Architecture
 
-**Analysis Date:** 2026-04-08
+**Analysis Date:** 2026-04-12
 
 ## Pattern Overview
 
-**Overall:** LLM-Maintained Knowledge Management System with Dual Layers (Human-Readable Wiki + Distributed Processing)
+**Overall:** Local-first knowledge and research system with dual layers (human-readable wiki + Qwen/BGE retrieval and search tooling)
 
 **Key Characteristics:**
 - Git-backed Obsidian vault as primary knowledge repository
 - LLM-active content generation and maintenance (not read-only)
 - Structured semantic organization (topics, concepts, sources, people, projects)
 - RAG (Retrieval-Augmented Generation) pipeline for knowledge querying
+- Search-enabled local assistant surfaces via OpenClaw/Open WebUI
 - MkDocs publishing layer for static site generation
 - Agent platform integration for autonomous knowledge operations
 
@@ -41,8 +42,15 @@
 - Purpose: Index and query wiki content using embeddings
 - Location: `Gemma/rag/`
 - Contains: Python modules for indexing (`index.py`), querying (`query.py`), configuration (`config.py`)
-- Depends on: ChromaDB for vector storage, Ollama for embeddings and LLM inference, wiki content
+- Depends on: ChromaDB for vector storage, LangChain, SentenceTransformers (`BAAI/bge-small-en-v1.5`), Ollama (`qwen2.5:3b`), wiki content
 - Used by: Knowledge-based applications, query answering, semantic search
+
+**Research Layer:**
+- Purpose: Stable local chat, web search, and fetch over the same Ollama model base
+- Location: `openclaw/` and `openwebui/`
+- Contains: Reference configs, env examples, verification docs
+- Depends on: Ollama, local web-search/fetch providers, optional Tavily in Open WebUI
+- Used by: Current-web queries, assisted research, Apple-Silicon-friendly local workflows
 
 **Agent Platform:**
 - Purpose: Autonomous knowledge operations (research, curation, validation)
@@ -74,13 +82,21 @@
 **Knowledge Querying Flow:**
 
 1. Query enters RAG system (`Gemma/rag/query.py`)
-2. Query embedded using `nomic-embed-text` via Ollama
+2. Query embedded using `BAAI/bge-small-en-v1.5` via SentenceTransformers/LangChain
 3. Similarity search against ChromaDB vector index (`Gemma/rag/chroma_db/`)
 4. Top 5 chunks retrieved with metadata (source, title, tags)
 5. Context synthesized from retrieved chunks
-6. System prompt + context + question sent to Gemma model via Ollama
+6. System prompt + context + question sent to `qwen2.5:3b` via Ollama
 7. Response generated with source citations
 8. Sources traced back to wiki pages
+
+**Current-Web Research Flow:**
+
+1. Query enters OpenClaw or Open WebUI
+2. Local `qwen2.5:3b` handles orchestration and answer synthesis
+3. Search/fetch providers retrieve current web pages
+4. Retrieved pages are summarized back into the response or fed into follow-up reasoning
+5. Stable research path stays separated from direct Vault writes
 
 **Publishing Flow:**
 
@@ -104,7 +120,7 @@
 **State Management:**
 
 - **Authoritative state**: Git repository at `/Users/maxim/Claude/` (committed content in wiki/)
-- **Temporary state**: Obsidian app config in `.obsidian/`, RAG index in `Gemma/rag/chroma_db/`, agent state in PaperclipAI
+- **Temporary state**: Obsidian app config in `.obsidian/`, RAG index in `Gemma/rag/chroma_db/`, Open WebUI/OpenClaw runtime state, agent state in PaperclipAI
 - **Personal state**: Task tracking (`Obsidian/TODOS.md`) and project tracking (`Obsidian/PROJEKTE.md`) — gitignored, local-only
 - **Cache invalidation**: RAG index must be regenerated after wiki changes via `python3 Gemma/rag/index.py`
 
@@ -201,3 +217,7 @@
 - Operational guidance in `CLAUDE.md` (project-level) and `Obsidian/CLAUDE.md` (vault-specific)
 - Working instructions in `AGENTS.md` (German language for LLM agents)
 - Configuration files self-documented through comments and examples
+
+---
+
+*Architecture analysis: 2026-04-12*

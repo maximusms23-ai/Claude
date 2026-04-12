@@ -36,7 +36,7 @@ Gleiche Änderung wie 2, nur für `DAILY_DIR`. Der Rest (`STATE_FILE`, `LOG_FILE
 
 ### 5. `tom_tools/wiki_query.py` — Neues Modul
 
-**Was:** Eigenes Query-Modul das lokal via Ollama (`gemme`) statt Claude Agent SDK läuft. Nimmt `--brain` oder `--root` Parameter.
+**Was:** Eigenes Query-Modul das lokal via Ollama (`qwen2.5:3b`) statt Claude Agent SDK läuft. Nimmt `--brain` oder `--root` Parameter.
 
 **Warum:**
 - `scripts/query.py` ist an `KNOWLEDGE_DIR` gebunden (= `95_Gehirn/knowledge/`); für `tom-wiki` brauchen wir aber auch `90_Wiki/` als Quelle
@@ -70,7 +70,7 @@ Aufruf via `uv run python -m tom_tools.wiki_query "Frage"`. Wird von `bin/tom-wi
 
 3. **Neue Konstanten:** `TOP_K = 5`, `MIN_KEYWORD_LEN = 3`, `STOPWORDS` (deutsche + englische Basisliste).
 
-**Warum:** Karpathy Index-first wird bei wachsendem Wiki verduennt — wenn alle Artikel in den Prompt gehen, antwortet `gemme` generisch statt praezise. Schmaler Filter + harter Prompt = praezise Antworten ohne RAG-Umstieg. Schwelle fuer RAG-Primary bleibt bei 1500 Artikel (Phase 25 dokumentiert das).
+**Warum:** Karpathy Index-first wird bei wachsendem Wiki verduennt — wenn alle Artikel in den Prompt gehen, antwortet `qwen2.5:3b` generisch statt praezise. Schmaler Filter + harter Prompt = praezise Antworten ohne RAG-Umstieg. Schwelle fuer RAG-Primary bleibt bei 1500 Artikel (Phase 25 dokumentiert das).
 
 **Smoke-Test (Phase 23 Abnahme):**
 

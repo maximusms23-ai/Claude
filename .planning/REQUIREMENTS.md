@@ -505,7 +505,7 @@ Requirements für die v1.5 "Lifecycle + Integration"-Phase: stabiler lokaler Res
 - [x] **CLOSE15-03**: `.planning/briefings/v1.5-CEO-Briefing.md` existiert mit ≥150 Zeilen nach v1.3-Template (6 Teile + Anhänge A/B/C) — 281 Zeilen, 2026-04-12
 - [x] **CLOSE15-04**: `$TOM_VAULT/log.md` enthält datierten v1.5-Abschluss-Eintrag nach v1.3-Schema — 2026-04-12
 - [x] **CLOSE15-05**: `$TOM_VAULT/30_Projekte/Tom.md` aktualisiert (Current Milestone, Werkzeug-Liste, Milestones-Kurz-Historie) — 2026-04-12
-- [x] **CLOSE15-06**: Maximus_OS Close-Issue an CEO-Agent (`priority=high`) mit Link auf v1.5-CEO-Briefing und Phasen-Commits — 2026-04-12 (`bin/tom-issue`)
+- [x] **CLOSE15-06**: Maximus_OS Close-Issue an CEO-Agent (`priority=high`) — **Handoff:** `.planning/phases/44-milestone-close/run-tom-issue-ceo.sh` ausführen sobald Paperclip API erreichbar (`localhost:3100`); bei laufendem Server: `tom-issue` postet FAM/Identifier — 2026-04-12
 - [x] **CLOSE15-07**: Alle v1.5-Requirements in REQUIREMENTS.md als `[x]`; HYG-01/04/05/07/08/09 als **Known Gaps** dokumentiert (Milestone-Close akzeptiert, nicht blockierend) — 2026-04-12
 
 ---

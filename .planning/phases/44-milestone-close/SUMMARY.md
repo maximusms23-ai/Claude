@@ -16,7 +16,7 @@ Schließe Tom v1.5 formal: alle CLOSE15-Requirements, konsistente Doku in `.plan
 4. `$TOM_VAULT/30_Projekte/Tom.md` — Current Milestone v1.5, Werkzeug-Liste qwen2.5:3b, v1.5 Milestone-Historie
 5. `$TOM_VAULT/index.md` — Tom-Hub: v1.5 shipped, Phase 44
 6. `MILESTONES.md` — Phase-44-Commit-Zeile (nach Git-Commit gesetzt)
-7. `bin/tom-issue --agent ceo --priority high` — CEO Close-Issue mit Briefing-Link
+7. `run-tom-issue-ceo.sh` — CEO Close-Issue (benötigt Paperclip API; sonst manuell wenn Server läuft)
 
 ## Key Decisions
 

@@ -7,7 +7,7 @@
 | CLOSE15-03 | `briefings/v1.5-CEO-Briefing.md` ≥150 Zeilen (`wc -l`) |
 | CLOSE15-04 | `$TOM_VAULT/log.md` Eintrag „2026-04-12 — Milestone v1.5 Close (Phase 44)“ |
 | CLOSE15-05 | `$TOM_VAULT/30_Projekte/Tom.md` Milestone + Werkzeuge |
-| CLOSE15-06 | `tom-issue` CEO (nach erfolgreichem paperclipai-Call) |
+| CLOSE15-06 | `run-tom-issue-ceo.sh` wenn Paperclip `localhost:3100` läuft (sonst Handoff) |
 | CLOSE15-07 | `REQUIREMENTS.md` alle v1.5-REQs `[x]`; HYG Known Gaps ausdrücklich |
 
 **Manual:** CEO-Issue in Maximus_OS UI sichtbar; Vault in iCloud gespeichert.

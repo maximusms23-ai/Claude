@@ -57,30 +57,32 @@ Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Lebe
   - ADR-003 (`obsidian-ocr` Koexistenz mit `tom-doc`) + ADR-004 (`mcp-tools` als v1.5-Integrationskandidat)
   - CLAUDE.md Plugin Landscape auf **52 Plugins** erweitert + neue Kategorien (LLM-Alternativen, Email/Messaging) + Warning/Empfehlungs-Boxen
   - **Web-Clipper-Template-System**: 7 typ-spezifische Templates (Artikel, Paper, Video, Dokument, Social-Post, Rezept, Werkzeug) in `99_Vorlagen/web-clipper/` + 7 Ziel-Unterordner in `Clippings/`, `tom-clip-enrich` unverändert kompatibel
+- ✓ Tom v1.5a — Qwen/BGE-Migration (2026-04-12):
+  - Aktiver lokaler Stack auf `qwen2.5:3b` vereinheitlicht
+  - RAG-Embeddings auf `BAAI/bge-small-en-v1.5` via LangChain + SentenceTransformers umgestellt
+  - OpenClaw/Open WebUI als stabiler lokaler Research-Pfad über Ollama dokumentiert
+  - Gemma/Gemme und Qwen 3.5 aus aktiven Defaults entfernt
 
-**Active:** Tom v1.5 — Lifecycle + Integration
+- ✓ Tom v1.5 — Lifecycle + Integration (Phasen 36–44):
+  - **Lokaler Ollama-Switch**: `nutze-ollama`/`nutze-claude`/`ollama-status` Shell-Funktionen, `tom-local` Subshell-Wrapper, CCR-Daemon Port 3456
+  - **Vault-Hygiene**: 6 redundante LLM-Plugins disabled, OLLAMA_ORIGINS via LaunchAgent, Plugin-Audit Q1-Q5 beantwortet
+  - **Local Tool-Use**: `qwen2.5:3b` native `tool_calls` über Ollama, CCR übersetzt zu Anthropic `tool_use`-Blöcken
+  - **MCP-Bridge**: FastMCP v3 Server (`mcp-server/tom_mcp.py`), 5 Read-only-Tools in Cursor, ADR-006
+  - **Lifecycle-State-Machine**: 6 Bereiche (Dokumente 5 States, Aufgaben 4, Termine 5, Projekte 3, Verträge 5, Social 4), Meta Bind Buttons, `tom-state` CLI
+  - **KI-Intake + Triage**: `tom-doc-intake` CLI, 5 KI-Templates, QuickAdd AI Assistant (9 Prompts), Book-Chunking
+  - **7 Dataview-Dashboards**: Dokumente, Aufgaben, Termine, Projekte, Finanzen, Social, Morgen-Briefing
+  - **Auto-Transitions**: `tom-state auto-transition` (Termine→Verpasst, Verträge→Frist-naht), launchd 07:00
+  - **Verpasst-Handling**: tel:-Links, Doctolib/App-Links, Reminder-Task-Injection
+  - **tom-status CLI**: Vault-weite Zusammenfassung mit Top-5 dringend
+  - 6 HYG-Requirements als Known Gaps (Maxim-Handoff: Obsidian-UI/Browser-Interaktion)
 
-## Current Milestone: v1.5 — Lifecycle + Integration
+**Active:** —
 
-**Goal:** Tom bekommt (1) eine projekt-übergreifende **Lebens-State-Machine** für seine 6 Bereiche (Dokumente, Aufgaben, Termine, Projekte, Finanzen, Social Media), (2) eine Obsidian-native **MCP-Bridge** für die wichtigsten Tom-CLIs (`tom-doc`/`tom-wiki`/`tom-ask`/`tom-clip-enrich`) im Editor, (3) einen **lokalen Claude-Code-Modus mit funktionierendem Tool-Use** (Phase 36 retroaktiv + besseres Modell), und (4) eine vorgeschaltete **Vault-Hygiene-Phase**, die alle prepared-pending Handoffs aus v1.4/v1.4.1 schließt.
+## Completed Milestones
 
-**Target features:**
+Alle Milestones (v1.0–v1.5) sind abgeschlossen. Siehe `.planning/MILESTONES.md` für Details.
 
-- **Phase 36 retroaktiv**: Lokaler Ollama-Switch (`nutze-ollama`/`tom-local`) — bereits shipped als out-of-band Opener am 2026-04-11, Chat-Only-Modus dokumentiert
-- **Vault-Hygiene-Phase**: Smart Connections Repair, 6 unused LLM-Plugins disablen, eml-reader + apple-reminders Setup, OLLAMA_ORIGINS dauerhaft via launchctl, CLIP141-04 + CLIP141-13 + OBPL-03 abschließen
-- **Local Tool-Use Modell-Upgrade**: qwen3-coder oder glm-4.5-air pullen, CCR-Config umstellen, Tool-Use-Gate retesten — wenn PASS, wird Phase 36 zum vollwertigen lokalen Agentic-Modus
-- **mcp-tools Integration**: 4 Tom-CLIs (tom-doc/tom-wiki/tom-ask/tom-clip-enrich) als MCP-Tools direkt im Obsidian-Editor erreichbar, Privacy-Boundaries definiert
-- **Lifecycle-Foundation Dokumente**: State-Field-Schema für 20_Dokumente (Eingang/In-Bearbeitung/Antwort-formuliert/Warte/Erledigt), Templater-Integration, Dataview-View, Beispiel mit Eltern-Betreuung
-- **Lifecycle Aufgaben & Termine**: 40_Aufgaben States (Open/Doing/Blocked/Done) + 50_Gesundheit Termin-States (Geplant/Heute/Verpasst), Frist-Auto-Highlight via Dataview
-- **Lifecycle Projekte / Finanzen / Social**: 30_Projekte (aktiv/pausiert/abgeschlossen) + 60_Finanzen (Vertrag-Frist-States) + 80_Social_Media (Draft/Geplant/Live)
-- **Lifecycle Dashboards + Auto-Routing**: Vault-weite Dataview-Dashboards, automatische State-Transitions wo möglich, Notifications via Apple-Reminders-Plugin
-- **Milestone-Close v1.5**: 6 Doku-Kanäle nach v1.3-Schema + CEO-Briefing
-
-### Active
-
-<!-- Milestone v1.5 scope. -->
-
-Siehe `.planning/REQUIREMENTS.md` (Milestone v1.5).
+Nächster Milestone (v1.6) ist noch nicht geplant.
 
 ### Out of Scope
 
@@ -118,4 +120,4 @@ Siehe `.planning/REQUIREMENTS.md` (Milestone v1.5).
 | 00_Inbox → 99_Vorlagen Nummerierungsschema | Ordnet sich auto-sortiert, Trennung persönlich/wiki bleibt visuell | — Pending |
 
 ---
-*Last updated: 2026-04-11 after Tom v1.5 milestone start*
+*Last updated: 2026-04-12 — Tom v1.5 Milestone-Close (Phase 44)*

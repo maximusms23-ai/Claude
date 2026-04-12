@@ -108,10 +108,26 @@ Details: siehe `CLAUDE.md` Sektion "Maximus_OS-Kommunikation".
 Wissensfragen durchlaufen diese Kaskade:
 
 1. **Direct-Read** für persönliche/aktuelle Daten (`40_Aufgaben/`, `10_Personen/`, `20_Dokumente/`)
-2. **`tom-wiki "Frage"`** — Karpathy Index-first über `$TOM_VAULT/90_Wiki/` (lokal via gemme)
+2. **`tom-wiki "Frage"`** — Karpathy Index-first über `$TOM_VAULT/90_Wiki/` (lokal via `qwen2.5:3b`)
 3. **`tom-wiki --brain "Frage"`** — selbes Prinzip, aber über privates `$TOM_VAULT/95_Gehirn/`
-4. **`tom-ask "Frage"`** — Gemma RAG-Fallback über drei Collections (wiki, clippings, gehirn)
+4. **`tom-ask "Frage"`** — Qwen-RAG-Fallback über drei Collections (wiki, clippings, gehirn)
 
 Weitere Brain-Tools: `tom-compile` (daily → knowledge), `tom-lint [--structural-only]` (Health-Check).
 
 Details: siehe `CLAUDE.md` Sektion "Wissens-Kaskade".
+
+## Learned User Preferences
+
+- Obsidian Web Clipper (Interpreter → Erweitert): für Ollama/Qwen den Standard-Interpreter-Kontext auf den extrahierten Artikel setzen (`{{content}}`), nicht auf die volle Roh-HTML-Seite (`{{fullHtml}}`); bei sehr langen Seiten Kontext kürzen (z. B. `slice`) statt vollständiges HTML zu senden.
+- Große Dokument-Migrationen in den Vault: kein blindes Verschieben ohne Review; Copy-first und vorher Kandidatenliste prüfen; bei Massen-Ingest Hash-basierte Dedupe bevorzugen.
+- Kurze Obsidian-Interpreter-Aufgaben (Summary, Tags, Textbewertung) auf M4 mit 16 GB: lieber ein kleines, schnelles Ollama-Instruct-Modell nutzen; aktueller Default ist `qwen2.5:3b`, Embeddings laufen ueber `bge-small-en-v1.5`.
+- Vor größeren Umsetzungen oder neuen Phasen: zuerst Web und GitHub nach etablierten Lösungen recherchieren, passende Skills prüfen (u. a. skill.ch), die gewählte Architektur kritisch gegenzeichnen; während längerer Umsetzung und vor jeder Fertigmeldung eigenständig Qualitätschecks durchführen (nicht nur auf Freigabe warten).
+
+## Learned Workspace Facts
+
+- Im Git-Repo liegt `scripts/raw_ingest_from_tsv.py`: liest u. a. `~/Desktop/candidates_review.tsv`, kopiert nach `$TOM_VAULT/raw/` mit SHA-256-Dedupe und Manifest `raw/.raw_ingest_manifest.tsv`; Folgeläufe überspringen bereits bekannte Hashes.
+- `Obsidian/TODOS.md` im Git-Repo ist nur Alt-Vault/Vorlage und oft leer; maßgeblich für offene Vorhaben bleibt `$TOM_VAULT/40_Aufgaben/TODOS.md`.
+- Lokaler Ollama-/Tom-Stack nutzt `qwen2.5:3b`; Gemma 4 wurde aus dem Setup entfernt — neue lokale Defaults nicht wieder auf Gemma 4 drehen.
+- OpenClaw (lokaler Research-Pfad über Ollama) bleibt auf `qwen2.5:3b`; schwere Alternativ-Chatmodelle (z. B. glm-4.7) gehören nicht zum Tom-Default-Stack.
+- Für CCR/Ollama-Tool-Use bleibt `qwen2.5:3b` der geeignete Pfad; `qwen2.5-coder` liefert Tool-Aufrufe oft nur als Text und ist für strukturierten Tool-Use unzuverlässig.
+- Volltext-/Metadaten-Suchen über das gesamte `$TOM_VAULT` (viele tausend `.md`, u. a. in `raw/`) sind in Agent-Sessions oft zu teuer; `state:` und ähnliche Audits zuerst in den Tom-Ordnern `00_`–`99_` ohne `raw/`/`Clippings` scopen.

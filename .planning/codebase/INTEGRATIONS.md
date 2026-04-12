@@ -2,6 +2,8 @@
 
 **Analysis Date:** 2026-04-12
 
+**Vault scope:** Active Tom vault is **`$TOM_VAULT`** (iCloud). Paths under `Obsidian/wiki/` in this repo refer to the **legacy Alt-Vault** unless a note says otherwise. RAG [`config.py`](/Gemma/rag/config.py) may still point at `Obsidian/wiki` — align with migration plans.
+
 ## APIs & External Services
 
 **Local LLM Runtime:**
@@ -20,14 +22,14 @@
 **Local Research Surfaces:**
 - Open WebUI
   - Purpose: Stable local chat plus optional web search/RAG over Ollama
-  - Config: `openwebui/.env.example`
+  - Config (repo reference): [`openwebui/.env.example`](/openwebui/.env.example)
 - OpenClaw
   - Purpose: Local search/fetch-enabled assistant path over Ollama
-  - Config: `openclaw/config/*.reference.json`
+  - Config (repo reference): [`openclaw/openclaw.json.reference`](/openclaw/openclaw.json.reference); live: `~/.openclaw/openclaw.json`
 
 **Web Content Integration:**
 - Obsidian Web Clipper - Browser extension for capturing web articles
-  - Purpose: Save external articles to `/Users/maxim/Claude/Obsidian/Clippings/`
+  - Purpose: Save external articles to **`$TOM_VAULT/Clippings/`** (Tom); legacy Alt-Vault: `Obsidian/Clippings/`
   - No authentication required (local browser extension)
 
 ## Data Storage
@@ -126,6 +128,10 @@
 **Research Workflow:**
 - `openclaw models status` - Validate local OpenClaw model wiring
 - Open WebUI - Run local chat/RAG/search against the same Ollama base model
+
+## MCP (Cursor IDE)
+
+**Audit 2026-04-12:** [`.cursor/mcp.json`](../../.cursor/mcp.json) exposes a **single** server, `tom-tools` → [`mcp-server/tom_mcp.py`](../../mcp-server/tom_mcp.py) (read-oriented Tom CLIs). Kein zweiter Shadow-Server; Erweiterungen nur nach Review ([ADR-006](../obsidian-plugin-config/adr-006-mcp-architecture.md)).
 
 ---
 

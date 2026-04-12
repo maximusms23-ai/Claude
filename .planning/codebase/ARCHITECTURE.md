@@ -19,7 +19,8 @@
 
 **Presentation Layer:**
 - Purpose: Public-facing knowledge access via static website
-- Location: `Obsidian/output/` (generated artifacts) and MkDocs publishing from `Obsidian/wiki/`
+- **Tom (v1.1+):** authoritative public wiki build is **`$TOM_VAULT/90_Wiki/`** + `mkdocs.yml` in the iCloud vault (not this repo)
+- Legacy / repo: `Obsidian/output/` (generated artifacts) and MkDocs publishing from `Obsidian/wiki/` (Alt-Vault migration path)
 - Contains: Markdown files compiled to HTML, slides (Marp), plots (matplotlib), reports, JSON Canvas visualizations
 - Depends on: Wiki content from `Obsidian/wiki/`
 - Used by: External users via mkdocs serve or deployed website
@@ -47,8 +48,9 @@
 
 **Research Layer:**
 - Purpose: Stable local chat, web search, and fetch over the same Ollama model base
-- Location: `openclaw/` and `openwebui/`
-- Contains: Reference configs, env examples, verification docs
+- Location (repo): [`openclaw/`](../../openclaw/README.md) and [`openwebui/`](../../openwebui/README.md) — **reference-only** README + `openclaw.json.reference` / `.env.example`
+- Live config: **`~/.openclaw/openclaw.json`** (not versioned); Tom-Standard Modell: **`qwen2.5:3b`** (Phase 38)
+- Contains: Reference configs, env examples; verification in [`.planning/phases/38-local-toolupgrade/`](/.planning/phases/38-local-toolupgrade/SUMMARY.md)
 - Depends on: Ollama, local web-search/fetch providers, optional Tavily in Open WebUI
 - Used by: Current-web queries, assisted research, Apple-Silicon-friendly local workflows
 
@@ -220,4 +222,4 @@
 
 ---
 
-*Architecture analysis: 2026-04-12*
+*Architecture analysis: 2026-04-12 — ergänzt: Repo-`openclaw/` + `openwebui/`, Tom `$TOM_VAULT` Präsentations-Hinweis*

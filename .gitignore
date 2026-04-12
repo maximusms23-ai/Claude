@@ -28,12 +28,17 @@ __pycache__/
 
 # External projects (not Tom)
 OmniRoute/
-openclaw/
-openwebui/
 Obsidian-backup/
+
+# Open WebUI / OpenClaw: vollständige Upstream-Installs liegen außerhalb des Repos.
+# Versioniert sind nur die Referenz-Ordner im Repo-Root: openclaw/, openwebui/
 
 # Apple Intelligence (separate build artifacts)
 apple-intelligence/
 
-# StreamDeck configs
-bin/streamdeck/
+# Stream Deck: viele .command-Skripte; nur README versioniert (Rest lokal nutzbar)
+bin/streamdeck/*
+!bin/streamdeck/README.md
+
+# Swift temp files
+.tmp-swift-*

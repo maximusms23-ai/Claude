@@ -35,6 +35,17 @@ Details: `AGENTS.md` (Codex-Sicht) und `$TOM_VAULT/CLAUDE.md` (Vault-Regeln + Wo
 - **Personal tracking**: `$TOM_VAULT/40_Aufgaben/TODOS.md` und `PROJEKTE.md`. Bei "was steht an?" oder "woran arbeite ich?" → diese lesen
 - **Output-Formate**: Marp (Slides), matplotlib (Plots), Markdown (Reports), JSON Canvas (Canvas) → `$TOM_VAULT/output/`
 
+## Ressourcen, Kosten, Obsidian-Performance
+
+- **`tom-compile`:** Default = Cloud-SDK; **`--local`** mit `qwen2.5:3b` spart Subscription-Tokens (Eval: [`Gemma/eval/results/v1.4-compile-local-vs-claude.md`](Gemma/eval/results/v1.4-compile-local-vs-claude.md)).
+- **CCR / `nutze-ollama`:** Nur bei Bedarf; keine schweren Tool-Use-Ketten auf kleinen lokalen Modellen für Agent-Workflows.
+- **Ollama:** `num_ctx` und Modelfiles: [`Gemma/modelfile/README.md`](Gemma/modelfile/README.md); offizielle Hinweise [Ollama FAQ](https://docs.ollama.com/faq); mit `ollama ps` prüfen, ob mehrere große Modelle gleichzeitig resident sind.
+- **Obsidian:** Bei hoher Startzeit oder RAM: eingebauter Startup-Debugger (Settings); schwere Plugins (z. B. Dataview, Excalidraw, Kanban) gezielt testweise deaktivieren. Leitfaden: [Optimize plugin load time](https://github.com/obsidianmd/obsidian-developer-docs/blob/main/en/Plugins/Guides/Optimize%20plugin%20load%20time.md).
+
+## Stream Deck „Brain Ops“
+
+AppleScript-`.command`-Skripte (u. a. `tom-brain-lint`, `tom-raw-inject`, OpenClaw, Paperclip) liegen unter [`bin/streamdeck/`](bin/streamdeck/README.md) — Hotkeys in der Elgato-Software auf diese Dateien zeigen.
+
 ## Commands
 
 ```bash
@@ -568,9 +579,52 @@ ki_relevanz: ""          # hoch | mittel | niedrig
 
 ### Dashboards
 
-- `$TOM_VAULT/40_Aufgaben/Heute.md` — Morgen-Briefing (Termine, Fristen, Eingang, Aufgaben)
+- `$TOM_VAULT/40_Aufgaben/Heute.md` — Morgen-Briefing (11 Sektionen: Termine, Fristen, Eingang, Aufgaben, Wartend, Verpasste Termine, Aktive Projekte, Vertraege mit Frist, Geplante Social Posts)
 - `$TOM_VAULT/20_Dokumente/Dashboard.md` — Dokumente nach State + Fristen + Steuer-relevant
 - `$TOM_VAULT/50_Gesundheit/Dashboard.md` — Arzttermine, Befunde, Folgetermine
+- `$TOM_VAULT/30_Projekte/Aktive.md` — Projekte nach State (aktiv/pausiert/abgeschlossen)
+- `$TOM_VAULT/60_Finanzen/Fristen.md` — Vertraege mit Kuendigungsfrist-Countdown + Kostensumme
+- `$TOM_VAULT/80_Social_Media/Pipeline.md` — Content-Pipeline (Draft/Geplant/Live/Archiv)
+- `$TOM_VAULT/index.md` — Tom-Hub mit DataviewJS Inline-Aggregation (Live-Zahlen pro Bereich)
+
+### Auto-Transitions (seit v1.5 Phase 43)
+
+`tom-state auto-transition` laeuft taeglich um 07:00 via launchd (`com.maxim.tom-state-transitions`):
+
+| Bereich | Von | Nach | Bedingung |
+|---------|-----|------|-----------|
+| Termine | Geplant/Bestaetigt | Heute | `datum == today` |
+| Termine | Heute | Verpasst | `datum < today` |
+| Vertraege | aktiv | Frist-naht | `kuendigungsfrist_datum` innerhalb 14d |
+| Vertraege | Frist-naht | Versaeumt | `kuendigungsfrist_datum < today` |
+
+Bei Transition auf "Verpasst" wird automatisch ein Handlungsempfehlung-Block injiziert:
+- `tel:` Link aus Frontmatter `telefon`-Feld
+- App-Link je nach `termin_kategorie` (arzt→Doctolib, auto→ADAC, amt→Behoerdenfinder, steuer→Elster)
+- Reminder-Task fuer morgen
+
+Verifikation:
+```bash
+tom-state auto-transition --dry-run  # Vorschau
+launchctl list | grep tom-state      # Job registriert?
+tail -5 ~/Library/Logs/tom-state-transitions.log  # Letzte Laeufe
+```
+
+### KI-Aufgabenvorschlaege (seit v1.5 Phase 43)
+
+Zwei QuickAdd AI Prompts fuer Ollama/qwen2.5:3b:
+- **naechste-schritte**: Analysiert Note, schlaegt 3-5 Tasks vor (Ctrl+P → "QuickAdd: naechste-schritte")
+- **aufgaben-zerlegung**: Zerlegt grosse Aufgabe in 3-5 Teilschritte mit Zeitschaetzung
+
+### tom-status (seit v1.5 Phase 43)
+
+Vault-weite Terminal-Zusammenfassung "Was steht an?":
+```bash
+tom-status          # Kompakte Uebersicht mit Top-5 dringend
+tom-status --json   # JSON-Output fuer Weiterverarbeitung
+```
+
+Zeigt Zahlen pro Bereich (Dokumente, Aufgaben, Termine, Projekte, Vertraege, Social) und die 5 dringendsten Items inkl. Verpasst-Termine mit Telefonnummer.
 
 ### Migration
 
@@ -579,6 +633,7 @@ tom-state migrate-dokumente --dry-run     # v1 Felder (state, state_changed, due
 tom-state migrate-dokumente-v2 --dry-run  # v2 Felder (betreff_kurz, absender, empfaenger, etc.)
 tom-state migrate-aufgaben --dry-run      # Aufgaben in 40_Aufgaben/
 tom-state migrate-termine --dry-run       # Termine in 50_Gesundheit/
+tom-state auto-transition --dry-run      # Taegl. Auto-Transitions (Termine + Vertraege)
 ```
 
 ## Claude-Code Hooks (seit v1.2 Phase 16)

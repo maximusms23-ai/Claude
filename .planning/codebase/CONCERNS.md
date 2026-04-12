@@ -2,6 +2,10 @@
 
 **Analysis Date:** 2026-04-08
 
+## Scope: öffentliches Wiki vs. Alt-Vault (`Obsidian/`)
+
+Viele Punkte unten (MkDocs, Personen-Index, `Obsidian/wiki/`-Pfade) betreffen den **im Repo liegenden Alt-Vault** und dessen Research-Wiki. **Toms aktives öffentliches Wiki** liegt unter **`$TOM_VAULT/90_Wiki/`** (MkDocs `docs_dir` im iCloud-Vault) — gleiche Kategorien-Konvention, aber **getrennte Dateibaum** und eigener Pflege-Workflow ([`CLAUDE.md`](../../CLAUDE.md)). Issues zu GitHub Pages / `Obsidian/.github/workflows/` sind nur relevant, wenn ihr **dieses** Repo-Wiki weiter publiziert; für rein privaten Tom-Betrieb über `$TOM_VAULT` sind sie **nice-to-have**, kein Blocker.
+
 ## Wiki Content Gaps and Incomplete References
 
 **Stub Index Pages:**

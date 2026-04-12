@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# tom-clip-enrich — Reichert Obsidian-Clippings mit Summary/Tags/Konzepten via gemme an
+# tom-clip-enrich — Reichert Obsidian-Clippings mit Summary/Tags/Konzepten via qwen2.5:3b an
 #
-# Liest eine Clipping-Datei, ruft lokales gemme für Enrichment,
+# Liest eine Clipping-Datei, ruft lokales qwen2.5:3b für Enrichment,
 # schreibt strukturierte Felder ins Frontmatter zurück. Idempotent via
 # `enriched: true`. Konzept-Vorschläge landen in
 # $TOM_VAULT/90_Wiki/konzepte-vorschlaege.md zur manuellen Review.
@@ -20,7 +20,7 @@ TOOL_DIR="/Users/maxim/Claude/claude-memory-compiler"
 
 if [[ $# -eq 0 || "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   cat <<EOF
-tom-clip-enrich — Obsidian-Clipping Auto-Enrichment via gemme
+tom-clip-enrich — Obsidian-Clipping Auto-Enrichment via qwen2.5:3b
 
 Usage:
   tom-clip-enrich <pfad>
@@ -29,7 +29,7 @@ Usage:
 
 Schreibt ins Frontmatter:
   summary                   3-5 Sätze Zusammenfassung (deutsch)
-  tags                      existing + 3-5 gemme-Vorschläge (dedupliziert)
+  tags                      existing + 3-5 qwen-Vorschläge (dedupliziert)
   suggested_wiki_category   themen / konzepte / personen / projekte / quellen
   enriched: true            Idempotenz-Flag
   enriched_at: YYYY-MM-DD   Datums-Stempel
@@ -37,7 +37,7 @@ Schreibt ins Frontmatter:
 Konzept-Vorschläge landen in:
   \$TOM_VAULT/90_Wiki/konzepte-vorschlaege.md
 
-Braucht: laufenden "ollama serve" + indiziertes gemme-Modell.
+Braucht: laufenden "ollama serve" + verfuegbares qwen2.5:3b.
 EOF
   exit 0
 fi

@@ -3,9 +3,9 @@
 import sys
 import yaml
 import chromadb
-import ollama
 
-from config import WIKI_PATH, CLIPPINGS_PATH, GEHIRN_PATH, CHROMA_PATH, EMBED_MODEL, CHUNK_SIZE, CHUNK_OVERLAP
+from config import WIKI_PATH, CLIPPINGS_PATH, GEHIRN_PATH, CHROMA_PATH, CHUNK_SIZE, CHUNK_OVERLAP
+from langchain_stack import embed_documents
 
 
 def parse_frontmatter(text: str) -> tuple[dict, str]:
@@ -70,15 +70,15 @@ def index_directory(client, collection_name: str, base_path, source_prefix: str)
 
         print(f"  {rel_path}: {len(chunks)} Chunks")
 
+        chunk_embeddings = embed_documents(chunks)
+
         ids = []
         documents = []
         metadatas = []
         embeddings = []
 
-        for i, chunk in enumerate(chunks):
+        for i, (chunk, embedding) in enumerate(zip(chunks, chunk_embeddings, strict=False)):
             chunk_id = f"{source_prefix}/{rel_path}:{i}"
-            response = ollama.embed(model=EMBED_MODEL, input=chunk)
-            embedding = response["embeddings"][0]
 
             ids.append(chunk_id)
             documents.append(chunk)

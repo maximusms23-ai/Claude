@@ -3,19 +3,19 @@
 #
 # Zwei Modi:
 #   tom-compile               # Default: claude_agent_sdk via Subscription (erprobt, shipped)
-#   tom-compile --local       # Alternative: lokales gemme ohne Subscription (seit v1.4)
+#   tom-compile --local       # Alternative: lokales qwen2.5:3b ohne Subscription (seit v1.4)
 #
 # Usage:
 #   tom-compile                       # neue Logs via claude-sdk
 #   tom-compile --all                 # re-kompiliert alles (claude-sdk)
-#   tom-compile --local --file <log>  # lokal via gemme (einzelnes File)
+#   tom-compile --local --file <log>  # lokal via qwen2.5:3b (einzelnes File)
 #   tom-compile --local --file <log> --output-dir /tmp/sandbox  # Sandbox-Run
 #
 # Läuft typischerweise einmal täglich (z.B. 18:00). Nicht bei jedem SessionEnd.
 #
 # --local Trade-offs:
 #   Pro: Kein Subscription-Verbrauch, vollständig lokal, deterministisch-reproduzierbar
-#   Con: Kein Tool-Access → fragileres JSON-Parsing, 8192 num_ctx Budget
+#   Con: Kein Tool-Access → fragileres JSON-Parsing, limitiertes lokales Kontext-Budget
 #   Eval: Gemma/eval/results/v1.4-compile-local-vs-claude.md
 #
 # Default bleibt claude_agent_sdk bis Eval etwas anderes belegt.

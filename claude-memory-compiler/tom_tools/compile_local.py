@@ -1,13 +1,13 @@
-"""Tom Compile — Lokale Gemma-basierte Variante (ohne Claude Agent SDK).
+"""Tom Compile — Lokale Qwen-basierte Variante (ohne Claude Agent SDK).
 
 Alternative zum `scripts/compile.py` mit claude_agent_sdk. Ruft lokales
-`gemme` via Ollama an, lässt es strukturiertes JSON mit Artikel-Inhalten
+`qwen2.5:3b` via Ollama an, laesst es strukturiertes JSON mit Artikel-Inhalten
 zurückgeben, und schreibt die Files selbst (statt dem LLM Tool-Zugriff zu
 geben wie der claude-sdk-Modus).
 
 Trade-offs:
 - Pro: Kein Subscription-Verbrauch, läuft komplett lokal, deterministisch-reproduzierbar
-- Con: Kein Tool-Access → gemme kann existierende Artikel nicht lazy laden,
+- Con: Kein Tool-Access → qwen2.5:3b kann existierende Artikel nicht lazy laden,
        muss den ganzen Kontext im Prompt bekommen (8192 num_ctx Budget)
 - Con: JSON-Output-Parsing ist fragiler als Agent-mit-Tools
 - Con: Keine multi-turn Exploration des Brains
@@ -45,7 +45,7 @@ from config import (  # noqa: E402
     now_iso,
 )
 
-MODEL = os.environ.get("TOM_COMPILE_MODEL", "gemme")
+MODEL = os.environ.get("TOM_COMPILE_MODEL", "qwen2.5:3b")
 NUM_CTX = int(os.environ.get("TOM_COMPILE_NUM_CTX", "8192"))
 TEMPERATURE = float(os.environ.get("TOM_COMPILE_TEMP", "0.3"))
 
@@ -131,10 +131,10 @@ Log-Datei: {log_path.name}
 Extrahiere jetzt die Konzepte als JSON wie spezifiziert."""
 
 
-# ── gemme Call ─────────────────────────────────────────────────────────────
+# ── Qwen Call ──────────────────────────────────────────────────────────────
 
 
-def call_gemme(system: str, user: str) -> tuple[str, float]:
+def call_model(system: str, user: str) -> tuple[str, float]:
     t0 = time.monotonic()
     response = ollama.chat(
         model=MODEL,
@@ -158,7 +158,7 @@ def compile_local(
     output_dir: Path | None = None,
     dry_run: bool = False,
 ) -> CompileResult:
-    """Compile a daily log using local gemme. Returns CompileResult with metrics."""
+    """Compile a daily log using local qwen2.5:3b. Returns CompileResult with metrics."""
     out_root = output_dir or KNOWLEDGE_DIR
     out_concepts = out_root / "concepts"
     out_connections = out_root / "connections"
@@ -179,7 +179,7 @@ def compile_local(
     user_prompt = build_user_prompt(log_path, log_content, existing)
 
     try:
-        raw, duration = call_gemme(SYSTEM_PROMPT, user_prompt)
+        raw, duration = call_model(SYSTEM_PROMPT, user_prompt)
     except Exception as e:
         return CompileResult(
             log_name=log_path.name,
@@ -298,7 +298,7 @@ def compile_local(
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="Tom Compile (local gemme variant)")
+    p = argparse.ArgumentParser(description="Tom Compile (local qwen2.5:3b variant)")
     p.add_argument("--file", type=Path, required=True, help="Daily log path")
     p.add_argument("--output-dir", type=Path, default=None, help="Override knowledge/ output root")
     p.add_argument("--dry-run", action="store_true", help="Don't write files")

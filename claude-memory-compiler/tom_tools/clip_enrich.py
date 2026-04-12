@@ -1,7 +1,7 @@
-"""Tom Clipper Auto-Enrichment — Summary + Tags + Konzepte + Wiki-Kategorie via gemme.
+"""Tom Clipper Auto-Enrichment — Summary + Tags + Konzepte + Wiki-Kategorie via qwen2.5:3b.
 
 Liest eine Clipping-Datei aus $TOM_VAULT/Clippings/, baut einen strukturierten
-Prompt mit Body-Preview, ruft lokales Ollama (`gemme`) mit JSON-Output-Format,
+Prompt mit Body-Preview, ruft lokales Ollama (`qwen2.5:3b`) mit JSON-Output-Format,
 und schreibt die angereicherte Version idempotent zurück. Konzept-Vorschläge
 landen als Zeilen in 90_Wiki/konzepte-vorschlaege.md zur manuellen Review.
 
@@ -32,8 +32,8 @@ import ollama
 
 # ── Config ──────────────────────────────────────────────────────────────────
 
-MODEL = os.environ.get("TOM_CLIP_MODEL", "gemme")
-MAX_BODY_CHARS = 6000    # Kontext-Budget für gemme (langer body wird abgeschnitten)
+MODEL = os.environ.get("TOM_CLIP_MODEL", "qwen2.5:3b")
+MAX_BODY_CHARS = 6000
 DEFAULT_VAULT = Path(os.environ.get(
     "TOM_VAULT",
     "/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw",
@@ -146,11 +146,11 @@ def _yaml_escape(s: str) -> str:
     return str(s).replace("\\", "\\\\").replace('"', '\\"')
 
 
-# ── Gemme Call ──────────────────────────────────────────────────────────────
+# ── Qwen Call ───────────────────────────────────────────────────────────────
 
 
-def enrich_via_gemme(title: str, body_preview: str) -> dict:
-    """Call gemme with JSON-format request. Returns parsed enrichment dict."""
+def enrich_via_model(title: str, body_preview: str) -> dict:
+    """Call qwen2.5:3b with JSON-format request. Returns parsed enrichment dict."""
     user_prompt = f"""Titel: {title}
 
 Clipping-Text (gekürzt):
@@ -173,7 +173,7 @@ Antworte im spezifizierten JSON-Format."""
     try:
         data = json.loads(content)
     except json.JSONDecodeError as e:
-        raise RuntimeError(f"gemme returned non-JSON:\n{content[:500]}") from e
+        raise RuntimeError(f"qwen returned non-JSON:\n{content[:500]}") from e
 
     # Validate + normalize
     summary = str(data.get("summary", "")).strip()
@@ -265,7 +265,7 @@ def enrich_file(
     fm, _raw_fm, body = split_frontmatter(text)
 
     # Idempotenz: akzeptiert "true", "clip-time", "tom-clip-enrich" als bereits-enriched.
-    # ADR-005: Interpreter schreibt `enriched: clip-time` + `enriched_by: gemme-interpreter`,
+    # ADR-005: Interpreter schreibt `enriched: clip-time` + `enriched_by: qwen-interpreter`,
     # tom-clip-enrich (legacy) schreibt `enriched: true` + `enriched_by: tom-clip-enrich`.
     enriched_val = str(fm.get("enriched", "")).lower().strip()
     already = enriched_val in ("true", "yes", "1", "clip-time", "tom-clip-enrich")
@@ -299,7 +299,7 @@ def enrich_file(
     if len(body_preview) < 200:
         return {"status": "skip", "reason": f"body too short ({len(body_preview)} chars)", "path": str(path)}
 
-    enrichment = enrich_via_gemme(title, body_preview)
+    enrichment = enrich_via_model(title, body_preview)
 
     # Merge tags (existing + new, dedup, preserve order)
     existing_tags = fm.get("tags") or []
@@ -345,7 +345,7 @@ def enrich_file(
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="Tom Clipper Auto-Enrichment via gemme")
+    p = argparse.ArgumentParser(description="Tom Clipper Auto-Enrichment via qwen2.5:3b")
     p.add_argument("path", type=Path, help="Clipping file to enrich")
     p.add_argument("--dry-run", action="store_true", help="Don't write changes, just print result")
     p.add_argument("--force", action="store_true", help="Re-enrich even if already enriched")

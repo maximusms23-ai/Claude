@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-tom-inject — gemme injiziert Content in eine Obsidian-Note.
+tom-inject — qwen2.5:3b injiziert Content in eine Obsidian-Note.
 
-Zweck: Maxim sagt "injeziere <prompt> in <note>", gemme generiert Response,
+Zweck: Maxim sagt "injeziere <prompt> in <note>", qwen2.5:3b generiert Response,
 Script schreibt die Response entweder in Frontmatter oder hängt sie als
 neuen Body-Abschnitt an. Alles lokal, ohne Cloud, ohne Subscription.
 
@@ -21,7 +21,7 @@ Beispiele:
   tom-inject note.md "Neue Summary" --mode frontmatter --key summary --force
 
 Dependencies: Python 3.8+ stdlib only (keine venv, keine Installation).
-Ollama muss laufen (http://127.0.0.1:11434), Modell `gemme` muss gepullt sein.
+Ollama muss laufen (http://127.0.0.1:11434), Modell `qwen2.5:3b` muss gepullt sein.
 
 ADR: .planning/obsidian-plugin-config/ (Phase 39 MCP-Bridge ist verwandt,
 aber tom-inject ist der schnelle CLI-Weg ohne Editor-Integration).
@@ -35,7 +35,7 @@ from datetime import datetime
 from pathlib import Path
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
-MODEL = "gemme"
+MODEL = "qwen2.5:3b"
 SYSTEM_PROMPT = (
     "Du bist Tom's lokaler Schreib-Assistent für Obsidian-Notes. "
     "Antworte auf Deutsch, prägnant, ohne Meta-Geschwafel und ohne Einleitung. "
@@ -43,12 +43,12 @@ SYSTEM_PROMPT = (
     "Keine Markdown-Headings — nur Fließtext oder Bulletpoints."
 )
 
-BODY_MAX_CHARS = 6000  # gemme num_ctx ≈ 8192 tokens ≈ 24000 chars, lass Puffer
+BODY_MAX_CHARS = 8000  # qwen2.5:3b bleibt klein, bekommt aber etwas mehr Kontext
 MARKER_APPEND = "<!-- tom-inject -->"
 
 
-def call_gemme(body: str, prompt: str) -> str:
-    """Ruft Ollama /api/chat mit gemme auf, liefert Response-Text."""
+def call_model(body: str, prompt: str) -> str:
+    """Ruft Ollama /api/chat mit qwen2.5:3b auf, liefert Response-Text."""
     payload = {
         "model": MODEL,
         "messages": [
@@ -121,12 +121,12 @@ def rebuild(fm_lines: list[str], body: str) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser(
-        description="gemme injiziert in eine Obsidian-Note (lokal, ohne Cloud)",
+        description="qwen2.5:3b injiziert in eine Obsidian-Note (lokal, ohne Cloud)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
     ap.add_argument("note", type=Path, help="Pfad zur Obsidian .md-Datei")
-    ap.add_argument("prompt", help="Aufgabe an gemme (Anführungszeichen!)")
+    ap.add_argument("prompt", help="Aufgabe an qwen2.5:3b (Anführungszeichen!)")
     ap.add_argument(
         "--mode",
         choices=["frontmatter", "append"],
@@ -146,7 +146,7 @@ def main() -> int:
     ap.add_argument(
         "--dry-run",
         action="store_true",
-        help="gemme aufrufen + Response zeigen, aber Note NICHT schreiben",
+        help="qwen2.5:3b aufrufen + Response zeigen, aber Note NICHT schreiben",
     )
     args = ap.parse_args()
 
@@ -176,19 +176,19 @@ def main() -> int:
             )
             return 0
 
-    print(f"… gemme denkt nach: {args.prompt[:70]}…", file=sys.stderr)
+    print(f"… qwen2.5:3b denkt nach: {args.prompt[:70]}…", file=sys.stderr)
     try:
-        response = call_gemme(body, args.prompt)
+        response = call_model(body, args.prompt)
     except urllib.error.URLError as e:
         print(f"✗ Ollama nicht erreichbar: {e.reason}", file=sys.stderr)
-        print("  Fix: ollama serve + ollama pull gemme", file=sys.stderr)
+        print("  Fix: ollama serve + ollama pull qwen2.5:3b", file=sys.stderr)
         return 2
     except Exception as e:
-        print(f"✗ gemme-Call fehlgeschlagen: {e}", file=sys.stderr)
+        print(f"✗ qwen-Call fehlgeschlagen: {e}", file=sys.stderr)
         return 3
 
     if args.dry_run:
-        print("--- DRY RUN: gemme-Response ---")
+        print("--- DRY RUN: qwen-Response ---")
         print(response)
         print("--- (Note wurde NICHT geschrieben) ---")
         return 0

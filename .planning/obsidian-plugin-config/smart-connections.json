@@ -25,13 +25,13 @@
       "provider": "ollama",
       "endpoint": "http://localhost:11434",
       "model": "nomic-embed-text:latest",
-      "rationale": "Bereits in v1.2 via Gemma/rag/.venv installiert (Phase 18). Fast local embedding, 768-dim, deutsches Vokabular OK."
+      "rationale": "Plugin-Backup bleibt auf dem Ollama-nativen Embedding-Pfad. Primärer RAG/Open-WebUI-Stack nutzt parallel `BAAI/bge-small-en-v1.5` via LangChain + SentenceTransformers."
     },
     "chat_model": {
       "provider": "ollama",
       "endpoint": "http://localhost:11434",
-      "model": "gemme:latest",
-      "rationale": "Custom-Model aus v1.1 Phase 11, basiert auf gemma4:e4b, 8192 Kontext, temperature 0.7. Identisches Modell wie tom-wiki/tom-ask nutzen."
+      "model": "qwen2.5:3b",
+      "rationale": "Aktiver lokaler Chat-/Research-Default seit 2026-04-12. Konsistent mit `tom-wiki`, `tom-ask`, OpenClaw und Open WebUI."
     },
     "excluded_folders_ui_list": [
       "00_Inbox",
@@ -61,7 +61,7 @@
     "3. Plugin DEAKTIVIEREN (Toggle OFF) falls bereits aktiv",
     "4. [WICHTIG] Settings → Smart Connections → Excluded Folders: Alle 17 Einträge aus recommended_settings.excluded_folders_ui_list eintragen (eine pro Zeile)",
     "5. Settings → Smart Connections → Embed Model → Ollama → nomic-embed-text:latest",
-    "6. Settings → Smart Connections → Chat Model → Ollama → gemme:latest",
+    "6. Settings → Smart Connections → Chat Model → Ollama → qwen2.5:3b",
     "7. Plugin AKTIVIEREN (Toggle ON)",
     "8. Smart Connections Panel öffnen (Command: 'Smart Connections: Open Smart View' oder Sidebar-Icon)",
     "9. Initial-Indexing abwarten (NUR 90_Wiki/ + 95_Gehirn/knowledge/ dank UI-Exclude-Liste)",

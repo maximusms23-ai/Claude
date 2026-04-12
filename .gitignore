@@ -16,3 +16,24 @@ claude-memory-compiler/scripts/last-flush.json
 claude-memory-compiler/scripts/*.log
 claude-memory-compiler/scripts/session-flush-*
 claude-memory-compiler/scripts/flush-context-*
+
+# Temp / Cache / IDE
+.tmp*/
+.tmp-*/
+.cache/
+.local/
+.cursor/
+__pycache__/
+*.pyc
+
+# External projects (not Tom)
+OmniRoute/
+openclaw/
+openwebui/
+Obsidian-backup/
+
+# Apple Intelligence (separate build artifacts)
+apple-intelligence/
+
+# StreamDeck configs
+bin/streamdeck/

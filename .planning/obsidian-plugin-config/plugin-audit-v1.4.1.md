@@ -59,17 +59,19 @@
 **Koexistenz-Entscheidung nötig:**
 - `obsidian-ocr` — **ADR-003** mit Koexistenz-Regel (darf nicht `archivum/` anfassen)
 
-## Offene Fragen an Maxim
+## Offene Fragen an Maxim — BEANTWORTET (Phase 37, 2026-04-12)
 
-1. Nutzt du Apple Reminders aktiv auf macOS/iOS? (Entscheidung `obsidian-apple-reminders-plugin`)
-2. Willst du `.eml`-Dateien künftig in `20_Dokumente/13_Betreuung/` ablegen? (Entscheidung `eml-reader`)
-3. TaskRobin als externen Email-Sync-Service nutzen — oder lieber manuell via `.eml`-Export? (Entscheidung `taskrobin` vs `eml-reader`-only)
-4. LLM-Plugin-Konsolidierung: Behalten wir nur Smart Connections, oder kommt in v1.5 noch ein zweites LLM-Plugin (Tars/CAO) dazu?
-5. `marker-api` als `tom-doc`-Backend-Upgrade — self-hosted Marker oder Mistral-OCR-API? (Entscheidung `marker-api`, ADR-005)
+**Status: answered**
+
+1. **Apple Reminders** → **Ja, aktivieren.** Plugin `obsidian-apple-reminders-plugin` v2.0.0 wird konfiguriert und smoke-tested. Recherche (2026-04-12) zeigt: Plugin ist AppleScript-basiert, macOS-only, v2.0.0 stabil. Bidirektionaler Sync mit `obsidian-reminders-sync` (oleksiitymchenko) als Upgrade-Option falls nötig. Für Phase 43 (Lifecycle Dashboards) wird Apple-Reminders-Sync für `state == Doing`-Aufgaben gebraucht.
+2. **`.eml`-Dateien in Betreuung** → **Ja, aktivieren.** `eml-reader` v1.1.2 ist reiner lokaler Preview-Renderer (kein Netzwerk, kein Privacy-Risiko). Maxim kann `.eml`-Exports aus Outlook/Mail in `20_Dokumente/13_Betreuung/` ablegen und direkt im Vault lesen.
+3. **TaskRobin vs eml-reader** → **eml-reader-only für jetzt.** TaskRobin braucht externen Cloud-Account (Privacy-kritisch). `eml-reader` + manueller `.eml`-Export aus Mail.app reicht für den Betreuungs-Workflow. TaskRobin bleibt installed-but-unused bis ein konkreter Automatisierungs-Bedarf entsteht.
+4. **LLM-Plugin-Konsolidierung** → **Nur Smart Connections bleibt aktiv.** Die 6 redundanten LLM-Plugins (`cao`, `tars`, `large-language-models`, `llm-summary`, `llm-test-gen`, `ai-latex-generator`) wurden in Phase 37 aus `community-plugins.json` entfernt. Smart Connections + lokaler `qwen2.5:3b`-Stack (tom-wiki/tom-ask) ist der einzige LLM-Pfad. MCP-Bridge (Phase 39) wird der nächste Integrationsschritt.
+5. **marker-api Backend-Upgrade** → **Deferred nach v1.6+.** Aktuell ist `pdftotext` + `ocrmypdf`-Fallback ausreichend für den Archiv-Bestand. `marker-api` bleibt installed-but-unused. Wenn komplexe PDFs (Tabellen, Formeln) zum Problem werden, self-hosted Marker evaluieren (kein externer API-Key).
 
 ## Nicht-Ziele in Phase 34
 
-- **Echte Integration von mcp-tools** → v1.5
-- **Echte Integration von marker-api** → v1.5+
-- **Echte Aktivierung von messager/taskrobin mit Accounts** → v1.5 Email-Workflow-Phase
-- **Entscheidung ob `large-language-models` ggf. doch Primary wird** → v1.5
+- **Echte Integration von mcp-tools** → v1.5 Phase 39
+- **Echte Integration von marker-api** → v1.6+
+- **Echte Aktivierung von messager/taskrobin mit Accounts** → deferred bis konkreter Use-Case
+- ~~Entscheidung ob `large-language-models` ggf. doch Primary wird~~ → **Erledigt: Nein, Smart Connections bleibt einziges LLM-Plugin (Phase 37)**

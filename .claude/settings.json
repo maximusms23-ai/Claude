@@ -1,5 +1,13 @@
 {
-  "_comment": "Tom v1.2 Phase 16: projekt-lokale Claude-Code-Hooks für claude-memory-compiler. Diese Hooks mergen mit den globalen Hooks in ~/.claude/settings.json (GSD + RTK bleiben aktiv). Paths absolut damit aus jedem cwd lauffähig. SessionEnd/PreCompact verwenden längeren Timeout weil flush.py als detached Popen spawnt — der Hook selbst ist trotzdem schnell.",
+  "permissions": {
+    "allow": [
+      "Bash(ccr start:*)",
+      "Bash(ccr status:*)"
+    ],
+    "additionalDirectories": [
+      "/Users/maxim"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -37,5 +45,6 @@
         ]
       }
     ]
-  }
+  },
+  "_comment": "Tom v1.2 Phase 16: projekt-lokale Claude-Code-Hooks für claude-memory-compiler. Diese Hooks mergen mit den globalen Hooks in ~/.claude/settings.json (GSD + RTK bleiben aktiv). Paths absolut damit aus jedem cwd lauffähig. SessionEnd/PreCompact verwenden längeren Timeout weil flush.py als detached Popen spawnt — der Hook selbst ist trotzdem schnell."
 }

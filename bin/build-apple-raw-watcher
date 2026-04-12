@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+ROOT="/Users/maxim/Claude/apple-intelligence"
+APP="$ROOT/build/TomAppleRawWatcher.app"
+BIN="$APP/Contents/MacOS/TomAppleRawWatcher"
+PLIST="$APP/Contents/Info.plist"
+
+mkdir -p "$APP/Contents/MacOS"
+cp "$ROOT/TomAppleRawWatcher-Info.plist" "$PLIST"
+
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+swiftc \
+  -module-cache-path /Users/maxim/Claude/.tmp-swift-module-cache \
+  -framework AppKit \
+  "$ROOT/TomAppleRawWatcher.swift" \
+  -o "$BIN"
+
+codesign --force --deep --sign - "$APP" >/dev/null 2>&1 || true
+echo "$APP"

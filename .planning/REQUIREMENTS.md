@@ -1,8 +1,27 @@
 # Requirements: Tom — Persönlicher Lebens-Assistent
 
 **Defined:** 2026-04-10
-**Current Milestone:** v1.5 — Lifecycle + Integration
+**Current Milestone:** v1.6 — Expansion
 **Core Value:** Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Leben wichtig ist — Tom weiß, wo was liegt, und unterstützt proaktiv.
+
+## Planned Requirements (Candidate)
+
+Requirements fuer eine skalierbare LinkedIn-Kontakt-Pipeline nach Obsidian. Fokus: Bulk-Import, Silver-Layer, selektive Materialisierung, Web-Clipper nur fuer Einzelprofile.
+
+### LinkedIn Kontakte -> Obsidian (LIOBS)
+
+- [ ] **LIOBS-01**: LinkedIn-Export-Flow ist dokumentiert (`Settings & Privacy -> Data Privacy -> Get a copy of your data`) und fuer einen echten Testlauf reproduzierbar
+- [ ] **LIOBS-02**: Minimales Export-Paket ist festgelegt (`Connections` Pflicht, `Profile`/`Email Addresses`/`Phone Numbers`/`Contacts` optional)
+- [ ] **LIOBS-03**: Ein explizites Schema mappt LinkedIn-Exportfelder auf das Tom-Personenmodell
+- [ ] **LIOBS-04**: Bronze-Ingest ist copy-first, hash-basiert und idempotent
+- [ ] **LIOBS-05**: Ein Normalizer erzeugt ein konsistentes Silver-Dataset als `csv` und `jsonl`
+- [ ] **LIOBS-06**: Dedupe nutzt bevorzugt `public_profile_url`, dann `email`, dann einen stabilen Fallback-Key
+- [ ] **LIOBS-07**: Die Massenansicht bleibt ausserhalb eines 1-Note-pro-Kontakt-Modells (z. B. `csv`/`sqlite`/subset Bases)
+- [ ] **LIOBS-08**: Nur priorisierte Kontakte werden als echte Personen-Noten materialisiert
+- [ ] **LIOBS-09**: Ein Web-Clipper-Template `Tom-LinkedIn-Profil` unterstuetzt gezielte Einzelprofil-Erfassung
+- [ ] **LIOBS-10**: Fehlende Angaben werden nur fuer priorisierte Kontakte per Web-Recherche nachgetragen und mit Quellen-/Confidence-Hinweis markiert
+- [ ] **LIOBS-11**: Jede materialisierte Kontakt-Note enthaelt KI-Bewertung, Prioritaet und naechsten Schritt
+- [ ] **LIOBS-12**: Die Rollout-Reihenfolge ist pilotiert und skaliert kontrolliert (100 -> 1000 -> 10000 -> Full)
 
 ## v1.4 Requirements (Current)
 
@@ -509,5 +528,112 @@ Requirements für die v1.5 "Lifecycle + Integration"-Phase: stabiler lokaler Res
 - [x] **CLOSE15-07**: Alle v1.5-Requirements in REQUIREMENTS.md als `[x]`; HYG-01/04/05/07/08/09 als **Known Gaps** dokumentiert (Milestone-Close akzeptiert, nicht blockierend) — 2026-04-12
 
 ---
+
+## v1.6 Requirements
+
+Requirements für v1.6 "Expansion": externe Open-Source-Tools integrieren, Token-Optimierung, Eval-Verbesserung, Skill-Engine. Phasen 47–53.
+
+### Plugin-Installationen + Raw/Vault-Bereinigung — Phase 47 (PLUG16) — Done
+
+- [x] **PLUG16-01**: Security Guidance Skill installiert und aktiv (9 Pattern-Checks als PreToolUse-Hook)
+- [x] **PLUG16-02**: claude-mem evaluiert und bewusst übersprungen (funktional redundant mit claude-memory-compiler + 95_Gehirn)
+- [x] **PLUG16-03**: 122 leere Raw-Ordner gelöscht (160→38 Ordner), `bin/tom-raw-cleanup` Tool erstellt
+- [x] **PLUG16-04**: Raw-Inventar + Triage dokumentiert in `.planning/phases/47-plugins-raw-cleanup/raw-inventar.md`
+- [x] **PLUG16-05**: 00_Inbox-Herkunft geklärt (207 Notes von Apple Intelligence Raw Watcher + tom-raw-inject, nicht Cursor)
+
+### RAG-Anything Multimodal — Phase 48 (RAG16)
+
+- [ ] **RAG16-01**: RAG-Anything (HKUDS/RAG-Anything) geklont + lokal installiert (Dependencies: MinerU, LightRAG, Python 3.10+)
+- [ ] **RAG16-02**: Evaluation mit 10 repräsentativen Dokumenten aus `~/Downloads/Archiv/` (PDFs mit Tabellen, Bildern, Formeln)
+- [ ] **RAG16-03**: Neuer Subcommand `tom-doc multi-search` integriert (parallel zu FTS5, non-destructive)
+- [ ] **RAG16-04**: MCP-Erweiterung `tom_doc_multi_search` in `mcp-server/tom_mcp.py`
+- [ ] **RAG16-05**: Query gegen PDF mit Tabelle liefert korrekte Zahlen; `tom-doc search` weiterhin funktional
+- [ ] **RAG16-06**: Privacy: komplett lokal, kein Cloud-Abfluss verifiziert
+
+### Codex-Plugin Token-Optimierung — Phase 49 (CDX16)
+
+- [ ] **CDX16-01**: OpenAI-Account Free-Tier-Limits geklärt
+- [ ] **CDX16-02**: Codex-Plugin (`openai/codex-plugin-cc`) installiert
+- [ ] **CDX16-03**: Smoke-Test `/codex:review` gegen `bin/tom-raw-batch` erfolgreich
+- [ ] **CDX16-04**: Privacy-Grenzen definiert (NUR generische Skripte, NICHT Vault-Pfade/persönliche Daten)
+- [ ] **CDX16-05**: CLAUDE.md Update mit Wann-Codex-statt-Claude-Regel
+
+### Autoresearch Eval-Pipeline — Phase 50 (ARES16)
+
+- [ ] **ARES16-01**: karpathy/autoresearch analysiert, übertragbare Konzepte identifiziert
+- [ ] **ARES16-02**: `Gemma/eval/run_eval.py` um automatische Fragengenerierung erweitert
+- [ ] **ARES16-03**: Fehlerrate + Token-Verbrauch pro Compile in `Gemma/training/collector.py` messbar
+- [ ] **ARES16-04**: Eval generiert automatisch neue Testfragen aus Wiki-/Brain-Inhalten
+- [ ] **ARES16-05**: Score verbessert sich vs. v1.3-Baseline (`Gemma/eval/results/v1.3-baseline.md`)
+
+### OpenSpace Skill-Engine — Phase 51 (OSP16)
+
+- [ ] **OSP16-01**: Privacy-Check: Cloud-Skill-Sharing evaluiert (falls ja: NUR lokale Teile)
+- [ ] **OSP16-02**: Bestehende Superpowers-Skills bewertet (Nutzung, Redundanz, Lücken)
+- [ ] **OSP16-03**: 3 Tom-Workflow-Skills entwickelt (Dokument-Intake, Wiki-Query, Status-Check)
+- [ ] **OSP16-04**: Token-Messung Vorher/Nachher mit `rtk gain`
+- [ ] **OSP16-05**: Abbruch-Bedingung dokumentiert falls Cloud-Skill-Sharing → Phase auf Analyse reduziert
+
+### Clicky Lokal-Build — Phase 52 (CLK16)
+
+- [ ] **CLK16-01**: Fork + Xcode-Build (Swift, macOS 14.2+ Target)
+- [ ] **CLK16-02**: Minimal-Build: Screenshot + Ollama-Query (ohne Voice als MVP)
+- [ ] **CLK16-03**: Lokalisierung: AssemblyAI→Whisper.cpp, ElevenLabs→weglassen, Claude API→Ollama/qwen2.5:3b
+- [ ] **CLK16-04**: CLAUDE.md + AGENTS.md in Clicky-Kontext eingebunden
+- [ ] **CLK16-05**: Menu-Bar-App startet + Screenshot-Analyse über Ollama funktioniert
+
+### audiobridge Transkription — Phase 53 (AUD16)
+
+- [ ] **AUD16-01**: Browser-Extension installiert (Chrome/Safari dev-mode)
+- [ ] **AUD16-02**: API-Backend konfiguriert (OpenAI-kompatibel oder Ollama-Whisper-Endpoint)
+- [ ] **AUD16-03**: Plaud-Note-Pro-Koexistenz geprüft (Export-Format, Transkript-Verbesserung)
+- [ ] **AUD16-04**: Transkripte als Markdown-Notes in `$TOM_VAULT/raw/transkripte/` nutzbar
+
+---
+
+## Coverage: v1.6
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| PLUG16-01 | 47 | Complete |
+| PLUG16-02 | 47 | Complete |
+| PLUG16-03 | 47 | Complete |
+| PLUG16-04 | 47 | Complete |
+| PLUG16-05 | 47 | Complete |
+| RAG16-01 | 48 | Pending |
+| RAG16-02 | 48 | Pending |
+| RAG16-03 | 48 | Pending |
+| RAG16-04 | 48 | Pending |
+| RAG16-05 | 48 | Pending |
+| RAG16-06 | 48 | Pending |
+| CDX16-01 | 49 | Pending |
+| CDX16-02 | 49 | Pending |
+| CDX16-03 | 49 | Pending |
+| CDX16-04 | 49 | Pending |
+| CDX16-05 | 49 | Pending |
+| ARES16-01 | 50 | Pending |
+| ARES16-02 | 50 | Pending |
+| ARES16-03 | 50 | Pending |
+| ARES16-04 | 50 | Pending |
+| ARES16-05 | 50 | Pending |
+| OSP16-01 | 51 | Pending |
+| OSP16-02 | 51 | Pending |
+| OSP16-03 | 51 | Pending |
+| OSP16-04 | 51 | Pending |
+| OSP16-05 | 51 | Pending |
+| CLK16-01 | 52 | Pending |
+| CLK16-02 | 52 | Pending |
+| CLK16-03 | 52 | Pending |
+| CLK16-04 | 52 | Pending |
+| CLK16-05 | 52 | Pending |
+| AUD16-01 | 53 | Pending |
+| AUD16-02 | 53 | Pending |
+| AUD16-03 | 53 | Pending |
+| AUD16-04 | 53 | Pending |
+
+**Coverage:**
+- v1.6 requirements: 34 total (5 PLUG16 + 6 RAG16 + 5 CDX16 + 5 ARES16 + 5 OSP16 + 5 CLK16 + 4 AUD16 - 1 abzgl. Phase 46 nicht in v1.6), mapped to phases: 34, unmapped: 0 ✓
+
+---
 *Requirements defined: 2026-04-10*
-*Last updated: 2026-04-12 — v1.5 Milestone-Close Phase 44 shipped (CLOSE15-01..07 done)*
+*Last updated: 2026-04-14 — v1.6 Milestone-Start (Phase 47 Done, Phasen 48–53 defined)*

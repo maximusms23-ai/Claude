@@ -1,5 +1,27 @@
 # Roadmap: Tom — Persönlicher Lebens-Assistent
 
+## Planned Candidate
+
+### Phase 45 — LinkedIn-Kontakte -> Obsidian
+
+**Goal:** Eine skalierbare LinkedIn->Obsidian-Pipeline fuer sehr grosse Kontaktmengen planen und danach in kontrollierten Stufen umsetzen, ohne Obsidian mit 200000 Einzelnoten zu ueberlasten.
+
+**Status:** Planned / research-backed
+
+**Requirements:** LIOBS-01..12
+
+**Depends on:** Phase 35 (Web-ClIipper-Templates), Phase 41b (KI-Intake + Triage), bestehende Dedupe-/Ingest-Muster
+
+**Success Direction:**
+
+1. LinkedIn-Export dient als offizielle Bulk-Quelle.
+2. Die Gesamtmenge bleibt zunaechst in einer Silver-Schicht (`csv`, `jsonl`, optional `sqlite`).
+3. Obsidian-Noten werden nur fuer Tier-A/Tier-B Kontakte materialisiert.
+4. Web Clipper wird nur fuer Einzelprofile und Nachanreicherung eingesetzt.
+5. Skalierung erfolgt gestuft: 100 -> 1000 -> 10000 -> Full.
+
+Siehe `.planning/phases/45-linkedin-kontakte-obsidian/45-01-PLAN.md`.
+
 ## v1.0 Complete
 
 Phases 1–7 shipped in commit `525c073` (2026-04-10). See git history for v1.0 phase details.
@@ -879,9 +901,206 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 
 ---
 
+## v1.6 — Expansion
+
+**Goal:** Tom's Werkzeug-Stack um externe Open-Source-Tools erweitern: multimodaler RAG (RAG-Anything), Token-Optimierung (Codex-Plugin), Eval-Verbesserung (Autoresearch), Skill-Engine (OpenSpace), lokaler Menu-Bar-Assistant (Clicky), Transkription (audiobridge). Alles lokal-first, Privacy-konform.
+
+### Phases
+
+- [x] **Phase 47: Plugins + Raw/Vault-Cleanup** — Security Guidance installiert, claude-mem übersprungen (redundant), 122 leere Raw-Ordner bereinigt, Raw-Inventar dokumentiert — shipped 2026-04-14
+- [ ] **Phase 48: RAG-Anything Multimodal** — HKUDS/RAG-Anything für PDFs mit Tabellen/Bildern/Formeln, `tom-doc multi-search` Subcommand, MCP-Erweiterung
+- [ ] **Phase 49: Codex-Plugin Token-Opt** — openai/codex-plugin-cc, Free-Tier-Limits, Privacy-Grenzen
+- [ ] **Phase 50: Autoresearch Eval-Pipeline** — karpathy/autoresearch Konzepte für `run_eval.py`, automatische Fragengenerierung
+- [ ] **Phase 51: OpenSpace Skill-Engine** — HKUDS/OpenSpace, 3 Tom-Workflow-Skills, Token-Messung
+- [ ] **Phase 52: Clicky Lokal-Build** — farzaa/clicky Fork, Screenshot+Ollama MVP, macOS Menu-Bar
+- [ ] **Phase 53: audiobridge Transkription** — audiobridge-ai/browser-extension, Plaud-Koexistenz
+
+### Wave-Dependencies (v1.6)
+
+- **Phase 47 ✓** ist Opener, blockiert nichts
+- **Phase 48 (RAG-Anything)** kann sofort starten — unabhängig
+- **Phase 49 (Codex)** braucht OpenAI-Account-Status — unabhängig von 48
+- **Phase 50 (Autoresearch)** profitiert von Phase 48 (RAG-Eval-Daten), kann aber parallel starten
+- **Phase 51 (OpenSpace)** braucht Privacy-Check first — unabhängig
+- **Phase 52 (Clicky)** braucht Xcode — unabhängig
+- **Phase 53 (audiobridge)** braucht Extension-Install — unabhängig
+
+```text
+47 ✓
+   ↓
+  48 ──── 49 ──── 50
+                    ↓
+  51 ──── 52 ──── 53
+```
+
+### Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 47. Plugins + Raw/Vault-Cleanup | — | ✓ Done | 2026-04-14 |
+| 48. RAG-Anything Multimodal | — | Planned | — |
+| 49. Codex-Plugin Token-Opt | — | Planned | — |
+| 50. Autoresearch Eval-Pipeline | — | Planned | — |
+| 51. OpenSpace Skill-Engine | — | Planned | — |
+| 52. Clicky Lokal-Build | — | Planned | — |
+| 53. audiobridge Transkription | — | Planned | — |
+
+---
+
+## Phase Details (v1.6)
+
+### Phase 47: Plugins + Raw/Vault-Cleanup (Done)
+
+**Goal**: Security Guidance + claude-mem evaluieren, Raw-Ordner bereinigen, Raw-Inventar erstellen.
+
+**Requirements**: PLUG16-01..05 (alle ✓ shipped)
+
+**Ergebnisse:**
+1. Security Guidance installiert (9 Pattern-Checks als PreToolUse-Hook)
+2. claude-mem übersprungen (funktional redundant mit claude-memory-compiler + 95_Gehirn)
+3. 122 leere Raw-Ordner gelöscht (160→38), `bin/tom-raw-cleanup` erstellt
+4. Inventar + Triage in `.planning/phases/47-plugins-raw-cleanup/raw-inventar.md`
+5. 00_Inbox-Herkunft: 207 Notes von Apple Intelligence Raw Watcher + tom-raw-inject
+
+---
+
+### Phase 48: RAG-Anything — Multimodaler Dokumenten-RAG
+
+**Goal**: `tom-doc` um multimodale RAG-Fähigkeiten erweitern — PDFs mit Tabellen, Bildern, Formeln korrekt abfragen. Komplett lokal.
+
+**Depends on**: Nothing (kann sofort starten)
+
+**Requirements**: RAG16-01..06
+
+**Success Criteria**:
+
+1. RAG-Anything lokal installiert und lauffähig
+2. 10 repräsentative Dokumente aus Archiv getestet
+3. `tom-doc multi-search "query"` liefert Ergebnisse aus multimodalen PDFs
+4. `tom_doc_multi_search` MCP-Tool in Cursor grün
+5. `tom-doc search` (FTS5) weiterhin funktional (non-destructive)
+6. Kein Cloud-Abfluss — komplett lokal verifiziert
+
+**Plans**: TBD
+
+---
+
+### Phase 49: Codex-Plugin — Token-Optimierung
+
+**Goal**: Codex-Plugin installieren für Token-optimierte Code-Reviews, mit klaren Privacy-Grenzen.
+
+**Depends on**: Nothing
+
+**Requirements**: CDX16-01..05
+
+**Success Criteria**:
+
+1. OpenAI Free-Tier-Limits dokumentiert
+2. `/codex:review` funktioniert gegen generische Skripte
+3. Privacy-Regel: NICHT für Vault-Pfade oder persönliche Daten
+4. Token-Einsparung via `rtk gain` messbar
+
+**Plans**: TBD
+
+---
+
+### Phase 50: Autoresearch — Tom-Eval-Pipeline verbessern
+
+**Goal**: Eval-Pipeline um automatische Fragengenerierung erweitern, Compile-Qualität systematisch messen.
+
+**Depends on**: Nothing (profitiert von Phase 48)
+
+**Requirements**: ARES16-01..05
+
+**Success Criteria**:
+
+1. Übertragbare Konzepte aus karpathy/autoresearch identifiziert
+2. `run_eval.py` generiert automatisch neue Testfragen
+3. Fehlerrate + Token-Verbrauch pro Compile messbar
+4. Score verbessert sich vs. v1.3-Baseline
+
+**Plans**: TBD
+
+---
+
+### Phase 51: OpenSpace — Skill-Optimierung + Token-Reduktion
+
+**Goal**: Bestehende Skills bewerten, 3 neue Tom-Workflow-Skills entwickeln, Token-Einsparung messen.
+
+**Depends on**: Nothing
+
+**Requirements**: OSP16-01..05
+
+**Success Criteria**:
+
+1. Privacy-Check Cloud-Skill-Sharing abgeschlossen
+2. 3 Tom-Workflow-Skills (Dokument-Intake, Wiki-Query, Status-Check) funktional
+3. Token-Einsparung via `rtk gain` dokumentiert
+4. Abbruch-Bedingung: Cloud-Sharing → Phase auf Analyse reduziert
+
+**Plans**: TBD
+
+---
+
+### Phase 52: Clicky — macOS Menu-Bar Assistant (Lokal-Build)
+
+**Goal**: Clicky als lokale macOS Menu-Bar-App mit Screenshot→Ollama-Query (MVP ohne Voice).
+
+**Depends on**: Nothing (braucht Xcode)
+
+**Requirements**: CLK16-01..05
+
+**Success Criteria**:
+
+1. Fork baut in Xcode (macOS 14.2+)
+2. Menu-Bar-App startet
+3. Screenshot-Analyse über Ollama/qwen2.5:3b funktioniert
+4. AssemblyAI→Whisper.cpp, Claude API→Ollama substituiert
+
+**Plans**: TBD
+
+---
+
+### Phase 53: audiobridge — Transkriptions-Extension
+
+**Goal**: Browser-Extension für lokale Audio-Transkription, Plaud-Note-Pro-Koexistenz prüfen.
+
+**Depends on**: Nothing
+
+**Requirements**: AUD16-01..04
+
+**Success Criteria**:
+
+1. Extension transkribiert Audio-Aufnahme
+2. API-Backend (Ollama-Whisper oder OpenAI-kompatibel) konfiguriert
+3. Transkripte als Markdown-Notes in `$TOM_VAULT/raw/transkripte/` nutzbar
+
+**Plans**: TBD
+
+---
+
+## Coverage: v1.6
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| PLUG16-01..05 | 47 | Complete |
+| RAG16-01..06 | 48 | Pending |
+| CDX16-01..05 | 49 | Pending |
+| ARES16-01..05 | 50 | Pending |
+| OSP16-01..05 | 51 | Pending |
+| CLK16-01..05 | 52 | Pending |
+| AUD16-01..04 | 53 | Pending |
+
+**v1.6 total: 35 — Mapped: 35 — Unmapped: 0 ✓**
+
+Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
+
+---
+
 *Roadmap v1.1 created: 2026-04-10*
 *Roadmap v1.2 appended: 2026-04-10*
 *Roadmap v1.3 appended: 2026-04-10*
 *Roadmap v1.4 appended: 2026-04-10*
 *Roadmap v1.5 appended: 2026-04-11 (Sonnet roadmapper-subagent blockiert durch Limit, Roadmap manuell von Opus geschrieben)*
-*Current milestone: v1.5 — Lifecycle + Integration*
+*Roadmap v1.6 appended: 2026-04-14*
+*Current milestone: v1.6 — Expansion*

@@ -76,13 +76,39 @@ Maxim hat eine einzige, vertrauenswürdige Ablage für alles, was in seinem Lebe
   - **tom-status CLI**: Vault-weite Zusammenfassung mit Top-5 dringend
   - 6 HYG-Requirements als Known Gaps (Maxim-Handoff: Obsidian-UI/Browser-Interaktion)
 
-**Active:** —
+**Active:** v1.6 Expansion — Phasen 47–53 (Phase 47 Done, Phase 48 nächste)
 
 ## Completed Milestones
 
 Alle Milestones (v1.0–v1.5) sind abgeschlossen. Siehe `.planning/MILESTONES.md` für Details.
 
-Nächster Milestone (v1.6) ist noch nicht geplant.
+## v1.6 — Expansion
+
+**Goal:** Tom's Werkzeug-Stack um externe Open-Source-Tools erweitern: multimodaler RAG, Token-Optimierung, Eval-Verbesserung, Skill-Engine, lokaler Menu-Bar-Assistant, Transkription.
+
+### Phases
+
+| Phase | Name | Prio | Status |
+|-------|------|------|--------|
+| 47 | Plugins + Raw/Vault-Cleanup | HOCH | ✓ Done (2026-04-14) |
+| 48 | RAG-Anything Multimodal | HOCH | Planned |
+| 49 | Codex-Plugin Token-Opt | MITTEL | Planned |
+| 50 | Autoresearch Eval-Pipeline | MITTEL | Planned |
+| 51 | OpenSpace Skill-Engine | MITTEL-NIEDRIG | Planned |
+| 52 | Clicky Lokal-Build | NIEDRIG | Planned |
+| 53 | audiobridge Transkription | NIEDRIG | Planned |
+
+### Phase 47 ✓ — Plugins + Raw/Vault-Cleanup (Done)
+
+Security Guidance installiert, claude-mem übersprungen (redundant), 122 leere Raw-Ordner bereinigt, Raw-Inventar dokumentiert.
+
+## Planned Initiative
+
+### Phase 45 — LinkedIn-Kontakte -> Obsidian (Deferred)
+
+**Status:** Research + GSD-Plan vorhanden, Implementierung deferred (nicht in v1.6)
+
+Siehe `.planning/phases/45-linkedin-kontakte-obsidian/45-01-PLAN.md`.
 
 ### Out of Scope
 
@@ -120,4 +146,4 @@ Nächster Milestone (v1.6) ist noch nicht geplant.
 | 00_Inbox → 99_Vorlagen Nummerierungsschema | Ordnet sich auto-sortiert, Trennung persönlich/wiki bleibt visuell | — Pending |
 
 ---
-*Last updated: 2026-04-12 — Tom v1.5 Milestone-Close (Phase 44)*
+*Last updated: 2026-04-14 — Tom v1.6 Milestone-Start (Phase 47 Done, Phasen 48–53 geplant)*

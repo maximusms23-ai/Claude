@@ -181,12 +181,19 @@ _VAULT_WRITE_ROOTS = (
 )
 _VAULT_WRITE_FILES = ("log.md", "index.md")
 
+# Wenn TOM_MCP_VAULT_FULL_ACCESS=1, wird die Whitelist deaktiviert und der Server
+# erlaubt Read/Write/List unter jedem Vault-Pfad (raw/, Clippings/, Archiv/,
+# 99_Vorlagen/, 10_Personen/, 20_Dokumente/, 50_Gesundheit/, 60_Finanzen/,
+# 70_Hardware/, 80_Social_Media/ inklusive). Path-Traversal-Schutz bleibt aktiv.
+_VAULT_FULL_ACCESS = os.environ.get("TOM_MCP_VAULT_FULL_ACCESS", "0") == "1"
+
 
 def _resolve_vault_path(relpath: str) -> str:
-    """Resolve relpath under TOM_VAULT, reject traversal + non-whitelisted roots.
+    """Resolve relpath under TOM_VAULT, reject traversal.
 
-    Returns absolute path. Raises ValueError if path escapes vault or hits
-    a non-whitelisted area (raw/, Clippings/, Archiv/, 99_Vorlagen/, ...).
+    Returns absolute path. Raises ValueError if path escapes vault. Wenn
+    TOM_MCP_VAULT_FULL_ACCESS=1 ist die Whitelist aufgehoben (alle Vault-Roots
+    erlaubt). Sonst beschraenkt auf _VAULT_WRITE_ROOTS + _VAULT_WRITE_FILES.
     """
     if not relpath or relpath.startswith("/") or ".." in relpath.split("/"):
         raise ValueError(f"Pfad ungueltig (absolut oder traversal): {relpath}")
@@ -194,6 +201,8 @@ def _resolve_vault_path(relpath: str) -> str:
     target = os.path.realpath(os.path.join(vault, relpath))
     if not (target == vault or target.startswith(vault + os.sep)):
         raise ValueError(f"Pfad ausserhalb Vault: {relpath}")
+    if _VAULT_FULL_ACCESS:
+        return target
     rel_resolved = os.path.relpath(target, vault)
     first = rel_resolved.split(os.sep, 1)[0]
     if first in _VAULT_WRITE_ROOTS:
@@ -202,7 +211,8 @@ def _resolve_vault_path(relpath: str) -> str:
         return target
     raise ValueError(
         f"Schreiben nicht erlaubt unter '{first}'. "
-        f"Erlaubt: {_VAULT_WRITE_ROOTS} + {_VAULT_WRITE_FILES}"
+        f"Erlaubt: {_VAULT_WRITE_ROOTS} + {_VAULT_WRITE_FILES} "
+        f"(setze TOM_MCP_VAULT_FULL_ACCESS=1 um Whitelist aufzuheben)"
     )
 
 

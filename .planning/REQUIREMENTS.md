@@ -600,7 +600,7 @@ Requirements für v1.6 "Expansion": externe Open-Source-Tools integrieren, Token
 - [x] **SCF16-03**: CLI `bin/tom-shortcut`: build (headless `claude --print` + Fallback-Prompt + Artefakt-Verifikation + tidy), list, run, import, helpers deploy, setup — „Hallo Tom" E2E (Build+Import+Run), „Uhrzeit-Test" via `--fallback-prompt`
 - [ ] **SCF16-04**: Stream-Deck-Button `bin/streamdeck/tom-shortcut-build.command` (prompt_text → build → pause_terminal) — Repo shipped; Doppelklick-Test + Elgato-Registrierung manuell offen
 - [x] **SCF16-05**: Doku: `shortcuts-forge/README.md` (Helper-Vertrag, Cherri-Sektion, Troubleshooting, Privacy) + CLAUDE.md-Sektion `tom-shortcut`
-- [ ] **SCF16-06**: E2E-Verifikation: Headless-Build „Hallo Tom" signiert ✓, Import + `shortcuts run` ✓; Helper-Shortcut gebaut+signiert ✓, **Run offen** (Import-Klick + Skript-Erlaubnis); Session-Pfad **offen** (nach Session-Neustart)
+- [ ] **SCF16-06**: E2E-Verifikation: „Hallo Tom" Build+Import+Run ✓; „Helper-Test" Run ✓ (Kette Kurzbefehl→zsh→Symlink→Python-Helper, 2026-07-20); „Uhrzeit-Test" Fallback+Run ✓; „Batterie-Status" Regression Plugin 1.2.1 ✓; Session-Pfad **offen** (nach Session-Neustart)
 
 > **Repo geliefert:** Pipeline komplett + 2 signierte Test-Shortcuts verifiziert. SCF16-04/-06-Checkboxen bleiben bis Maxim Helper-Test-Run, Session-Probe und Stream-Deck-Klick bestätigt (siehe `61-shortcuts-forge/VERIFICATION.md`).
 

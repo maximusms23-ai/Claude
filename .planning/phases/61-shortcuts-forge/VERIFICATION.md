@@ -21,7 +21,7 @@
 | 2 | Helper über Symlink-Pfad | ✅ alle drei (AppleScript: Compile-Check; Laufzeit braucht Safari + Consent — manuell) |
 | 3 | Headless „Hallo Tom" | ✅ Exit 0, `signed/Hallo Tom.shortcut` 24K, `drafts/Hallo Tom.xml`, Wurzel sauber |
 | 4 | Import + Run „Hallo Tom" | ✅ Import-Klick durch Maxim, `shortcuts list` zeigt Eintrag, `run` Exit 0 + Benachrichtigung |
-| 5 | Helper-Shortcut „Helper-Test" | ⚠️ Build + Sign ✅ (Draft-XML verifiziert: runshellscript, `/bin/zsh`, korrekter Script); **Import-Klick + Run offen (Maxim)** — erwartet: Benachrichtigung „TOM"; Voraussetzung: Kurzbefehle → Einstellungen → Erweitert → Skripte erlauben |
+| 5 | Helper-Shortcut „Helper-Test" | ✅ Build + Sign ✅; Import durch Maxim ✅; `run` Exit 0 → Kette Kurzbefehl→zsh→Symlink→`text_tools.py` funktioniert (2026-07-20). Skript-Erlaubnis damit nachweislich aktiv |
 | 6 | Session-Pfad `/shortcuts-playground:build` | ⚠️ Offen — nach Claude/Cursor-Neustart testen (Env-Var aus settings.json greift erst in neuer Session) |
 | 7 | Stream Deck | ⚠️ Offen — `.command` Doppelklick + Elgato-Registrierung (manuell) |
 | 8 | `--fallback-prompt`-Probe | ✅ „Uhrzeit-Test" signiert (24K) über expliziten Fallback-Pfad |
@@ -47,7 +47,7 @@
 
 ## Restpunkte für Phase-Close (Maxim)
 
-1. Helper-Test importieren (Dialog) + ausführen → „TOM"-Benachrichtigung
-2. Einmalig: Kurzbefehle-App → Einstellungen → Erweitert → „Ausführen von Skripten erlauben"
-3. Session-Probe nach Neustart: `/shortcuts-playground:build …` → Artefakt in Tom-Shortcuts
-4. Stream-Deck: Doppelklick-Test + Elgato-Button
+1. ~~Helper-Test importieren + ausführen~~ ✅ 2026-07-20 (Run OK, Skript-Erlaubnis aktiv)
+2. Session-Probe nach Neustart: `/shortcuts-playground:build …` → Artefakt in Tom-Shortcuts
+3. Stream-Deck: Doppelklick-Test + Elgato-Button
+4. Optional: „Batterie-Status"-Import bestätigen (Dialog offen)

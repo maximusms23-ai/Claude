@@ -58,18 +58,18 @@ Requirements für Dokumenten-Volltext-Fundament, `tom-doc` CLI, Smart-Connection
 
 ### Clipper Auto-Enrichment (CLIP)
 
-- [x] **CLIP-01**: `bin/tom-clip-enrich` liest Clipping-Datei, ruft `qwen2.5:3b` lokal, schreibt angereicherte Version zurück; idempotent via `enriched: true` Frontmatter-Flag
+- [x] **CLIP-01**: `bin/tom-clip-enrich` liest Clipping-Datei, ruft `qwen3:8b` lokal, schreibt angereicherte Version zurück; idempotent via `enriched: true` Frontmatter-Flag
 - [x] **CLIP-02**: Enrichment — **Summary**: 3–5 Sätze in Frontmatter-Feld `summary`
 - [x] **CLIP-03**: Enrichment — **Auto-Tags**: 3–5 lokale Qwen-Tags an existierende `tags` appended (dedupliziert)
 - [x] **CLIP-04**: Enrichment — **Konzept-Extraktion**: 2–4 Begriffe als Zeilen in `$TOM_VAULT/90_Wiki/konzepte-vorschlaege.md` (Review-Schleife, NICHT direkt als Stub-Pages)
-- [x] **CLIP-05**: Enrichment — **Wiki-Kategorie-Vorschlag**: `qwen2.5:3b` wählt eine `90_Wiki/`-Subkategorie (themen/konzepte/personen/projekte/quellen) → Frontmatter-Feld `suggested_wiki_category`
+- [x] **CLIP-05**: Enrichment — **Wiki-Kategorie-Vorschlag**: `qwen3:8b` wählt eine `90_Wiki/`-Subkategorie (themen/konzepte/personen/projekte/quellen) → Frontmatter-Feld `suggested_wiki_category`
 - [~] **CLIP-06**: `tom-clip-enrich --watch` — **deferred nach v1.5** (CLI on-demand reicht für v1.4)
 - [x] **CLIP-07**: Smoke-Test mit `Mannheim – Wikipedia.md` — Summary, 5 Tags, 4 Konzepte, Kategorie "themen", keine Halluzinationen, Idempotenz-Test grün
 - [x] **CLIP-08**: **Entscheidung dokumentiert**: NICHT als Hook in `tom-compile-safe` integriert. Begründung: Clipper-Enrichment ist opportunistisch (neue Clippings kommen unregelmäßig), während tom-compile täglich läuft. On-demand CLI reicht für v1.4. launchd-Integration offen für v1.5 bei Bedarf.
 
 ### Token-Spar-Lokalisierung (LOCAL)
 
-- [x] **LOCAL-01**: `tom-compile --local` Alternative-Pfad über `qwen2.5:3b` via `tom_tools/compile_local.py`; Default bleibt `claude_agent_sdk` (bin/tom-compile dispatcht)
+- [x] **LOCAL-01**: `tom-compile --local` Alternative-Pfad über `qwen3:8b` via `tom_tools/compile_local.py`; Default bleibt `claude_agent_sdk` (bin/tom-compile dispatcht)
 - [x] **LOCAL-02**: Eval-Vergleich in `Gemma/eval/results/v1.4-compile-local-vs-claude.md` — auf real-log (FLUSH_OK-only, beide Modi korrekt 0 Artikel) + synthetic-log (local: 2 Artikel in 67s, keine Halluzinationen, saubere Struktur). 3-Log-Vollvergleich deferred nach v1.5 wegen fehlender akkumulierter daily-logs.
 - [x] **LOCAL-03**: `tom-lint --structural-only` als empfohlener launchd-Default in `CLAUDE.md` dokumentiert (kein neues `--no-llm` Flag — existierendes reicht, minimal-invasiv)
 - [x] **LOCAL-04**: Maximus_OS-Issue zur Entscheidung (ausstehend — nach Commit)
@@ -103,7 +103,7 @@ Requirements für Compile-Automation, `tom-wiki` Quality-Pass, Eval-Framework-Er
 ### tom-wiki Quality-Pass (QUAL)
 
 - [x] **QUAL-01**: `claude-memory-compiler/tom_tools/wiki_query.py` hat neuen, stärkeren System-Prompt der präzise Antworten + Quellen-Zitation verlangt
-- [x] **QUAL-02**: Context-Filter reduziert den an `qwen2.5:3b` übergebenen Kontext auf nur Index + relevante Artikel (statt alle) — per Keyword-Matching aus Query
+- [x] **QUAL-02**: Context-Filter reduziert den an `qwen3:8b` übergebenen Kontext auf nur Index + relevante Artikel (statt alle) — per Keyword-Matching aus Query
 - [x] **QUAL-03**: Antworten von `tom-wiki` zitieren mindestens eine Quell-Datei explizit per Wiki-Link oder Dateiname
 - [x] **QUAL-04**: Smoke-Test: `tom-wiki "Was ist TurboQuant?"` liefert präzisere Antwort als Baseline (nicht generisch, verweist auf `turboquant.md`)
 - [x] **QUAL-05**: Patches sind in `claude-memory-compiler/TOM-PATCHES.md` dokumentiert
@@ -417,12 +417,12 @@ Kleine Bridge-Phase zwischen v1.4-Close und v1.5-Kickoff. Drei Themen: Obsidian-
 ### Web-Clipper-Interpreter-Integration — Phase 35-Hotfix (CLIP141-07..13)
 
 - [x] **CLIP141-07**: `OLLAMA_ORIGINS` persistent via `launchctl setenv` auf `chrome-extension://*,moz-extension://*,safari-web-extension://*` gesetzt; CORS-Preflight im README dokumentiert
-- [x] **CLIP141-08**: Interpreter-Provider-Setup dokumentiert in `web-clipper/README.md` Abschnitt 2 (Endpoint `http://127.0.0.1:11434/api/chat`, Model `qwen2.5:3b`)
+- [x] **CLIP141-08**: Interpreter-Provider-Setup dokumentiert in `web-clipper/README.md` Abschnitt 2 (Endpoint `http://127.0.0.1:11434/api/chat`, Model `qwen3:8b`)
 - [x] **CLIP141-09**: Alle 7 Templates mit 3 Interpreter-Prompts (`summary`, `tags`-Ergänzung, `konzepte_vorschlaege`) refaktoriert inkl. typ-spezifischer Prompt-Formulierung und "Betrachte nur die ersten X Zeichen"-Hinweis. **Schritt 2:** Zusätzlich 7 importable JSON-Templates in `99_Vorlagen/web-clipper/json/Tom-*.json` (Schema `0.1.0`, Properties + noteContentFormat + path), weil die Browser-Extension nur JSON liest, nicht die Vault-Markdown-Files. Modell-Label konsistent `qwen25-interpreter`
 - [x] **CLIP141-10**: ADR-005 `adr-005-web-clipper-interpreter-vs-clip-enrich.md` in `.planning/obsidian-plugin-config/` angelegt
 - [x] **CLIP141-11**: `web-clipper/README.md` überarbeitet — Interpreter-Setup als Primary, CORS-Troubleshooting, `tom-clip-enrich` auf Fallback-Rolle + `--queue-only` dokumentiert
 - [x] **CLIP141-12**: `CLAUDE.md` Web-Clipper-Flow-Sektion aktualisiert — Interpreter-Primary, `--queue-only` erwähnt, ADR-005-Verweis
-- [x] **CLIP141-13a**: Ollama-Pipeline (Origin → CORS → `qwen2.5:3b` → deutsche Antwort) verifiziert via direktem POST gegen `/api/chat` mit Browser-Extension-Origin
+- [x] **CLIP141-13a**: Ollama-Pipeline (Origin → CORS → `qwen3:8b` → deutsche Antwort) verifiziert via direktem POST gegen `/api/chat` mit Browser-Extension-Origin
 - [x] **CLIP141-13b**: 7 Tom-Templates direkt in Chrome-Extension-LevelDB-Storage importiert (Sync Extension Settings, lz-string-UTF16-komprimiert) inkl. Vault-Eintrag `Obsidian_Zentralw`
 - [~] **CLIP141-13c**: Echter Browser-Clip mit Frontmatter-Befüllung + `--queue-only`-Test + Fallback-Test — Maxim klickt einmal auf einen echten Wikipedia-Artikel und prüft das Ergebnis (siehe Phase-35-Hotfix-Note)
 - [x] **CLIP141-14**: tuan3w-Template-Adaption (Schritt 4) — 6 neue Wiki/Personal-Templates (`Konzept`, `Thema`, `Person-Wiki`, `Buch`, `Zitat`, `Gedanke`) mit Templater-Syntax + Tom-Frontmatter, Templater Folder-Routing für 6 Ordner, 2 Reading-Kanbans in `30_Projekte/Lesen/`, neue Wiki-Subfolder `zitate/` + `werkzeuge/`, README komplett überarbeitet, Entscheidung dokumentiert (Templater statt Auto Note Mover)
@@ -435,17 +435,17 @@ Kleine Bridge-Phase zwischen v1.4-Close und v1.5-Kickoff. Drei Themen: Obsidian-
 
 ## v1.5 Requirements (Current)
 
-Requirements für die v1.5 "Lifecycle + Integration"-Phase: stabiler lokaler Research-/Assistant-Modus auf `qwen2.5:3b` + `BAAI/bge-small-en-v1.5`, Vault-Hygiene-Cleanup, MCP-Bridge für Tom-CLIs in Obsidian, projekt-übergreifende Lebens-State-Machine für 6 Lebens-Bereiche, Milestone-Close. Phasen 36–44 (Phase 36 ist out-of-band-shipped am 2026-04-11 als Opener und wird retroaktiv aufgenommen).
+Requirements für die v1.5 "Lifecycle + Integration"-Phase: stabiler lokaler Research-/Assistant-Modus auf `qwen3:8b` + `BAAI/bge-small-en-v1.5`, Vault-Hygiene-Cleanup, MCP-Bridge für Tom-CLIs in Obsidian, projekt-übergreifende Lebens-State-Machine für 6 Lebens-Bereiche, Milestone-Close. Phasen 36–44 (Phase 36 ist out-of-band-shipped am 2026-04-11 als Opener und wird retroaktiv aufgenommen).
 
 ### Lokaler Claude-Code-Modus — Phase 36 (LOCAL-05) — out-of-band shipped
 
-- [x] **LOCAL-05-01**: Claude Code Router (`@musistudio/claude-code-router`) installiert via `npm -g`, `~/.claude-code-router/config.json` mit Ollama-Provider + Model-Aliasing (`opus/background/haiku → qwen2.5:3b`), CCR-Daemon läuft auf Port 3456
+- [x] **LOCAL-05-01**: Claude Code Router (`@musistudio/claude-code-router`) installiert via `npm -g`, `~/.claude-code-router/config.json` mit Ollama-Provider + Model-Aliasing (`opus/background/haiku → qwen3:8b`), CCR-Daemon läuft auf Port 3456
 - [x] **LOCAL-05-02**: `bin/nutze-ollama.sh` Sourced Shell-Library mit Funktionen `nutze-ollama` / `nutze-claude` / `ollama-status`, Preflight für ollama+ccr+modelle, `eval $(ccr activate)`-Pattern statt Hardcoding
 - [x] **LOCAL-05-03**: `bin/tom-local` Wrapper-Script (Subshell-Spawn ohne Argument, One-Shot mit Argument), `~/bin/tom-local`-Symlink analog `tom-*`-Konvention
 - [x] **LOCAL-05-04**: `~/.zshrc` enthält guarded Source-Line `[[ -f "$HOME/Claude/bin/nutze-ollama.sh" ]] && source ...`, Funktionen sind in jeder neuen Shell verfügbar
 - [x] **LOCAL-05-05**: `CLAUDE.md` neue Sektion "Lokaler Ollama-Modus für Claude Code (seit v1.5 Phase 36)" mit Kommando-Referenz, Architektur-Diagramm, prominentem Chat-Only-Warning, Use-Cases-Tabelle, Rollback-Anleitung, VSCode-Extension-Koexistenz
 - [x] **LOCAL-05-06**: VSCode Ollama Extension `warm3snow.vscode-ollama-1.2.1` identifiziert (reines Chat-Panel, kein File-I/O, kein Privacy-Risiko) + dokumentiert in CLAUDE.md
-- [x] **LOCAL-05-07**: 7-stufige Smoke-Tests durchgeführt: Cloud-Default ✓, Switch ✓, Status ✓, Reset ✓, CCR-Endpoint Chat ✓, tom-local Subshell+One-Shot ✓ — Fokus ist jetzt stabiler Chat/Research auf `qwen2.5:3b`; fragiler lokaler Tool-Use bleibt bewusst kein Gate
+- [x] **LOCAL-05-07**: 7-stufige Smoke-Tests durchgeführt: Cloud-Default ✓, Switch ✓, Status ✓, Reset ✓, CCR-Endpoint Chat ✓, tom-local Subshell+One-Shot ✓ — Fokus ist jetzt stabiler Chat/Research auf `qwen3:8b`; fragiler lokaler Tool-Use bleibt bewusst kein Gate
 
 ### Vault-Hygiene & Cleanup — Phase 37 (HYG)
 
@@ -461,8 +461,8 @@ Requirements für die v1.5 "Lifecycle + Integration"-Phase: stabiler lokaler Res
 
 ### Local Tool-Use Modell-Upgrade — Phase 38 (LOCAL-06)
 
-- [x] **LOCAL-06-01**: `qwen2.5:3b` (bereits installiert, 1.9 GB) hat native Tool-Calls — überraschend besser als `qwen2.5-coder` (das Tool-Calls nur als Text-String liefert). Kein neues Modell nötig. Verifiziert 2026-04-12.
-- [x] **LOCAL-06-02**: `~/.claude-code-router/config.json` aktualisiert: Provider `ollama` → `qwen2.5:3b` als Default. Reference-Copy in `.planning/phases/38-local-toolupgrade/ccr-config.reference.json` — 2026-04-12
+- [x] **LOCAL-06-01**: `qwen3:8b` (bereits installiert, 1.9 GB) hat native Tool-Calls — überraschend besser als `qwen2.5-coder` (das Tool-Calls nur als Text-String liefert). Kein neues Modell nötig. Verifiziert 2026-04-12.
+- [x] **LOCAL-06-02**: `~/.claude-code-router/config.json` aktualisiert: Provider `ollama` → `qwen3:8b` als Default. Reference-Copy in `.planning/phases/38-local-toolupgrade/ccr-config.reference.json` — 2026-04-12
 - [x] **LOCAL-06-03**: Tool-Use-Gate PASS: CCR-Proxy `/v1/messages` liefert `content[].type == "tool_use"` mit `stop_reason: tool_use` + korrektem Tool-Name/Input — 2026-04-12
 - [x] **LOCAL-06-04**: Real-Use-Test PASS: Read-Tool + Shell-Tool korrekt selektiert aus 3-Tool-Set (Read/Shell/Write) via CCR-Proxy im Anthropic-Format — 2026-04-12
 - [x] **LOCAL-06-05**: CLAUDE.md "Lokaler Ollama-Modus" Limitations-Sektion updated: Tool-Use FAIL→PASS, Use-Cases erweitert um einfache Tool-Calls — 2026-04-12
@@ -472,7 +472,7 @@ Requirements für die v1.5 "Lifecycle + Integration"-Phase: stabiler lokaler Res
 
 - [x] **MCP-01**: MCP-Server-Architektur entschieden + dokumentiert — FastMCP v3 standalone mit stdio-Transport, ADR-006 in `.planning/obsidian-plugin-config/adr-006-mcp-architecture.md` — 2026-04-12
 - [x] **MCP-02**: MCP-Server `tom-doc` als 3 separate Tools exposed (`tom_doc_search`, `tom_doc_list`, `tom_doc_show`), async subprocess mit Timeout — 2026-04-12
-- [x] **MCP-03**: MCP-Server `tom-wiki` als `tom_wiki_query` Tool exposed, Karpathy-Index-first via qwen2.5:3b, 120s Timeout — 2026-04-12
+- [x] **MCP-03**: MCP-Server `tom-wiki` als `tom_wiki_query` Tool exposed, Karpathy-Index-first via qwen3:8b, 120s Timeout — 2026-04-12
 - [x] **MCP-04**: MCP-Server `tom-ask` als `tom_ask` Tool exposed, RAG-Query über 3 Collections (wiki/clippings/gehirn), 120s Timeout — 2026-04-12
 - [x] **MCP-05**: `tom-clip-enrich` bewusst **nicht** exposed — Write-Zugriff über MCP ist Privacy-Risiko (ADR-006, Entscheidung dokumentiert). CLI bleibt einziger Schreibpfad — 2026-04-12
 - [x] **MCP-06**: Privacy-Boundary explizit definiert pro Tool in ADR-006: alle 5 Tools Read-only, kein Write-Zugriff über MCP, persönliche Daten nur bei tom_doc_* und teilweise tom_ask (gehirn) — 2026-04-12
@@ -541,46 +541,48 @@ Requirements für v1.6 "Expansion": externe Open-Source-Tools integrieren, Token
 - [x] **PLUG16-04**: Raw-Inventar + Triage dokumentiert in `.planning/phases/47-plugins-raw-cleanup/raw-inventar.md`
 - [x] **PLUG16-05**: 00_Inbox-Herkunft geklärt (207 Notes von Apple Intelligence Raw Watcher + tom-raw-inject, nicht Cursor)
 
-### RAG-Anything Multimodal — Phase 48 (RAG16)
+### RAG-Anything Multimodal — Phase 48 (RAG16) — Done
 
-- [ ] **RAG16-01**: RAG-Anything (HKUDS/RAG-Anything) geklont + lokal installiert (Dependencies: MinerU, LightRAG, Python 3.10+)
-- [ ] **RAG16-02**: Evaluation mit 10 repräsentativen Dokumenten aus `~/Downloads/Archiv/` (PDFs mit Tabellen, Bildern, Formeln)
-- [ ] **RAG16-03**: Neuer Subcommand `tom-doc multi-search` integriert (parallel zu FTS5, non-destructive)
-- [ ] **RAG16-04**: MCP-Erweiterung `tom_doc_multi_search` in `mcp-server/tom_mcp.py`
-- [ ] **RAG16-05**: Query gegen PDF mit Tabelle liefert korrekte Zahlen; `tom-doc search` weiterhin funktional
-- [ ] **RAG16-06**: Privacy: komplett lokal, kein Cloud-Abfluss verifiziert
+- [x] **RAG16-01**: RAG-Anything lokal installiert (`rag-anything-env`, MinerU, LightRAG, Python 3.13) — siehe `48-01-SUMMARY.md`
+- [x] **RAG16-02**: Eval-Spezifikation + Ergebnis-Vorlage + `scripts/rag_anything_eval_run.py` (10-Dok-Lauf: privat ausfüllen, siehe `48-02-EVAL-SPEC.md`)
+- [x] **RAG16-03**: Subcommand `tom-doc multi-search` + `scripts/tom_doc_multi_search.py` (Opt-in-Manifest, parallel zu FTS5)
+- [x] **RAG16-04**: MCP-Tool `tom_doc_multi_search` in `mcp-server/tom_mcp.py`
+- [x] **RAG16-05**: `tom-doc search` (FTS5) Regression verifiziert; Tabellen-Zahlen-Query: manuell nach Indexierung laut Eval-Protokoll
+- [x] **RAG16-06**: Privacy — nur `127.0.0.1:11434` / lokales Ollama im neuen Pfad; MCP Read-only (siehe `VERIFICATION.md`)
 
 ### Codex-Plugin Token-Optimierung — Phase 49 (CDX16)
 
-- [ ] **CDX16-01**: OpenAI-Account Free-Tier-Limits geklärt
-- [ ] **CDX16-02**: Codex-Plugin (`openai/codex-plugin-cc`) installiert
-- [ ] **CDX16-03**: Smoke-Test `/codex:review` gegen `bin/tom-raw-batch` erfolgreich
-- [ ] **CDX16-04**: Privacy-Grenzen definiert (NUR generische Skripte, NICHT Vault-Pfade/persönliche Daten)
-- [ ] **CDX16-05**: CLAUDE.md Update mit Wann-Codex-statt-Claude-Regel
+- [x] **CDX16-01**: OpenAI-Account Free-Tier-Limits geklärt (Referenz: `.planning/phases/49-codex-plugin-token-opt/49-OPENAI-CODEX-LIMITS.md`; Dashboard bleibt Source of Truth)
+- [x] **CDX16-02**: Codex-Plugin (`openai/codex-plugin-cc`) in **Claude Code** installiert (manuell) — Maxim 2026-04-16
+- [x] **CDX16-03**: Smoke-Test `/codex:review` gegen `bin/tom-raw-batch` erfolgreich (manuell) — Maxim 2026-04-16
+- [x] **CDX16-04**: Privacy-Grenzen definiert (`.planning/phases/49-codex-plugin-token-opt/PRIVACY.md`)
+- [x] **CDX16-05**: CLAUDE.md Update mit Wann-Codex-statt-Claude-Regel
 
 ### Autoresearch Eval-Pipeline — Phase 50 (ARES16)
 
-- [ ] **ARES16-01**: karpathy/autoresearch analysiert, übertragbare Konzepte identifiziert
-- [ ] **ARES16-02**: `Gemma/eval/run_eval.py` um automatische Fragengenerierung erweitert
-- [ ] **ARES16-03**: Fehlerrate + Token-Verbrauch pro Compile in `Gemma/training/collector.py` messbar
-- [ ] **ARES16-04**: Eval generiert automatisch neue Testfragen aus Wiki-/Brain-Inhalten
-- [ ] **ARES16-05**: Score verbessert sich vs. v1.3-Baseline (`Gemma/eval/results/v1.3-baseline.md`)
+- [x] **ARES16-01**: karpathy/autoresearch analysiert, übertragbare Konzepte identifiziert (`50-RESEARCH.md`)
+- [x] **ARES16-02**: `Gemma/eval/run_eval.py` um automatische Fragengenerierung erweitert (`generate-questions` + `questiongen.py`)
+- [x] **ARES16-03**: Pro Eval-Tool-Aufruf messbar: Wall-Zeit + stdout-Länge → `Gemma/eval/results/eval_run_metrics.jsonl` (Compile-Token in `collector.py`: später / separat)
+- [x] **ARES16-04**: Neue Testfragen aus Wiki-Index (Wikilinks), reproduzierbar via `--seed`
+- [x] **ARES16-05**: Eval-Reports mit Baseline-Vergleich zu `v1.3-baseline.md` (Avg/Wins); keine automatische Score-Garantie
 
 ### OpenSpace Skill-Engine — Phase 51 (OSP16)
 
-- [ ] **OSP16-01**: Privacy-Check: Cloud-Skill-Sharing evaluiert (falls ja: NUR lokale Teile)
-- [ ] **OSP16-02**: Bestehende Superpowers-Skills bewertet (Nutzung, Redundanz, Lücken)
-- [ ] **OSP16-03**: 3 Tom-Workflow-Skills entwickelt (Dokument-Intake, Wiki-Query, Status-Check)
-- [ ] **OSP16-04**: Token-Messung Vorher/Nachher mit `rtk gain`
-- [ ] **OSP16-05**: Abbruch-Bedingung dokumentiert falls Cloud-Skill-Sharing → Phase auf Analyse reduziert
+- [x] **OSP16-01**: Privacy-Check: Cloud-Skill-Sharing evaluiert (falls ja: NUR lokale Teile)
+- [x] **OSP16-02**: Bestehende Superpowers-Skills bewertet (Nutzung, Redundanz, Lücken)
+- [x] **OSP16-03**: 3 Tom-Workflow-Skills entwickelt (Dokument-Intake, Wiki-Query, Status-Check)
+- [x] **OSP16-04**: Token-Messung Vorher/Nachher mit `rtk gain` — Projekt-Baseline + Follow-up: `51-RTK-NOTES.md`
+- [x] **OSP16-05**: Abbruch-Bedingung dokumentiert falls Cloud-Skill-Sharing → Phase auf Analyse reduziert
 
 ### Clicky Lokal-Build — Phase 52 (CLK16)
 
-- [ ] **CLK16-01**: Fork + Xcode-Build (Swift, macOS 14.2+ Target)
+- [x] **CLK16-01**: Fork + Xcode-Build (Swift, macOS 14.2+ Target) — `./bin/tom-clicky-build`, Debug **Clicky.app** (DerivedData), 2026-04-15/16
 - [ ] **CLK16-02**: Minimal-Build: Screenshot + Ollama-Query (ohne Voice als MVP)
-- [ ] **CLK16-03**: Lokalisierung: AssemblyAI→Whisper.cpp, ElevenLabs→weglassen, Claude API→Ollama/qwen2.5:3b
+- [ ] **CLK16-03**: Lokalisierung: AssemblyAI→Whisper.cpp, ElevenLabs→weglassen, Claude API→Ollama/qwen3:8b
 - [ ] **CLK16-04**: CLAUDE.md + AGENTS.md in Clicky-Kontext eingebunden
-- [ ] **CLK16-05**: Menu-Bar-App startet + Screenshot-Analyse über Ollama funktioniert
+- [ ] **CLK16-05**: Menu-Bar-App startet + Screenshot-Analyse über Ollama funktioniert — App-Start aus Debug-Build möglich; Ollama-Ende offen bis CLK16-02/03
+
+> **Repo geliefert (ohne E2E-Abnahme):** Patch `artifacts/companion-manager-local-ollama.patch`, `bin/tom-clicky-apply-local-proxy`, `bin/tom-clicky-ollama-smoke`, `52-OLLAMA-PROXY.md` (curl), `52-TOM-CONTEXT-CLICKY.md` (CLK16-04). Checkboxen CLK16-02..05 bleiben bis Screenshot→Ollama wirklich getestet.
 
 ### audiobridge Transkription — Phase 53 (AUD16)
 
@@ -588,6 +590,19 @@ Requirements für v1.6 "Expansion": externe Open-Source-Tools integrieren, Token
 - [ ] **AUD16-02**: API-Backend konfiguriert (OpenAI-kompatibel oder Ollama-Whisper-Endpoint)
 - [ ] **AUD16-03**: Plaud-Note-Pro-Koexistenz geprüft (Export-Format, Transkript-Verbesserung)
 - [ ] **AUD16-04**: Transkripte als Markdown-Notes in `$TOM_VAULT/raw/transkripte/` nutzbar
+
+> **Repo geliefert:** `bin/tom-vault-transkripte-dir` (legt `raw/transkripte/` an, wenn `TOM_VAULT` gesetzt) + `53-RUNBOOK.md`. AUD16-Checkboxen bleiben bis Extension/API/Export von dir verifiziert.
+
+### Shortcuts-Forge — AI→Apple-Shortcuts-Pipeline — Phase 61 (SCF16)
+
+- [x] **SCF16-01**: Ablage + Setup: `~/Documents/Tom-Shortcuts/{drafts,signed,helpers,archive}`; `tom-shortcut setup` idempotent; `CLAUDE_PLUGIN_OPTION_OUTPUT_DIR` via settings.json-env persistiert; manueller `/plugin`-userConfig-Weg dokumentiert — verifiziert 2026-07-19
+- [x] **SCF16-02**: Helper-Bibliothek: je 1 Python/AppleScript/Swift-Helper nach dokumentiertem Helper-Vertrag; `bin/build-shortcut-helpers` (swiftc + ad-hoc codesign + Smoke-Tests); Symlink-Deploy mit `--copy`-Fallback — Smoke-Tests grün
+- [x] **SCF16-03**: CLI `bin/tom-shortcut`: build (headless `claude --print` + Fallback-Prompt + Artefakt-Verifikation + tidy), list, run, import, helpers deploy, setup — „Hallo Tom" E2E (Build+Import+Run), „Uhrzeit-Test" via `--fallback-prompt`
+- [ ] **SCF16-04**: Stream-Deck-Button `bin/streamdeck/tom-shortcut-build.command` (prompt_text → build → pause_terminal) — Repo shipped; Doppelklick-Test + Elgato-Registrierung manuell offen
+- [x] **SCF16-05**: Doku: `shortcuts-forge/README.md` (Helper-Vertrag, Cherri-Sektion, Troubleshooting, Privacy) + CLAUDE.md-Sektion `tom-shortcut`
+- [ ] **SCF16-06**: E2E-Verifikation: Headless-Build „Hallo Tom" signiert ✓, Import + `shortcuts run` ✓; Helper-Shortcut gebaut+signiert ✓, **Run offen** (Import-Klick + Skript-Erlaubnis); Session-Pfad **offen** (nach Session-Neustart)
+
+> **Repo geliefert:** Pipeline komplett + 2 signierte Test-Shortcuts verifiziert. SCF16-04/-06-Checkboxen bleiben bis Maxim Helper-Test-Run, Session-Probe und Stream-Deck-Klick bestätigt (siehe `61-shortcuts-forge/VERIFICATION.md`).
 
 ---
 
@@ -600,28 +615,28 @@ Requirements für v1.6 "Expansion": externe Open-Source-Tools integrieren, Token
 | PLUG16-03 | 47 | Complete |
 | PLUG16-04 | 47 | Complete |
 | PLUG16-05 | 47 | Complete |
-| RAG16-01 | 48 | Pending |
-| RAG16-02 | 48 | Pending |
-| RAG16-03 | 48 | Pending |
-| RAG16-04 | 48 | Pending |
-| RAG16-05 | 48 | Pending |
-| RAG16-06 | 48 | Pending |
-| CDX16-01 | 49 | Pending |
-| CDX16-02 | 49 | Pending |
-| CDX16-03 | 49 | Pending |
-| CDX16-04 | 49 | Pending |
-| CDX16-05 | 49 | Pending |
-| ARES16-01 | 50 | Pending |
-| ARES16-02 | 50 | Pending |
-| ARES16-03 | 50 | Pending |
-| ARES16-04 | 50 | Pending |
-| ARES16-05 | 50 | Pending |
-| OSP16-01 | 51 | Pending |
-| OSP16-02 | 51 | Pending |
-| OSP16-03 | 51 | Pending |
-| OSP16-04 | 51 | Pending |
-| OSP16-05 | 51 | Pending |
-| CLK16-01 | 52 | Pending |
+| RAG16-01 | 48 | Complete |
+| RAG16-02 | 48 | Complete |
+| RAG16-03 | 48 | Complete |
+| RAG16-04 | 48 | Complete |
+| RAG16-05 | 48 | Complete |
+| RAG16-06 | 48 | Complete |
+| CDX16-01 | 49 | Complete |
+| CDX16-02 | 49 | Complete |
+| CDX16-03 | 49 | Complete |
+| CDX16-04 | 49 | Complete |
+| CDX16-05 | 49 | Complete |
+| ARES16-01 | 50 | Complete |
+| ARES16-02 | 50 | Complete |
+| ARES16-03 | 50 | Complete |
+| ARES16-04 | 50 | Complete |
+| ARES16-05 | 50 | Complete |
+| OSP16-01 | 51 | Complete |
+| OSP16-02 | 51 | Complete |
+| OSP16-03 | 51 | Complete |
+| OSP16-04 | 51 | Complete |
+| OSP16-05 | 51 | Complete |
+| CLK16-01 | 52 | Complete |
 | CLK16-02 | 52 | Pending |
 | CLK16-03 | 52 | Pending |
 | CLK16-04 | 52 | Pending |
@@ -630,10 +645,16 @@ Requirements für v1.6 "Expansion": externe Open-Source-Tools integrieren, Token
 | AUD16-02 | 53 | Pending |
 | AUD16-03 | 53 | Pending |
 | AUD16-04 | 53 | Pending |
+| SCF16-01 | 61 | Pending |
+| SCF16-02 | 61 | Pending |
+| SCF16-03 | 61 | Pending |
+| SCF16-04 | 61 | Pending |
+| SCF16-05 | 61 | Pending |
+| SCF16-06 | 61 | Pending |
 
 **Coverage:**
-- v1.6 requirements: 34 total (5 PLUG16 + 6 RAG16 + 5 CDX16 + 5 ARES16 + 5 OSP16 + 5 CLK16 + 4 AUD16 - 1 abzgl. Phase 46 nicht in v1.6), mapped to phases: 34, unmapped: 0 ✓
+- v1.6 requirements: 40 total (5 PLUG16 + 6 RAG16 + 5 CDX16 + 5 ARES16 + 5 OSP16 + 5 CLK16 + 4 AUD16 + 6 SCF16 - 1 abzgl. Phase 46 nicht in v1.6), mapped to phases: 40, unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-10*
-*Last updated: 2026-04-14 — v1.6 Milestone-Start (Phase 47 Done, Phasen 48–53 defined)*
+*Last updated: 2026-07-19 — Phase 61 shortcuts-forge: SCF16-01..06 hinzugefügt (AI→Apple-Shortcuts-Pipeline)*

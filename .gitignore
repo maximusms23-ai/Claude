@@ -26,9 +26,18 @@ claude-memory-compiler/scripts/flush-context-*
 __pycache__/
 *.pyc
 
+# Quarantaene-Archiv (Phase 55 Cleanup) — Repo-lokales Backup vor Loeschen
+.archive/
+
 # External projects (not Tom)
 OmniRoute/
 Obsidian-backup/
+
+# Clicky upstream checkout (Phase 52; optional lokal — nicht ins Repo committen)
+third_party/clicky/
+
+# autoresearch-mlx (Apple Silicon / MLX Fork von karpathy/autoresearch — optional lokal)
+third_party/autoresearch-mlx/
 
 # Open WebUI / OpenClaw: vollständige Upstream-Installs liegen außerhalb des Repos.
 # Versioniert sind nur die Referenz-Ordner im Repo-Root: openclaw/, openwebui/
@@ -42,3 +51,29 @@ bin/streamdeck/*
 
 # Swift temp files
 .tmp-swift-*
+
+# RAG-Anything (Phase 48): venv + Working-Dir
+rag-anything-env/
+archivum/rag-anything/
+
+# Vault corpus / LoRA prep (local, can be large)
+Gemma/training/vault_corpus_policy.yaml
+Gemma/training/data/vault_chunks.jsonl
+Gemma/training/data/qa_pairs_vault.jsonl
+Gemma/training/data/corpus_qa_done.txt
+Gemma/training/data/corpus_qa_done.txt.bak.*
+
+# MLX LoRA training (local)
+Gemma/training/.venv-train/
+Gemma/training/lora_data/
+Gemma/training/adapters_out/
+
+# Nightly autoresearch eval artifacts
+Gemma/eval/generated/
+
+# Lokale Ollama API-Keys (falls jemals im Repo-Root abgelegt — nicht committen)
+tom-ollama.env
+**/tom-ollama.env
+
+# shortcuts-forge: Swift-Build-Output (Phase 61)
+shortcuts-forge/helpers/swift/build/

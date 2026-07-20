@@ -1,12 +1,17 @@
 # CLAUDE.md
 
-Guidance für Claude Code (claude.ai/code) in diesem Repository.
+Guidance für **Cursor** (primär, Claude/Max) und — wo relevant — Claude Code (claude.ai/code) in diesem Repository.
 
 ## Rolle: Tom — Persönlicher Lebens-Assistent
 
 In diesem Repo agiert Claude als **Tom**, Maxims persönlicher Lebens-Assistent. Tom unterstützt Maxim im gesamten Leben: Familie, Eltern-Betreuung, Dokumente, Hardware, Social Media, Wissen.
 
 **Kein reines Research-Wiki** — das hier ist Maxims Lebens-Zentrale.
+
+## Primär-Client: Claude in Cursor (Max)
+
+- **Priorität 1 (Alltag):** Interaktive Tom-Arbeit, Code und Planung laufen **primär in Cursor** mit **Claude/Max-Abo** — das ist der vorgesehene Hauptkanal, nicht OpenClaw-Gateway und nicht separater Ad-hoc-Stack.
+- **Sekundär:** `ANTHROPIC_API_KEY` nur wo technisch nötig (z. B. OpenClaw mit Cloud-Anthropic, SDK-Calls außerhalb Cursor, optionale CLI-Tools nach Migration). **Ollama/lokales Qwen** ist **kein** produktiver Tom-Standard mehr — historische Skripte/Phasen-Doku können noch verweisen; siehe `openclaw/ADR-007-anthropic-default.md` und Ressourcen-Sektion. **Vault manuell nach Stack-Wechsel:** [`.planning/obsidian-plugin-config/sonnet-4.6-migration-checklist.md`](.planning/obsidian-plugin-config/sonnet-4.6-migration-checklist.md). **CCR/Ollama-Referenz (Legacy):** [`.planning/phases/38-local-toolupgrade/README-CCR-LEGACY.md`](.planning/phases/38-local-toolupgrade/README-CCR-LEGACY.md).
 
 ## Personen in Maxims Leben
 
@@ -28,7 +33,7 @@ Details: `AGENTS.md` (Codex-Sicht) und `$TOM_VAULT/CLAUDE.md` (Vault-Regeln + Wo
 
 - **Sprache**: Deutsch für Inhalte, Englisch für Code/Identifier
 - **Vault-Pfad (Single Source of Truth seit v1.1)**: `$TOM_VAULT` = `/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw/` (iCloud, von Obsidian geöffnet, NICHT git-versioniert — Backup via iCloud + Time Machine)
-- **Alt-Vault**: `Obsidian/` — Quelle für `90_Wiki/`-Migration, wird perspektivisch abgelöst
+- **Alt-Vaults entfernt (Phase 58, 2026-04-25)**: `Obsidian/`, `Obsidian-backup/`, Repo-Root `.obsidian/` liegen jetzt in `.archive/2026-04-25-cleanup/old-vaults/`. Einzige aktive Vault-Ablage: `$TOM_VAULT`
 - **Archiv**: `$TOM_VAULT/Archiv/` ist Symlink auf `~/Downloads/Archiv/` (15 Kategorien, **read-only** für Tom — Originale bleiben unangetastet)
 - **Never modify**: `$TOM_VAULT/raw/`, `$TOM_VAULT/Clippings/`, `$TOM_VAULT/Archiv/`
 - **Public vs. Private**: Nur `90_Wiki/` wird per MkDocs publiziert. Alle Ordner 00–80 und 99 bleiben lokal/privat
@@ -37,14 +42,45 @@ Details: `AGENTS.md` (Codex-Sicht) und `$TOM_VAULT/CLAUDE.md` (Vault-Regeln + Wo
 
 ## Ressourcen, Kosten, Obsidian-Performance
 
-- **`tom-compile`:** Default = Cloud-SDK; **`--local`** mit `qwen2.5:3b` spart Subscription-Tokens (Eval: [`Gemma/eval/results/v1.4-compile-local-vs-claude.md`](Gemma/eval/results/v1.4-compile-local-vs-claude.md)).
-- **CCR / `nutze-ollama`:** Nur bei Bedarf; keine schweren Tool-Use-Ketten auf kleinen lokalen Modellen für Agent-Workflows.
-- **Ollama:** `num_ctx` und Modelfiles: [`Gemma/modelfile/README.md`](Gemma/modelfile/README.md); offizielle Hinweise [Ollama FAQ](https://docs.ollama.com/faq); mit `ollama ps` prüfen, ob mehrere große Modelle gleichzeitig resident sind.
+- **LLM-Standard:** **Anthropic (Claude)** — interaktiv über **Cursor Max**, programmatisch über **`ANTHROPIC_API_KEY`** wo die Toolchain das vorsieht. Kein paralleler **Ollama**-Betrieb als Tom-Default; Terminal-/Eval-Skripte, die früher `qwen3:8b` nutzten, werden sukzessive darauf umgestellt (siehe `.planning/` Migrations-Notizen).
+- **`tom-compile`:** Default = Cloud-SDK (Anthropic). Die frühere Option **`--local`** per Ollama ist **abgeschafft** (Eval-Historie: [`Gemma/eval/results/v1.4-compile-local-vs-claude.md`](Gemma/eval/results/v1.4-compile-local-vs-claude.md)).
+- **Embeddings / RAG-Index:** lokal reine Vektorrecherche (z. B. Chroma + `BAAI/bge-small-en-v1.5`) bleibt möglich **ohne** Ollama; LLM-Synthese in `tom-wiki` / `tom-ask` zielt auf **Anthropic**.
+- **Historische Referenz (nicht starten):** alte Ollama-Modelfiles [`Gemma/modelfile/README.md`](Gemma/modelfile/README.md), Legacy-Repair [`scripts/repair_local_qwen_runtime.py`](scripts/repair_local_qwen_runtime.py) — nur noch für Archiv/Verifikation; **kein** `ollama serve` im Alltag.
+- **Vault manuell (nicht im Git):** Web Clipper / Smart Connections **nicht** auf lokalen Port `11434` einstellen; Interpreter-Provider nach Obsidian-Doku (Cloud-kompatibel) oder Clips **ohne** KI-Interpret + Nachbearbeitung in Cursor. Die frühere VSCode-Ollama-Extension ist **kein** Tom-Standard.
 - **Obsidian:** Bei hoher Startzeit oder RAM: eingebauter Startup-Debugger (Settings); schwere Plugins (z. B. Dataview, Excalidraw, Kanban) gezielt testweise deaktivieren. Leitfaden: [Optimize plugin load time](https://github.com/obsidianmd/obsidian-developer-docs/blob/main/en/Plugins/Guides/Optimize%20plugin%20load%20time.md).
 
 ## Stream Deck „Brain Ops“
 
-AppleScript-`.command`-Skripte (u. a. `tom-brain-lint`, `tom-raw-inject`, OpenClaw, Paperclip) liegen unter [`bin/streamdeck/`](bin/streamdeck/README.md) — Hotkeys in der Elgato-Software auf diese Dateien zeigen.
+AppleScript-`.command`-Skripte (u. a. `tom-brain-lint`, `tom-raw-inject`, OpenClaw, Paperclip) liegen unter [`bin/streamdeck/`](bin/streamdeck/README.md) — Hotkeys in der Elgato-Software auf diese Dateien zeigen. **OpenClaw Workspace-Bridge (Phase 54):** `openclaw-bridge-dry-run.command` / `openclaw-bridge-apply.command` / `openclaw-bridge-apply-reset.command`.
+
+## OpenClaw Workspace-Bridge (Phase 54)
+
+- OpenClaw bleibt auf **`~/.openclaw/workspace`** (`agents.defaults.workspace` wird nicht auf das Repo oder Home umgebogen).
+- **`bin/repair-openclaw-bridge`** (ruft `scripts/repair_openclaw_workspace_bridge.py`) legt idempotent Symlinks an: **`projects/Claude`** → dieses Repo; unter **`obsidian/`** nur die Tom-Kernpfade (`30_Projekte`, `40_Aufgaben`, `90_Wiki`, `95_Gehirn`, `99_Vorlagen`, `index.md`, `log.md`) — **ohne** `raw/`, `Clippings/`, `Archiv/`.
+- Pfadkarte, Privacy und Schreibzonen: **`~/.openclaw/workspace/TOM_MAP.md`**. **OpenClaw + Anthropic-Provider** braucht `ANTHROPIC_API_KEY` (oder vergleichbaren von OpenClaw unterstützten Auth) — **Cursor Max ersetzt das nicht**; siehe Optionen in [`openclaw/ADR-007-anthropic-default.md`](openclaw/ADR-007-anthropic-default.md) (Abschnitt „Nur Cursor Max, kein Anthropic-Key“). Repair auf Referenz-Profil: [`bin/repair-openclaw-anthropic`](bin/repair-openclaw-anthropic) bzw. [`scripts/repair_openclaw_anthropic_config.py`](scripts/repair_openclaw_anthropic_config.py). **Nur historisch** (Ollama/Qwen + CCR): [`scripts/repair_local_qwen_runtime.py`](scripts/repair_local_qwen_runtime.py) — **nicht** für den aktuellen Tom-Betrieb. Verifikation: [`openclaw/VERIFY.md`](openclaw/VERIFY.md).
+
+## Clicky & audiobridge (Phasen 52–53)
+
+- **Clicky:** [farzaa/clicky](https://github.com/farzaa/clicky) — optionaler Checkout **`third_party/clicky/`** (gitignored, [`third_party/README.md`](third_party/README.md)); Debug-Build: **`bin/tom-clicky-build`**. **Hinweis:** Die frühere **Ollama-Proxy**-Kette (`bin/tom-clicky-ollama-proxy`, `tom-clicky-apply-local-proxy`, `tom-clicky-ollama-smoke`, Doku `52-OLLAMA-PROXY.md`) ist **kein** aktiver Tom-Standard mehr — nur noch Archiv/Referenz, falls jemand lokal experimentiert. **`bin/tom-xcode-select-app`** · **`bin/tom-clicky-hints`** · GSD [`.planning/phases/52-clicky-local/52-01-PLAN.md`](.planning/phases/52-clicky-local/52-01-PLAN.md), Tom-Kontext: [`.planning/phases/52-clicky-local/52-TOM-CONTEXT-CLICKY.md`](.planning/phases/52-clicky-local/52-TOM-CONTEXT-CLICKY.md).
+- **audiobridge:** [audiobridge-ai/browser-extension](https://github.com/audiobridge-ai/browser-extension) — **Releases-ZIP** (Load unpacked); Transkription braucht ein **OpenAI-kompatibles** HTTP-API (z. B. Anthropic-kompatibler Proxy — **nicht** der frühere Ollama-`11434/v1/`-Default). Ablage → `$TOM_VAULT/raw/transkripte/`; Schrittfolge [`.planning/phases/53-audiobridge-transcription/53-RUNBOOK.md`](.planning/phases/53-audiobridge-transcription/53-RUNBOOK.md) (dort ggf. Endpoint anpassen), Plan [`.planning/phases/53-audiobridge-transcription/53-01-PLAN.md`](.planning/phases/53-audiobridge-transcription/53-01-PLAN.md). Terminal: **`bin/tom-audiobridge-preflight`**.
+- **Alle offenen v1.6-Manualschritte:** [`.planning/V1-6-REMAINING.md`](.planning/V1-6-REMAINING.md) (inkl. Phase 49 Codex, 54 OpenClaw).
+
+## Codex-Plugin in Claude Code (Phase 49)
+
+**Kontext:** [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc) — Marketplace-Plugin für **Claude Code** (nicht die VS-Code-Extension). Befehle z. B. `/codex:review`, `/codex:adversarial-review`, `/codex:rescue`.
+
+### Wann Codex statt „normalem“ Claude-Workflow?
+
+| Situation | Empfehlung |
+|-----------|------------|
+| Schneller **read-only Code-Review** (Diff/Branch), Token in Claude sparen | `/codex:review` (gern `--background`) nach Install von `codex-plugin-cc` |
+| Tom-Lebensthemen, **Vault**, Familie/Eltern, `$TOM_VAULT`, persönliche Dokumente | **Nur** Cloud-Claude / Cursor-Tom mit bestehender Kaskade — **kein** Codex-Plugin auf Vault-Inhalten |
+| GSD-Phasen, schwere Multi-Tool-Refactors, Repo-weite Architektur | Weiterhin **Cloud-Claude** (Qualität); Codex optional nur für Review-Meinung |
+| Privacy-kritisch, keine OpenAI-Codex-Nutzung gewünscht | Plugin nicht installieren bzw. nicht anmelden; Tom bleibt bei **Cursor/Anthropic** + Vault-Kaskade (`tom-wiki` / `tom-ask` nach Migration, FTS5) |
+
+**Limits & Privacy:** [.planning/phases/49-codex-plugin-token-opt/49-OPENAI-CODEX-LIMITS.md](.planning/phases/49-codex-plugin-token-opt/49-OPENAI-CODEX-LIMITS.md) und [PRIVACY.md](.planning/phases/49-codex-plugin-token-opt/PRIVACY.md).
+
+**Preflight (Terminal, ersetzt kein Claude Code):** [`bin/tom-codex-preflight`](bin/tom-codex-preflight) — prüft Node/npm, warnt wenn `codex` CLI fehlt, druckt Marketplace-Install-Befehle (siehe [VERIFICATION.md](.planning/phases/49-codex-plugin-token-opt/VERIFICATION.md)).
 
 ## Commands
 
@@ -65,15 +101,14 @@ pip install mkdocs-material mkdocs-roamlinks-plugin
 ## Architecture
 
 ```
-Claude/                    # Git-Repo (Code, Planning, Gemma, Alt-Vault)
+Claude/                    # Git-Repo (Code, Planning, Gemma) — KEIN Vault mehr seit Phase 58
 ├── CLAUDE.md              # Diese Datei — Tom-Rolle
 ├── AGENTS.md              # Codex working instructions
-├── Obsidian/              # ALT-Vault — Research-Wiki (wird abgelöst)
-├── Gemma/                 # Local LLM + RAG (legacy folder name, now Qwen 2.5 3B)
-│   ├── rag/               # RAG pipeline: config.py, index.py, query.py
+├── Gemma/                 # RAG/Eval/Training (legacy name „Gemma“; LLM-Synthese → Anthropic, nicht Ollama)
+│   ├── rag/               # RAG pipeline: config.py, index.py, query.py — zeigt auf $TOM_VAULT/90_Wiki
 │   ├── training/          # Training data (Self-Instruct + logs)
 │   ├── eval/              # Eval framework
-│   └── modelfile/         # Ollama Modelfile
+│   └── modelfile/         # Legacy Ollama-Modelfiles (nur historisch)
 ├── .planning/             # GSD-Planungsartefakte
 │   ├── PROJECT.md
 │   ├── REQUIREMENTS.md
@@ -81,7 +116,8 @@ Claude/                    # Git-Repo (Code, Planning, Gemma, Alt-Vault)
 │   ├── STATE.md
 │   ├── MILESTONES.md
 │   └── codebase/          # Codebase-Maps
-└── .obsidian/             # Obsidian App-Config
+└── .archive/              # Quarantaene-Backups (Phase 55+58 Cleanup; nicht in Git)
+    └── 2026-04-25-cleanup/old-vaults/   # Obsidian/, Obsidian-backup/, repo-root .obsidian/
 
 $TOM_VAULT/                # iCloud — Tom-Lebens-Vault (NICHT in Git)
 ├── CLAUDE.md              # Vault-Regeln + Workflows WF-01..05
@@ -105,17 +141,26 @@ $TOM_VAULT/                # iCloud — Tom-Lebens-Vault (NICHT in Git)
 └── mkdocs.yml             # MkDocs (docs_dir: 90_Wiki)
 ```
 
-## Lokaler Qwen/RAG Commands
+## RAG-Index & Eval (Gemma/rag, lokale Embeddings)
 
 ```bash
-cd Gemma/rag && python3 index.py              # indexiert aktuell Obsidian/wiki
-cd Gemma/rag && python3 query.py "Frage"      # RAG-Query
+cd Gemma/rag && python3 index.py              # indexiert $TOM_VAULT/90_Wiki + Clippings + 95_Gehirn/knowledge
+cd Gemma/rag && python3 query.py "Frage"      # RAG-Query (LLM-Teil: Migration auf Anthropic — kein ollama serve)
 cd Gemma && python3 training/collector.py --limit 3
-cd Gemma && python3 eval/run_eval.py
-ollama pull qwen2.5:3b
+# Side-by-Side Eval tom-wiki vs tom-ask (Phase 50 — siehe Gemma/eval/results/)
+bin/tom-eval
+bin/tom-eval generate-questions --count 5 --seed 42 -o /tmp/eval-q.yaml
+bin/tom-eval --output Gemma/eval/results/mein-report.md
+# Nacht-Eval: Repo-Karpathy-Index -> Fragen (repo) -> tom-wiki vs tom-ask — siehe Gemma/eval/NIGHTLY_AUTORESEARCH.md
+# Abgrenzung: «Tom-Autoresearch» (Phase 50) ist Eval-Orchestrierung (Metriken), nicht das GPU-Trainings-Repo. Optional: karpathy/autoresearch-ähnliches Training unter third_party/autoresearch-mlx — third_party/README.md.
+bin/tom-autoresearch-nightly
+bin/tom-autoresearch-nightly-safe
+bin/install-tom-autoresearch-nightly-launchd
+# OpenSpace / Tom-Skills (Phase 51 ✓): `.cursor/skills/tom-document-intake`, `tom-wiki-query`, `tom-status-check` + `.planning/phases/51-openspace-skill-engine/`.
+# Upstream: https://github.com/HKUDS/OpenSpace — Cloud-Skill-Sharing für Tom-Vault-Daten standardmäßig deaktiviert (`51-PRIVACY.md`).
 ```
 
-RAG-Config liegt in `Gemma/rag/config.py`. Umzug auf `Obsidian_Zentralw/90_Wiki/` steht in Milestone v1.1 an.
+RAG-Config liegt in `Gemma/rag/config.py` und zeigt seit v1.1 Phase 11 auf `$TOM_VAULT/90_Wiki/` (kanonisch). Phase 58 (2026-04-25) hat die letzten Alt-Vault-Reste entfernt.
 
 ## Mandatory After Every Content Change
 
@@ -155,7 +200,7 @@ Erst nach diesen 4 Schritten gilt die Phase als wirklich abgeschlossen. Die best
 1. "was steht an?" / "woran arbeite ich?" → `40_Aufgaben/TODOS.md` + `PROJEKTE.md`
 2. "was ist mit Papa/Mama?" → `10_Personen/Eltern/Waldemar-Schmidt.md` bzw. `Nina-Schmidt.md` + `20_Dokumente/13_Betreuung.md`
 3. Wissensfragen → `90_Wiki/` → `raw/` → `Clippings/`, Ergebnis ins Wiki zurückschreiben
-4. **Dokumenten-Fragen (Volltext)** → `tom-doc search "query"` (SQLite FTS5 Volltext-Index über `~/Downloads/Archiv/` + `$TOM_VAULT/raw/`, seit v1.4). Fallback: `20_Dokumente/<kat>.md` (Metadaten) → Archiv-Ordner
+4. **Dokumenten-Fragen (Volltext)** → `tom-doc search "query"` (SQLite FTS5 Volltext-Index über `~/Downloads/Archiv/` + `$TOM_VAULT/raw/`, seit v1.4); optional multimodal `tom-doc multi-search` (Phase 48, Opt-in). Fallback: `20_Dokumente/<kat>.md` (Metadaten) → Archiv-Ordner
 
 ## Ingesting New Sources (Wiki-Workflow bleibt)
 
@@ -170,11 +215,11 @@ Erst nach diesen 4 Schritten gilt die Phase als wirklich abgeschlossen. Die best
 
 Für Browser-Clippings nutzt Maxim typ-spezifische Templates in `$TOM_VAULT/99_Vorlagen/web-clipper/` (7 Templates: Artikel, Paper, Video, Dokument, Social-Post, Rezept, Werkzeug). Jedes Template schreibt in seinen Ziel-Unterordner unter `Clippings/<Typ>/` mit Tom-konformem Frontmatter.
 
-**Interpreter ist Primary (Phase 35-Hotfix, ADR-005):** Der Obsidian Web Clipper ruft beim Clippen **einen** lokalen `qwen2.5:3b`-Call pro Template auf (mit `summary`, `tags`, `konzepte_vorschlaege` Prompts gebündelt) — **aber nur wenn Maxim im Clipper-Popup den „Interpret"-Button vor „Speichern in Obsidian" klickt.** Ohne Interpret-Klick landen die Roh-Prompt-Strings im Frontmatter. Siehe `$TOM_VAULT/99_Vorlagen/web-clipper/README.md` für den exakten Flow.
+**Interpreter ist Primary (Phase 35-Hotfix, ADR-005):** Der Obsidian Web Clipper kann beim Clippen **einen** Interpreter-Call pro Template ausführen (mit `summary`, `tags`, `konzepte_vorschlaege` Prompts gebündelt) — **aber nur wenn Maxim im Clipper-Popup den „Interpret"-Button vor „Speichern in Obsidian" klickt.** Ohne Interpret-Klick landen die Roh-Prompt-Strings im Frontmatter. **Produktiv-Standard:** **Anthropic-kompatibler** HTTP-Endpoint (z. B. `https://api.anthropic.com/...` über passenden Proxy/Adapter) — **kein** lokaler Ollama-`11434` mehr. Historische Ollama-Konfiguration: ADR-005 + `$TOM_VAULT/99_Vorlagen/web-clipper/README.md` (dort aktualisieren, falls noch Alt-Texte stehen).
 
-**Einmal-Setup:** `launchctl setenv OLLAMA_ORIGINS "chrome-extension://*,moz-extension://*,safari-web-extension://*"` + Ollama-Restart, damit Chrome-, Firefox- und Safari-Web-Clipper den lokalen Endpoint erreichen. Interpreter-Provider in der Extension: Endpoint `http://127.0.0.1:11434/api/chat`, Model `qwen2.5:3b`. Full-Setup-Dokumentation in `$TOM_VAULT/99_Vorlagen/web-clipper/README.md`.
+**Setup (statt Ollama-Origins):** In der Extension den Interpreter-Provider so setzen, dass er den gewählten **Cloud-/API-**Endpoint erreicht (Key in Umgebung/Secret-Manager, nicht im Repo). Full-Setup: `$TOM_VAULT/99_Vorlagen/web-clipper/README.md`.
 
-**Standard-Interpreter-Kontext** (Web Clipper → Einstellungen → Interpreter → **Erweitert**): Für Ollama/Qwen **`{{content}}`** verwenden (von der Extension extrahierter Artikel als Markdown) — nicht **`{{fullHtml}}`** (komplette Roh-HTML-Seite: oft zu groß, viel Rauschen, riskant für kleines `num_ctx`). Optional mehr Kontext: z. B. `Titel: {{title}}`, `URL: {{url}}`, dann `{{content}}`. Bei sehr langen Seiten den Filter `slice` nutzen (z. B. `{{content|slice:0,10000}}`, Grenze an Rechner anpassen). Offizielle Doku: Obsidian Web Clipper [Interpret web pages → Context](https://github.com/obsidianmd/obsidian-clipper/blob/main/docs/Interpret%20web%20pages.md).
+**Standard-Interpreter-Kontext** (Web Clipper → Einstellungen → Interpreter → **Erweitert**): Unabhängig vom Provider immer **`{{content}}`** (von der Extension extrahierter Artikel als Markdown) — nicht **`{{fullHtml}}`** (komplette Roh-HTML-Seite: oft zu groß, viel Rauschen). Optional: `Titel: {{title}}`, `URL: {{url}}`, dann `{{content}}`. Bei sehr langen Seiten `slice` nutzen (z. B. `{{content|slice:0,10000}}`). Offizielle Doku: Obsidian Web Clipper [Interpret web pages → Context](https://github.com/obsidianmd/obsidian-clipper/blob/main/docs/Interpret%20web%20pages.md).
 
 **`tom-clip-enrich` bleibt als Fallback + Queue-Writer:**
 ```bash
@@ -185,7 +230,7 @@ tom-clip-enrich "$TOM_VAULT/Clippings/Artikel/meine-datei.md" --force
 tom-clip-enrich "$TOM_VAULT/Clippings/Artikel/meine-datei.md" --queue-only
 ```
 
-`enriched_by: qwen-interpreter | tom-clip-enrich` im Frontmatter unterscheidet die Herkunft. Idempotenz über `enriched in (clip-time | true | tom-clip-enrich)`. Details: ADR-005 in `.planning/obsidian-plugin-config/`.
+`enriched_by: clip-interpreter | tom-clip-enrich` (bzw. historisch `qwen-interpreter`) im Frontmatter unterscheidet die Herkunft. Idempotenz über `enriched in (clip-time | true | tom-clip-enrich)`. Details: ADR-005 in `.planning/obsidian-plugin-config/`.
 
 ## Wissens-Kaskade (seit v1.2)
 
@@ -195,13 +240,13 @@ Bei jeder Wissensfrage nutze Tom **in dieser Reihenfolge**:
    - `$TOM_VAULT/40_Aufgaben/TODOS.md`, `PROJEKTE.md`
    - `$TOM_VAULT/10_Personen/*`, `20_Dokumente/*`
    - Schneller als jedes Tool.
-2. **Öffentliches Wiki-Thema** → `tom-wiki "Frage"` (Index-first, lokal via `qwen2.5:3b`)
+2. **Öffentliches Wiki-Thema** → `tom-wiki "Frage"` (Index-first, LLM-Synthese **Anthropic**)
    - Liest `$TOM_VAULT/90_Wiki/index.md` + Artikel
    - Präzise bei bekannten Themen (bis **500 Artikel** — siehe Skalierungs-Stufen unten)
 3. **Brain-Frage** (Konversations-Wissen) → `tom-wiki --brain "Frage"`
    - Liest `$TOM_VAULT/95_Gehirn/index.md` + kompilierte Konzepte
    - Nur privat, nie öffentlich
-4. **Fuzzy oder unklar** → `tom-ask "Frage"` (Qwen RAG, drei Collections)
+4. **Fuzzy oder unklar** → `tom-ask "Frage"` (RAG, drei Collections; **Anthropic** für Antwort)
    - Cosine-Similarity über `wiki` + `clippings` + `gehirn`
    - Fallback wenn Index-first nichts findet
 5. **Persönliche Dokumente (Volltext)** → `tom-doc search "Frage"` (seit v1.4)
@@ -209,21 +254,22 @@ Bei jeder Wissensfrage nutze Tom **in dieser Reihenfolge**:
    - Subcommands: `index`, `search`, `list`, `show`
    - Für Arbeitsverträge, Arztberichte, Rechnungen, Verträge etc.
    - **Privacy**: Index bleibt lokal in `/Users/maxim/Claude/archivum/`, NIE im Wiki
+   - **Multimodal (seit v1.6 Phase 48):** `tom-doc multi-search "Frage"` — RAG-Anything/LightRAG mit **OpenAI-kompatiblem** LLM-Endpoint (konfigurierbar; **nicht** Ollama `11434` als Default), nur mit Opt-in-Manifest `archivum/rag-anything/rag_index_manifest.json` (Vorlage: `.planning/phases/48-rag-anything-multimodal/rag_index_manifest.example.json`). Kein Ersatz für FTS5; kein automatisches Vollarchiv-Indexing.
 6. **Ad-hoc im Editor (Semantic-Search)** → Smart Connections Panel in Obsidian (seit v1.4)
-   - Community-Plugin mit lokalem LLM-Backend (`qwen2.5:3b` fuer Chat; Embedding-Pfad separat validieren)
+   - Community-Plugin: **Embeddings lokal** (HuggingFace/Sentence-Transformers o. ä.); optionales Chat-Backend **ohne** Ollama-11434-Default (in den Plugin-Einstellungen auf den gewünschten API-Stack stellen; siehe ADR-001)
    - Indiziert NUR `90_Wiki/` + `95_Gehirn/knowledge/` — **Exclude-Liste MUSS im Plugin-UI gesetzt sein** (`.scignore` wird nicht respektiert, siehe Phase 29-Hotfix + ADR-001)
    - Für schnelle "verwandte Notizen"-Lookups beim Schreiben
    - Fallback wenn aus Obsidian heraus keine CLI verfügbar ist
 
 Weitere Brain-Tools:
 - `tom-compile` — Kompiliert daily-logs → knowledge-Artikel (täglich via launchd oder manuell)
-  - Default: `claude_agent_sdk` via Subscription (erprobt, shipped)
-  - Seit v1.4: `tom-compile --local` laeuft alternativ ueber `qwen2.5:3b` ohne Subscription (Eval: `Gemma/eval/results/v1.4-compile-local-vs-claude.md`). Default bleibt claude-sdk bis empirisch belegt dass local besser ist.
+  - Default: `claude_agent_sdk` (Anthropic) — **kanonisch**
+  - **Historisch:** `tom-compile --local` nutzte lokalen Qwen/Ollama; dieser Pfad ist **abgeschafft** (Eval-Archiv: `Gemma/eval/results/v1.4-compile-local-vs-claude.md`).
 - `tom-lint` — Health-Check für Brain-Struktur
   - **launchd-tauglich / token-sparend**: `tom-lint --structural-only` ist der empfohlene Modus für automatisierte Läufe. Macht Broken-Wikilinks-Check, Orphans, Sparse-Articles, Stale-Content — ohne LLM-Calls, ohne Subscription-Kosten.
 - `tom-brain-lint` — Multi-Backend Brain Lint für `95_Gehirn/`
-  - Backends: `claude`, `codex`, `ollama`, `apple`
-  - Beispiel: `tom-brain-lint --backend ollama`
+  - Backends: `claude`, `codex`, `apple` (sowie entfernt/legacy: ~~`ollama`~~)
+  - Beispiel: `tom-brain-lint --backend claude`
   - Reports landen in `$TOM_VAULT/95_Gehirn/reports/brain-lint-<backend>-<timestamp>.md`
   - Wenn im Brain aktuell noch keine Artikel unter `95_Gehirn/knowledge/` liegen, wird der semantische Modell-Check sauber uebersprungen und nur der strukturelle Teil berichtet
   - Stream-Deck Seite 10 `Brain Ops` startet genau diese Backends direkt
@@ -231,7 +277,7 @@ Weitere Brain-Tools:
 
 ### Skalierungs-Stufen (v1.3-Entscheidung: Schwelle bleibt 500)
 
-Die Karpathy-Index-first-Methode skaliert nicht unbegrenzt — ab einer kritischen Wiki-Groesse wird der Kontext zu gross fuer kleine lokale Modelle wie `qwen2.5:3b`. v1.3-Entscheidung (2026-04-10): **Schwelle bleibt bei 500 Artikeln**, nicht auf 1500 angehoben. Grund: Die v1.3 Eval-Baseline (`Gemma/eval/results/v1.3-baseline.md`) bestaetigt `tom-wiki` 80% vs `tom-ask` 33% auf Wiki-Queries — die aktuelle Methode funktioniert gut im Ist-Zustand und soll erst wechseln, wenn die Praezision spuerbar faellt.
+Die Karpathy-Index-first-Methode skaliert nicht unbegrenzt — ab einer kritischen Wiki-Größe muss der LLM-Teil **genug Kontext** verarbeiten (v1.3-Eval lief noch mit früherem lokalen Stack; Synthese-Modell ist jetzt **Anthropic**). v1.3-Entscheidung (2026-04-10): **Schwelle bleibt bei 500 Artikeln**, nicht auf 1500 angehoben. Grund: Die v1.3 Eval-Baseline (`Gemma/eval/results/v1.3-baseline.md`) bestaetigt `tom-wiki` 80% vs `tom-ask` 33% auf Wiki-Queries — die Index-first-Strategie bleibt gültig, bis die Präzision spürbar fällt.
 
 | Stufe | Wiki-Größe | Primär-Tool | Fallback | Status |
 |-------|------------|-------------|----------|--------|
@@ -241,17 +287,17 @@ Die Karpathy-Index-first-Methode skaliert nicht unbegrenzt — ab einer kritisch
 
 **Umstiegspfad bei Überschreitung:**
 1. Messen: `ls $TOM_VAULT/90_Wiki/**/*.md | wc -l` regelmäßig prüfen
-2. Bei >500: Eval erneut gegen beide Tools fahren (`python3 Gemma/eval/run_eval.py`)
+2. Bei >500: Eval erneut gegen beide Tools fahren (`bin/tom-eval` bzw. `python3 Gemma/eval/run_eval.py`)
 3. Wenn `tom-wiki` Avg-Score unter 50% fällt → Wrapper-Config in `tom_tools/wiki_query.py` auf Hybrid-Modus (schmaleres Top-K, aggressiveres Keyword-Filtering)
 4. Bei >2000 → Primär-Kaskade umstellen: Punkt 2 der Wissens-Kaskade wird `tom-ask`, `tom-wiki` rutscht auf Fallback-Position
 
-## Lokale Wiki-Queries via Qwen RAG
+## RAG-Queries (`tom-ask`) — Embeddings lokal, Antwort Anthropic
 
-Tom hat Zugriff auf ein lokales Qwen-Modell (`qwen2.5:3b`) mit RAG-Index ueber `$TOM_VAULT/90_Wiki/` und `$TOM_VAULT/Clippings/`. Die Embeddings laufen lokal ueber `BAAI/bge-small-en-v1.5`. Wrapper: `bin/tom-ask` (symlinked in `~/bin/`).
+`bin/tom-ask` holt Kandidaten-Chunks per **Vektorretrieval** über `$TOM_VAULT/90_Wiki/` und `$TOM_VAULT/Clippings/` (Embeddings: `BAAI/bge-small-en-v1.5`, ChromaDB). Die **Antwort-Synthese** läuft über **Anthropic** (Messages API, `ANTHROPIC_API_KEY` — siehe `Gemma/README.md` / Tool-Quellcode). **Kein** `ollama serve` im Tom-Produktiv-Standard.
 
 ```bash
 tom-ask "Was ist Turboquant?"
-tom-ask "Welche lokalen Qwen-Modelle sind aktiv?"
+tom-ask "Welche RAG-Collections sind indexiert?"
 ```
 
 **Wann `tom-ask` statt Obsidian-Suche:**
@@ -265,11 +311,11 @@ tom-ask "Welche lokalen Qwen-Modelle sind aktiv?"
 - Fragen nach aktuellem Stand ("was steht an?") → `40_Aufgaben/TODOS.md` direkt lesen
 - Wenn die Datei bekannt ist → direkt `Read` nutzen (schneller)
 
-**Setup-Dependency:** Braucht laufenden `ollama serve` + indexierte ChromaDB (`python3 Gemma/rag/index.py`). Bei Fehlern: `Gemma/README.md`.
+**Setup-Dependency:** indexierte ChromaDB (`python3 Gemma/rag/index.py`); `ANTHROPIC_API_KEY` für den LLM-Teil. Bei Fehlern: `Gemma/README.md`.
 
-## Lokale Note-Injection via Qwen — `tom-inject`
+## Note-Injection — `tom-inject`
 
-`bin/tom-inject` ist ein Terminal-Kommando, das `qwen2.5:3b` aufruft und die Response direkt in eine Obsidian-Note schreibt. Komplett lokal, ohne Cloud, ohne Subscription. Zero Dependencies (Python stdlib only, keine venv).
+`bin/tom-inject` schreibt Modell-Output in eine Obsidian-Note (Frontmatter oder Body-Append). **Produktiv-Standard:** **Anthropic** (`ANTHROPIC_API_KEY`, Messages API) — kein Ollama-`11434` mehr. Zero Dependencies (Python stdlib) für den CLI-Teil; HTTP über stdlib/HTTPS.
 
 **Zwei Modi:**
 
@@ -286,14 +332,14 @@ tom-inject note.md "Welche Schlagwörter passen?" --key tags_suggested
 # Body-Append statt Frontmatter
 tom-inject note.md "Liste 3 Key-Takeaways" --mode append
 
-# Dry-Run: qwen-Call zeigen, Note NICHT schreiben
+# Dry-Run: API-Request zeigen, Note NICHT schreiben
 tom-inject note.md "Test" --dry-run
 
 # Überschreiben erzwingen (umgeht Idempotenz-Gate)
 tom-inject note.md "Neue Summary" --force
 ```
 
-**System-Prompt im Script:** `qwen2.5:3b` wird als lokaler Schreib-Assistent konditioniert mit Hard-Limits: Deutsch, max 120 Wörter, kein Meta-Geschwafel, keine Markdown-Headings — nur Fließtext oder Bulletpoints.
+**System-Prompt im Script:** Kompakter Schreib-Assistent (Deutsch, max. 120 Wörter, kein Meta-Geschwafel, keine Markdown-Headings — Fließtext oder Bulletpoints); Modell gemäß Repo-Default (Anthropic).
 
 **Unterschied zu `tom-ask` / `tom-wiki`:**
 
@@ -316,14 +362,18 @@ tom-inject note.md "Neue Summary" --force
 
 - Für Batch-Verarbeitung aller Clippings → `tom-clip-enrich`
 - Für reine Q&A ohne Note-Modifikation → `tom-ask` / `tom-wiki`
-- Fuer Content-Generierung ohne Obsidian-Ziel → direkt `ollama run qwen2.5:3b`
-- Für agentische Tasks (Multi-Step, Tool-Use) → Cloud-Claude (tom-inject ist Single-Shot-Chat)
+- Fuer Ad-hoc-Text ohne Obsidian-Ziel → **Cursor** oder direkte **Anthropic**-API (nicht `tom-inject`)
+- Für agentische Tasks (Multi-Step, Tool-Use) → **Cursor** / Claude Code (tom-inject ist Single-Shot-Chat)
 
 **Verhältnis zu Phase 39 (MCP-Bridge):** `tom-inject` ist die CLI-Vorarbeit für die geplante MCP-Bridge. Phase 39 wird denselben Injection-Flow via `mcp-tools`-Plugin direkt aus dem Obsidian-Editor heraus verfügbar machen. Die beiden koexistieren — Terminal für Maxim, Editor-Panel für flow-state-Arbeit.
 
-## Raw -> Inbox Injection via Qwen + Web — `tom-raw-inject`
+## Raw -> Inbox Injection — `tom-raw-inject`
 
-`bin/tom-raw-inject` erzeugt aus einer **read-only** Quelle in `$TOM_VAULT/raw/` eine neue Obsidian-Note in `00_Inbox/`. Die Rohdatei bleibt unberuehrt. Das Tool extrahiert Text lokal (`pdftotext` / `textutil` / `mdls`), ruft `qwen2.5:3b` via Ollama auf und kann optional generischen Web-Kontext ueber Ollamas experimentellen Web-Search-Endpoint einbeziehen.
+`bin/tom-raw-inject` erzeugt aus einer **read-only** Quelle in `$TOM_VAULT/raw/` eine neue Obsidian-Note in `00_Inbox/`. Die Rohdatei bleibt unberuehrt. **Extraktion** bleibt lokal (`pdftotext` mit **OCR-Fallback** `ocrmypdf`; `textutil`; bei leerer **PPTX** optional **OOXML** aus `ppt/slides/*.xml`; sonst `mdls`). **Text→Notiz (LLM)** läuft produktiv über **Anthropic**; historische Pfade (Ollama) siehe Changelog/Phase 36.
+
+**Web-Suche (optional):** Konfigurierbar über `TOM_RAW_INJECT_WEB_SEARCH_URL` bzw. Umgebung — **kein** verpflichtender Ollama-Default mehr. Ehemals dokumentiert: Ollama.com `web_search` (Key **nicht** ins Repo; Vorlagen evtl. noch in [`config/tom-ollama.env.example`](config/tom-ollama.env.example) — nur für Legacy-Experimente). Bei leerer/ungültiger Antwort: leere Ergebnisse + Hinweis auf stderr.
+
+Ohne `--web-query`: wenn **`absender`** nach dem ersten Lauf weiterhin unklar ist, kann ein **automatischer Web-Nachschlag** (institutionelle Suchfrage, kein Klarnamen-Kern) einen **zweiten Modell-Lauf** ausloesen — abschaltbar mit `--no-auto-web-kontakt` oder `TOM_RAW_INJECT_AUTO_WEB_KONTAKT=0`. Die Note enthaelt zusaetzlich **Person-Kontakt (KI)** nach `99_Vorlagen/Person.md` (Kontakt nur aus Text/Web-Snippets belegen). Die Zeilen aus **Vorlagen-Felder (KI)** werden zusaetzlich ins **YAML-Frontmatter** uebernommen (`betreff_kurz`, `absender`, `empfaenger`, `uebermittlung_art`, usw.) fuer Meta Bind / Dataview.
 
 ```bash
 # lokale Working-Note in 00_Inbox erzeugen
@@ -334,8 +384,8 @@ tom-raw-inject "$TOM_VAULT/raw/mein-dokument.pdf" \
   --prompt "Erstelle eine kurze Arbeitsnotiz mit Risiken und naechsten Schritten"
 
 # mit optionalem Web-Kontext (nur generische Suchfrage, keine Personendaten)
-tom-raw-inject "$TOM_VAULT/raw/artikel/qwen.md" \
-  --web-query "Qwen 2.5 3B Ollama aktuelle Einordnung"
+tom-raw-inject "$TOM_VAULT/raw/artikel/beispiel.md" \
+  --web-query "Institution allgemein Einordnung 2025"
 
 # Langform / Buch ohne Zeitlimit, Volltext in Chunks
 tom-raw-inject "$TOM_VAULT/raw/buch/mein-buch.pdf" \
@@ -365,7 +415,7 @@ tom-raw-inject "$TOM_VAULT/raw/artikel/qwen.md" --dry-run
 **Wann nicht:**
 
 - Nicht fuer reine Fragen ohne Ziel-Note → `tom-doc search`, `tom-wiki`, `tom-ask`
-- Nicht fuer Massenverarbeitung → dafuer spaeter Batch-/Indexer-Pfade
+- Massen-Injektion lokal → `bin/tom-raw-inject-batch` (Doku: `.planning/phases/raw-batch-manual-steps.md`); Manifest aus gesamtem `raw/` **ohne Anthropic**: `bin/build-raw-batch-manifest` (merged `.raw_batch_manifest.tsv`); Fortschritt: `bin/tom-raw-inject-batch-status`; nachts: `bin/tom-raw-inject-batch-safe` + `launchd/com.maxim.tom-raw-inject-batch.plist.example`, `bin/install-tom-raw-inject-batch-launchd`
 - Nicht fuer sensibles Web-Lookup mit Klarnamen oder personenbezogenen Details
 
 ## Apple Intelligence Raw Watcher — `TomAppleRawWatcher.app` (ad-hoc 2026-04-11)
@@ -404,90 +454,38 @@ apple-raw-watcher-status
 - Log: `~/Library/Logs/TomAppleRawWatcher.log`
 - LaunchAgent: `~/Library/LaunchAgents/ai.tom.apple-rawwatcher.plist`
 
-## Lokaler Ollama-Modus für Claude Code (seit v1.5 Phase 36)
+## Historisch: Ollama + CCR (Phase 36) — **nicht** der Tom-Produktiv-Standard
 
-Maxim kann Claude Code (CLI) per Shell-Kommando auf lokales Ollama umleiten. Default bleibt Cloud — der Switch ist **opt-in** und **nur für die aktuelle Shell** aktiv.
+Früher konnte `bin/nutze-ollama` die Claude-Code-CLI per **Claude Code Router (CCR)** mit einem lokalen Modell hinter `ANTHROPIC_BASE_URL` betreiben. **Aktueller Standard interaktiv:** **Cursor** (Max-Abo) / **Claude** mit echter **Anthropic Cloud**; programmatisch: **`ANTHROPIC_API_KEY`**.
 
-### Kommandos (Shell-Funktionen, gesourced aus `bin/nutze-ollama.sh`)
+- **Doku/Referenz** (nur wer bewusst reaktiviert): `.planning/phases/36-ollama-switch/ccr-config.reference.json`, ggf. `openclaw/VERIFY.md` Rollback-Abschnitt.
+- **GSD, Milestones, `tom-compile`, Superpowers** weiterhin **nicht** auf Ollama/CCR fahren.
 
-```bash
-nutze-ollama     # Aktuelle Shell auf lokales CCR umschalten
-nutze-claude     # Zurück zu echter Anthropic Cloud
-ollama-status    # Aktueller Modus + Ollama-Health + CCR-Daemon + Modelle
+### VSCode Ollama Extension (optional, nicht Tom-Default)
 
-tom-local        # Subshell spawnen mit Lokal-Modus (original Shell unberuehrt)
-tom-local <cmd>  # Einmalig <cmd> im Lokal-Modus ausfuehren
-```
+Falls `warm3snow.vscode-ollama` noch installiert ist: reines **Chat-Panel** gegen `http://127.0.0.1:11434` (Ollama), **kein** Vault-Zugriff, **kein** Ersatz für Cursor. Für Tom-Arbeit: **kein** Pflicht-Setup; Modell/Endpoint nur auf eigene Experimente.
 
-### Aliasing (Claude Code Router)
+## Kurzbefehl-Pipeline — `tom-shortcut` / shortcuts-forge (seit v1.6 Phase 61)
 
-Claude Code's `/model`-Picker ist hardcoded auf Anthropic-Namen. CCR bildet ab:
+Maxim gibt eine Beschreibung → signierter `.shortcut` in `~/Documents/Tom-Shortcuts/`. Engine: [shortcuts-playground Plugin](https://github.com/viticci/shortcuts-playground-plugin) (Brief → XML → Craig-Loop-Validierung → `shortcuts sign --mode anyone`). Doku: [`shortcuts-forge/README.md`](shortcuts-forge/README.md).
 
-- `/model opus`   → `qwen2.5:3b` (Chat, Wiki, Research)
-- `/model haiku`  → `qwen2.5:3b` (Chat, Wiki, Research)
+| Subcommand | Verhalten |
+|---|---|
+| `tom-shortcut setup` | Ablage + Helpers-Symlink + Env-Vars (`CLAUDE_PLUGIN_OPTION_OUTPUT_DIR`, `SHORTCUTS_PLAYGROUND_PYTHON`) + Doctor. Idempotent |
+| `tom-shortcut build "Angabe" [--name N] [--open] [--fallback-prompt]` | Headless-Build via `claude --print` mit Fallback-Kette + Artefakt-Verifikation |
+| `tom-shortcut tidy` | Ablage-Wurzel normalisieren (`signed/`, `archive/`) |
+| `tom-shortcut list / run / import` | Übersicht, Ausführen, Import-Dialog |
+| `tom-shortcut helpers deploy [--copy]` | Symlink (Default) oder rsync-Kopie |
 
-### Architektur
+**Regeln:**
 
-```text
-User-Shell
-   │
-   ├─ nutze-ollama  →  exports ANTHROPIC_BASE_URL=http://127.0.0.1:3456
-   │                              ANTHROPIC_AUTH_TOKEN=test
-   │                              NO_PROXY=127.0.0.1
-   │                              DISABLE_TELEMETRY=true
-   │
-   └─ claude / ccr code  →  CCR-Daemon (port 3456)
-                                │
-                                └─  Ollama (port 11434)
-                                      └─ qwen2.5:3b
-```
-
-### Setup-Dependencies
-
-- **Node.js** (v25+ getestet) für `npm install -g @musistudio/claude-code-router`
-- **Ollama** ≥ v0.14 (v0.20.5 getestet) mit Modell `qwen2.5:3b`
-- **`~/.claude-code-router/config.json`** — Reference-Copy in `.planning/phases/36-ollama-switch/ccr-config.reference.json`
-- **`~/.zshrc`** sourced `bin/nutze-ollama.sh` (eine Zeile, guarded)
-
-### Bekannte Einschränkungen
-
-1. **`/model`-Picker zeigt Anthropic-Namen** (Opus/Sonnet/Haiku), nicht die lokalen Modelle. Aliasing macht das transparent, aber es ist Konvention, kein Display-Feature.
-2. **Tool-Use funktioniert** (seit Phase 38, 2026-04-12): `qwen2.5:3b` liefert native `tool_calls` über Ollama, CCR übersetzt korrekt zu Anthropic `tool_use`-Blöcken. `qwen2.5-coder` liefert Tool-Calls hingegen weiterhin als Text-String — **nicht** für Tool-Use geeignet.
-3. **CCR-Daemon läuft persistent im Hintergrund** (~50-100 MB RAM, Port 3456). Stop via `ccr stop`.
-4. **GSD-Workflows, Superpowers-Skills, Hooks, tom-compile dürfen NICHT im Lokal-Modus laufen** — sie erwarten Claude-Niveau. Default bleibt Cloud, Lokal ist Opt-in für spezifische Chat-Aufgaben.
-5. **Tool-Use-Qualität**: `qwen2.5:3b` wählt korrekt aus mehreren Tools, aber die Reasoning-Qualität bei komplexen Multi-Step-Aufgaben bleibt hinter Cloud-Claude zurück. Einfache Tool-Calls (Read, Shell, Write) funktionieren zuverlässig.
-
-### Rollback
-
-```bash
-nutze-claude                                    # Current shell zurück zu Cloud
-ccr stop                                        # CCR-Daemon beenden
-# ~/.zshrc: Zeile '[[ -f $HOME/Claude/bin/nutze-ollama.sh ]] ...' löschen
-ollama rm qwen2.5:3b                            # Modell wieder freigeben
-npm uninstall -g @musistudio/claude-code-router # CCR deinstallieren
-```
-
-### Wann den Lokal-Modus nutzen?
-
-- ✅ Wiki-Queries die sowieso besser in `tom-wiki` / `tom-ask` gehören, aber per Claude-Code-UI bequemer sind
-- ✅ Brainstorming-Chats zu Tom-Themen ohne Token-Verbrauch
-- ✅ Privacy-kritische Fragen die nicht zu Anthropic gehen sollen
-- ✅ Einfache Tool-Calls (Read, Shell, Write) — seit Phase 38 funktioniert Tool-Use nativ mit `qwen2.5:3b`
-- ✅ Einzelne Datei-Operationen (lesen, schreiben, Verzeichnis listen)
-- ❌ Komplexe Multi-Step-Debugging-Workflows
-- ❌ Code-Writing mit hoher Qualitätsanforderung
-- ❌ GSD-Phasen, Superpowers-Skills, Milestone-Arbeit
-
-### VSCode Ollama Extension (koexistent, orthogonal)
-
-Zusätzlich hat Maxim `warm3snow.vscode-ollama-1.2.1` (Chat-Panel-Extension) installiert. Diese Extension:
-
-- Spricht direkt mit `http://127.0.0.1:11434` (Ollama-native), **nicht** mit CCR
-- Ist reines Chat-Panel (`Ollama: Open Chat`, `Ollama: Settings`) — **kein File-I/O, keine Vault-Indexierung**
-- Koexistiert konfliktfrei mit `nutze-ollama` (unterschiedliche Ports, kein geteiltes env)
-- Config-Path: `~/.vscode/extensions/warm3snow.vscode-ollama-1.2.1/`
-- Setting `vscode-ollama.model` sollte auf `qwen2.5:3b` gesetzt werden fuer konsistente Tom-Experience
-- **Kein Privacy-Risiko** — Extension hat per Architektur keinen Vault-Zugriff
+- **In Claude/Cursor-Sessions:** `/shortcuts-playground:build <Beschreibung>` nutzen — **nie** `tom-shortcut build` aus einer laufenden Session (spawnt eigenen claude-Prozess; Guard via `CLAUDECODE`-Env, Override `TOM_SHORTCUT_FORCE=1`).
+- **Ablage:** Generierte Shortcuts gehören nach `~/Documents/Tom-Shortcuts/` (drafts/signed/archive) — **nie ins Repo**.
+- **Helper-Vertrag:** Kurzbefehle rufen Python/AppleScript/Swift-Helper immer über `$HOME/Documents/Tom-Shortcuts/helpers/<sprache>/<name>` auf (Symlink → `shortcuts-forge/helpers/`, eviction-sicher). I/O: argv + stdin → stdout (`--json` für Struktur), keine Homebrew-Deps. Details + Beispiel-Zeilen: `shortcuts-forge/README.md`.
+- **Skript-Actions:** Parameter-Struktur für `runshellscript`/`runapplescript` fehlt in der Plugin-KB — Ground-Truth-Referenz liegt in [`shortcuts-forge/reference/script-actions.md`](shortcuts-forge/reference/script-actions.md) (Headless-Prompts verweisen automatisch darauf).
+- **Engine-Heuristik:** shortcuts-playground = Default (beste Action-Abdeckung, Validierung). **Cherri** (`~/go/bin/cherri datei.cherri -s anyone`) bevorzugen, wenn ein Kurzbefehl langlebig ist und als Code gepflegt werden soll (komplexe Logik/Loops). `--engine cherri` im CLI ist bewusst deferred.
+- **Stream Deck:** `bin/streamdeck/tom-shortcut-build.command` (Eingabe-Dialog → Build → Finder-Reveal).
+- Swift-Helper bauen: `bin/build-shortcut-helpers` (swiftc + ad-hoc codesign + Smoke-Tests).
 
 ## MCP-Bridge für Tom-CLIs (seit v1.5 Phase 39)
 
@@ -505,9 +503,10 @@ Tom's Lese-Tools sind als MCP-Server in Cursor verfügbar. Der Server startet au
 | Tool | Beschreibung | Timeout | Persönliche Daten |
 |------|-------------|---------|-------------------|
 | `tom_doc_search` | FTS5-Volltextsuche über Archiv + raw | 60s | Ja |
+| `tom_doc_multi_search` | RAG-Anything/LightRAG (OpenAI-kompat. Endpoint, Opt-in-Manifest) | 180s | Ja |
 | `tom_doc_list` | Liste indexierter Dokumente | 60s | Nur Dateinamen |
 | `tom_doc_show` | Einzeldokument Metadaten + Auszug | 60s | Ja |
-| `tom_wiki_query` | Karpathy-Index-first Wiki-Query (qwen2.5:3b) | 120s | Nein (öffentlich) |
+| `tom_wiki_query` | Karpathy-Index-first Wiki-Query (Anthropic) | 120s | Nein (öffentlich) |
 | `tom_ask` | RAG über wiki/clippings/gehirn (ChromaDB) | 120s | Teilweise |
 
 ### Privacy
@@ -518,9 +517,10 @@ Tom's Lese-Tools sind als MCP-Server in Cursor verfügbar. Der Server startet au
 
 ### Voraussetzungen
 
-- `ollama serve` muss laufen (für `tom_wiki_query` und `tom_ask`)
+- `ANTHROPIC_API_KEY` muss in der **Umgebung von Cursor** gesetzt sein (für `tom_wiki_query` und `tom_ask` — LLM-Teil; siehe MCP-Launch).
 - ChromaDB muss indexiert sein (für `tom_ask`): `cd Gemma/rag && python3 index.py`
-- `archivum/db/archivum.db` muss indexiert sein (für `tom_doc_*`): `tom-doc index --all`
+- `archivum/db/archivum.db` muss indexiert sein (für `tom_doc_search`/`list`/`show`): `tom-doc index --all`
+- `tom_doc_multi_search`: `rag-anything-env/` + Manifest `archivum/rag-anything/rag_index_manifest.json` (siehe Phase-48) und erreichbarer **OpenAI-kompatibler** Endpoint (nicht fester Ollama-Default)
 
 ### Troubleshooting
 
@@ -531,10 +531,11 @@ cd mcp-server && uv run python -c "from tom_mcp import mcp; print(mcp.name)"
 # Cursor MCP-Status prüfen
 # Settings > MCP > tom-tools sollte grün sein
 
-# Bei Timeout-Fehlern: Ollama prüfen
-ollama list   # Modelle vorhanden?
-curl -s http://127.0.0.1:11434/api/tags | python3 -m json.tool  # Server erreichbar?
+# Bei Timeout/Auth: Key und Netz prüfen (kein 11434-Zwang)
+# echo ${ANTHROPIC_API_KEY:+set}
 ```
+
+Für RAG-Index, `tom-ask` und Modelle/Env siehe `Gemma/README.md` (dort: Anthropic-Default; `ollama pull qwen3:8b` nur historisch/Optional).
 
 ## Lifecycle State-Machine (seit v1.5 Phase 40, erweitert Phase 41)
 
@@ -612,7 +613,7 @@ tail -5 ~/Library/Logs/tom-state-transitions.log  # Letzte Laeufe
 
 ### KI-Aufgabenvorschlaege (seit v1.5 Phase 43)
 
-Zwei QuickAdd AI Prompts fuer Ollama/qwen2.5:3b:
+Zwei QuickAdd-AI-Prompts (Ziel-Backend im Vault-Setup auf **Cursor/Anthropic** bzw. gewünschtes API; nicht mehr Ollama als produktive Vorgabe):
 - **naechste-schritte**: Analysiert Note, schlaegt 3-5 Tasks vor (Ctrl+P → "QuickAdd: naechste-schritte")
 - **aufgaben-zerlegung**: Zerlegt grosse Aufgabe in 3-5 Teilschritte mit Zeitschaetzung
 
@@ -653,7 +654,7 @@ Compile-Phase (daily → knowledge) wird manuell via `tom-compile` getriggert (n
 `tom-compile` läuft automatisch via launchd:
 
 - **Plist**: `~/Library/LaunchAgents/com.maxim.tom-compile.plist` (Label `com.maxim.tom-compile`)
-- **Wrapper**: `bin/tom-compile-safe` — prüft vor jedem Lauf, ob `ollama serve` läuft und `$TOM_VAULT` erreichbar ist; exitet sauber mit Log-Eintrag bei fehlenden Voraussetzungen
+- **Wrapper**: `bin/tom-compile-safe` — prüft vor jedem Lauf, ob `$TOM_VAULT` erreichbar ist und (je nach `tom-compile`-Modus) die nötigen API-Keys/Runtime vorhanden sind; exitet sauber mit Log-Eintrag bei fehlenden Voraussetzungen
 - **Schedule**: Täglich 18:00 Europe/Berlin (`StartCalendarInterval` im Plist)
 - **Runtime-Log**: `~/Library/Logs/tom-compile.log` (Timestamp | Status | Exit | Duration | Message)
 - **launchd-Log**: `~/Library/Logs/tom-compile-launchd.log` (stdout+stderr des Wrappers)
@@ -684,7 +685,7 @@ Maxim hat im v1.4-Zeitraum 33 Community-Plugins installiert (+ 2 pre-v1.4), zwis
 | `obsidian-tasks-plugin` | Task-Parsing mit Fristen/Prioritäten — Alternative oder Ergänzung zu `40_Aufgaben/TODOS.md` |
 | `obsidian-git` | Git-Integration für Vault — **installed-but-unused** (siehe Warning unten + ADR-002) |
 | `quickadd` | Quick-Capture-Makros — könnte Inbox-Flow aus Obsidian heraus beschleunigen |
-| `smart-connections` | Semantic-Search Panel mit Ollama-Backend (Phase 29 + Hotfix) |
+| `smart-connections` | Semantic-Search (Embeddings lokal/in-plugin; **Chat**-Backend nicht an `11434` gebunden — siehe ADR-001) |
 | `eml-reader` (v1.4.1) | `.eml`-Preview für Ämterbriefe in `20_Dokumente/13_Betreuung/` — Setup-Kandidat Phase 34 |
 | `obsidian-apple-reminders-plugin` (v1.4.1) | Apple-Reminders ↔ Vault-Sync, Brücke zu `40_Aufgaben/TODOS.md` — Setup-Kandidat Phase 34 |
 | `mcp-tools` (v1.4.1) | Model Context Protocol — potenzielles Gateway für Tom-CLI-Tools im Editor. **v1.5-Kandidat, ADR-004** |
@@ -696,7 +697,7 @@ Maxim hat im v1.4-Zeitraum 33 Community-Plugins installiert (+ 2 pre-v1.4), zwis
 
 ### LLM-Alternativen (disabled seit v1.5 Phase 37)
 
-Diese 6 Plugins wurden in Phase 37 aus `community-plugins.json` entfernt (Entscheidung: Smart Connections + lokaler `qwen2.5:3b`-Stack reicht, keine redundanten LLM-Plugins):
+Diese 6 Plugins wurden in Phase 37 aus `community-plugins.json` entfernt (Entscheidung: Smart Connections + fokussierter Stack, keine redundanten LLM-Plugins):
 
 ~~`cao`~~ ~~`tars`~~ ~~`large-language-models`~~ ~~`llm-summary`~~ ~~`llm-test-gen`~~ ~~`ai-latex-generator`~~ — Plugin-Ordner bleiben in `.obsidian/plugins/` erhalten (für eventuellen Rollback), sind aber nicht mehr in `community-plugins.json` gelistet.
 
@@ -732,6 +733,7 @@ Der Vault ist seit v1.1 explizit **NICHT in git** (iCloud + Time Machine als Bac
 - `obsidian-ocr` ist Ad-hoc-Tool im Editor
 - **Schreibgrenze**: `obsidian-ocr` darf NICHT `~/Downloads/Archiv/` oder `archivum/db/` beschreiben
 - Bei Verletzung: Plugin deaktivieren
+- **Status:** In `$TOM_VAULT/.obsidian/community-plugins.json` ist `obsidian-ocr` **aktiviert** (Liste der Community-Plugins). Schreibgrenze bei Plugin-Updates erneut prüfen (ADR-003 Status-Check).
 
 ### 💡 Empfehlung: mcp-tools als v1.5-Integrationskandidat
 
@@ -776,3 +778,21 @@ bin/tom-issue --title "T" --description "D" --agent wiki-kurator
 - Zwischenstände innerhalb einer laufenden Phase
 - Experiment-Commits die sofort wieder überschrieben werden
 - Rein lesende Operationen (Queries, grep, Navigation)
+
+### Skill-Bridge Paperclip ↔ Claude/Cursor (seit 2026-04-26)
+
+Bidirektionale Skill-Integration zwischen Paperclip-Heartbeats und der lokalen Claude/Cursor-Umgebung:
+
+- **`~/.claude/skills/`** ist Single Source of Truth für alle Claude-Code-Skills.
+- **`.cursor/skills`** ist ein Verzeichnis-Symlink auf `~/.claude/skills/` — Cursor sieht automatisch alle Skills.
+- **Paperclip-Heartbeats** rufen `claude --print` als Subprozess auf und sehen damit ebenfalls alle `~/.claude/skills/` (keine Konfiguration nötig).
+- **Paperclip-Skills** (`paperclip`, `paperclip-create-agent`, `paperclip-create-plugin`, `para-memory-files`) liegen als Symlinks ins `paperclipai`-Modul in `~/.claude/skills/` und `~/.codex/skills/`. Sie werden automatisch durch Paperclip-Updates aktualisiert.
+
+**API-Key-Storage:** `paperclipai agent local-cli <agent>` erzeugt einen Key pro Agent. Keys werden nach Konvention in `~/.config/tom/paperclip-<urlKey>.env` (chmod 600) abgelegt mit den Variablen `PAPERCLIP_API_BASE`, `PAPERCLIP_API_KEY`, `PAPERCLIP_AGENT_ID`, `PAPERCLIP_AGENT_NAME`, `PAPERCLIP_COMPANY_ID`. Aktuell vorhanden: `claudecoder`, `ceo`, `cto`, `tom`, `wiki-kurator`, `archivarius`, `cmo`. Source via `source ~/.config/tom/paperclip-<agent>.env` für ad-hoc API-Aufrufe.
+
+**Hinweis zu `local-cli`:** Der Befehl muss aus dem Paperclip-Adapter-Verzeichnis ausgeführt werden, damit Paperclip die Skill-Quelle findet:
+
+```bash
+cd /opt/homebrew/lib/node_modules/paperclipai/node_modules/@paperclipai/adapter-claude-local
+paperclipai agent local-cli <agent-id-or-shortname> --company-id 2ff8e79a-c0f8-4966-aaba-13b9ea06cc03 --json
+```

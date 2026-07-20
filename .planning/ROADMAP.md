@@ -637,7 +637,7 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 
 - [x] **Phase 36: Lokaler Ollama-Switch (out-of-band shipped 2026-04-11)** — `nutze-ollama` Shell-Funktionen + `tom-local` Wrapper + Claude Code Router dokumentiert
 - [x] **Phase 37: Vault-Hygiene & Cleanup** — shipped 2026-04-12 (6 HYG-Requirements bleiben Known Gaps / Maxim-Handoff)
-- [x] **Phase 38: Local Tool-Use Modell-Upgrade** — qwen2.5:3b native Tool-Use PASS, CCR-Config repariert, OpenClaw auf qwen2.5:3b, glm-4.7-flash entfernt
+- [x] **Phase 38: Local Tool-Use Modell-Upgrade** — qwen3:8b native Tool-Use PASS, CCR-Config repariert, OpenClaw auf qwen3:8b, glm-4.7-flash entfernt
 - [x] **Phase 39: MCP-Bridge für Tom-CLIs** — FastMCP v3 Server mit 5 Read-only-Tools (tom-doc search/list/show, tom-wiki, tom-ask), Cursor als Primär-Client via .cursor/mcp.json, async subprocess mit Timeouts, ADR-006, tom-clip-enrich bewusst excluded (Privacy)
 - [x] **Phase 40: Lifecycle Foundation — Dokumente** — `state`-Frontmatter-Schema für 20_Dokumente, Meta Bind Buttons, Dataview-Dashboard, tom-state — shipped 2026-04-12
 - [x] **Phase 41: Lifecycle — Aufgaben & Termine** — Phase 41a Engine + 41b KI-Intake; shipped 2026-04-12
@@ -908,12 +908,14 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 ### Phases
 
 - [x] **Phase 47: Plugins + Raw/Vault-Cleanup** — Security Guidance installiert, claude-mem übersprungen (redundant), 122 leere Raw-Ordner bereinigt, Raw-Inventar dokumentiert — shipped 2026-04-14
-- [ ] **Phase 48: RAG-Anything Multimodal** — HKUDS/RAG-Anything für PDFs mit Tabellen/Bildern/Formeln, `tom-doc multi-search` Subcommand, MCP-Erweiterung
-- [ ] **Phase 49: Codex-Plugin Token-Opt** — openai/codex-plugin-cc, Free-Tier-Limits, Privacy-Grenzen
-- [ ] **Phase 50: Autoresearch Eval-Pipeline** — karpathy/autoresearch Konzepte für `run_eval.py`, automatische Fragengenerierung
+- [x] **Phase 48: RAG-Anything Multimodal** — venv+LightRAG+Ollama, `tom-doc multi-search`, MCP `tom_doc_multi_search`, Eval-Spez — shipped 2026-04-15
+- [ ] **Phase 49: Codex-Plugin Token-Opt** — Repo: Plan + Limits + Privacy + CLAUDE; **offen:** Claude-Code-Install + `/codex:review`-Smoke
+- [x] **Phase 50: Autoresearch Eval-Pipeline** — `run_eval.py` + Fragengenerierung + Metriken (shipped)
 - [ ] **Phase 51: OpenSpace Skill-Engine** — HKUDS/OpenSpace, 3 Tom-Workflow-Skills, Token-Messung
 - [ ] **Phase 52: Clicky Lokal-Build** — farzaa/clicky Fork, Screenshot+Ollama MVP, macOS Menu-Bar
 - [ ] **Phase 53: audiobridge Transkription** — audiobridge-ai/browser-extension, Plaud-Koexistenz
+- [x] **Phase 54: OpenClaw Workspace-Bridge** — Repo+Stream-Deck shipped; Live-Symlinks: Nutzer führt `repair-openclaw-bridge` aus
+- [ ] **Phase 61: Shortcuts-Forge** — AI→Apple-Shortcuts-Pipeline: Ablage `~/Documents/Tom-Shortcuts/`, `bin/tom-shortcut`, Helper-Bibliothek (Python/AppleScript/Swift), Stream Deck
 
 ### Wave-Dependencies (v1.6)
 
@@ -924,6 +926,7 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 - **Phase 51 (OpenSpace)** braucht Privacy-Check first — unabhängig
 - **Phase 52 (Clicky)** braucht Xcode — unabhängig
 - **Phase 53 (audiobridge)** braucht Extension-Install — unabhängig
+- **Phase 61 (Shortcuts-Forge)** braucht nichts — unabhängig, parallel-fähig (Plugin + Cherri + `shortcuts` CLI bereits installiert)
 
 ```text
 47 ✓
@@ -938,12 +941,13 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 47. Plugins + Raw/Vault-Cleanup | — | ✓ Done | 2026-04-14 |
-| 48. RAG-Anything Multimodal | — | Planned | — |
-| 49. Codex-Plugin Token-Opt | — | Planned | — |
-| 50. Autoresearch Eval-Pipeline | — | Planned | — |
+| 48. RAG-Anything Multimodal | — | ✓ Done | 2026-04-15 |
+| 49. Codex-Plugin Token-Opt | 49-01-PLAN.md | In progress | 2026-04-14 |
+| 50. Autoresearch Eval-Pipeline | — | ✓ Done | 2026-04-14 |
 | 51. OpenSpace Skill-Engine | — | Planned | — |
 | 52. Clicky Lokal-Build | — | Planned | — |
 | 53. audiobridge Transkription | — | Planned | — |
+| 54. OpenClaw Workspace-Bridge | 54-01-PLAN.md | Repo shipped | 2026-04-14 |
 
 ---
 
@@ -981,7 +985,7 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 5. `tom-doc search` (FTS5) weiterhin funktional (non-destructive)
 6. Kein Cloud-Abfluss — komplett lokal verifiziert
 
-**Plans**: TBD
+**Plans**: `.planning/phases/48-rag-anything-multimodal/48-01-PLAN.md`, `SUMMARY.md`, `VERIFICATION.md`
 
 ---
 
@@ -998,9 +1002,11 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 1. OpenAI Free-Tier-Limits dokumentiert
 2. `/codex:review` funktioniert gegen generische Skripte
 3. Privacy-Regel: NICHT für Vault-Pfade oder persönliche Daten
-4. Token-Einsparung via `rtk gain` messbar
+4. Token-Einsparung optional via `rtk gain` vor/nach Review-Session dokumentieren (wenn RTK installiert)
 
-**Plans**: TBD
+**Plans**: `.planning/phases/49-codex-plugin-token-opt/49-01-PLAN.md`, `SUMMARY.md`, `VERIFICATION.md`
+
+**Status**: ✓ Done (2026-04-16) — Install + `/codex:review`-Smoke (Maxim); optional `rtk gain`.
 
 ---
 
@@ -1014,12 +1020,12 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 
 **Success Criteria**:
 
-1. Übertragbare Konzepte aus karpathy/autoresearch identifiziert
-2. `run_eval.py` generiert automatisch neue Testfragen
-3. Fehlerrate + Token-Verbrauch pro Compile messbar
-4. Score verbessert sich vs. v1.3-Baseline
+1. Übertragbare Konzepte aus karpathy/autoresearch identifiziert (`50-RESEARCH.md`)
+2. `run_eval.py` generiert Testfragen aus Wiki-Index (`generate-questions`, `--seed`, `questiongen.py`)
+3. Pro Eval-Tool-Call: Wall-Zeit + stdout-Länge in `eval_run_metrics.jsonl` (Token später / `collector.py` separat)
+4. Reports mit Baseline-Vergleich zu `v1.3-baseline.md` (Avg/Wins); keine Score-Garantie ohne neuen Lauf
 
-**Plans**: TBD
+**Plans**: `.planning/phases/50-autoresearch-eval/50-01-PLAN.md`, `50-RESEARCH.md`, `SUMMARY.md`, `VERIFICATION.md`
 
 ---
 
@@ -1038,7 +1044,9 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 3. Token-Einsparung via `rtk gain` dokumentiert
 4. Abbruch-Bedingung: Cloud-Sharing → Phase auf Analyse reduziert
 
-**Plans**: TBD
+**Plans**: `.planning/phases/51-openspace-skill-engine/51-01-PLAN.md`, `51-PRIVACY.md`, `51-RESEARCH.md`, `51-SKILLS-AUDIT.md`, `51-RTK-NOTES.md`, `SUMMARY.md`, `VERIFICATION.md`
+
+**Status**: ✓ Done (2026-04-15) — Projekt-Skills `.cursor/skills/tom-*`; siehe Phase-`SUMMARY.md`.
 
 ---
 
@@ -1054,10 +1062,12 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 
 1. Fork baut in Xcode (macOS 14.2+)
 2. Menu-Bar-App startet
-3. Screenshot-Analyse über Ollama/qwen2.5:3b funktioniert
+3. Screenshot-Analyse über Ollama/qwen3:8b funktioniert
 4. AssemblyAI→Whisper.cpp, Claude API→Ollama substituiert
 
-**Plans**: TBD
+**Plans**: `.planning/phases/52-clicky-local/52-01-PLAN.md`, `52-RESEARCH.md`, `SUMMARY.md`, `VERIFICATION.md`
+
+**Status**: In progress (Wave 0 — Plan+Research im Tom-Repo; Fork/Build auf dem Mac)
 
 ---
 
@@ -1073,9 +1083,51 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 
 1. Extension transkribiert Audio-Aufnahme
 2. API-Backend (Ollama-Whisper oder OpenAI-kompatibel) konfiguriert
-3. Transkripte als Markdown-Notes in `$TOM_VAULT/raw/transkripte/` nutzbar
+3. Plaud-Note-Pro-Koexistenz geprüft (Export-Format, Transkript-Verbesserung)
+4. Transkripte als Markdown-Notes in `$TOM_VAULT/raw/transkripte/` nutzbar
 
-**Plans**: TBD
+**Plans**: `.planning/phases/53-audiobridge-transcription/53-01-PLAN.md`, `53-RESEARCH.md`, `SUMMARY.md`, `VERIFICATION.md`
+
+**Status**: In progress (Wave 0 — Plan+Research im Tom-Repo; Install aus GitHub Releases)
+
+---
+
+### Phase 54: OpenClaw — Workspace-Bridge + Runtime-Normalisierung (Maintenance)
+
+**Goal**: OpenClaw bleibt auf `~/.openclaw/workspace`, bekommt aber kuratierte Symlinks zu `/Users/maxim/Claude` und zu Tom-Kernordnern im Vault; keine Exposition von `raw/`, `Clippings/`, `Archiv/`. Runtime-Health über harte Probes (`curl` Ollama/CCR, `openclaw gateway probe`), nicht allein Text-Status.
+
+**Depends on**: Nothing (Ops; parallel zu v1.6 Phasen 49–53)
+
+**Requirements**: (keine neuen REQ-IDs — Maintenance-Track)
+
+**Success Criteria**:
+
+1. `scripts/repair_openclaw_workspace_bridge.py` legt Bridges + `TOM_MAP.md` idempotent an.
+2. `USER.md` / `AGENTS.md` im Workspace verweisen auf `TOM_MAP.md` und Repo-Regeln.
+3. Harte Health-Signale dokumentiert und im Skript ausgewertet.
+4. Phasen 49–53 werden **nicht** renummeriert.
+
+**Plans**: `.planning/phases/54-openclaw-workspace-bridge/54-01-PLAN.md`
+
+---
+
+### Phase 61: Shortcuts-Forge — AI→Apple-Shortcuts-Pipeline
+
+**Goal**: Maxim gibt eine natürlichsprachige Beschreibung → signierter `.shortcut` in fester Ablage `~/Documents/Tom-Shortcuts/`. Drei Bedienwege (Claude-Session via `/shortcuts-playground:build`, `bin/tom-shortcut` headless, Stream Deck) + Helper-Bibliothek (Python/AppleScript/Swift) mit dokumentiertem Aufruf-Vertrag.
+
+**Depends on**: Nothing (Plugin shortcuts-playground v1.0.1, Cherri CLI, `shortcuts sign` bereits installiert)
+
+**Requirements**: SCF16-01..06
+
+**Success Criteria**:
+
+1. `tom-shortcut setup` idempotent; Ablage-Struktur + Helpers-Symlink + Env-Var-Persistenz stehen.
+2. `tom-shortcut build "Beschreibung"` liefert headless einen signierten `.shortcut` in `signed/` (mit Fallback-Prompt-Kette).
+3. Helper-Vertrag dokumentiert; je 1 Python/AppleScript/Swift-Helper baubar + per Shortcut aufrufbar.
+4. Stream-Deck-Button mit Eingabe-Dialog funktioniert.
+5. Cherri als Alternativ-Engine dokumentiert (documented-only, kein `--engine`-Flag).
+
+**Plans**: `.planning/phases/61-shortcuts-forge/61-01-PLAN.md`
 
 ---
 
@@ -1084,14 +1136,15 @@ Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | PLUG16-01..05 | 47 | Complete |
-| RAG16-01..06 | 48 | Pending |
-| CDX16-01..05 | 49 | Pending |
-| ARES16-01..05 | 50 | Pending |
+| RAG16-01..06 | 48 | Complete |
+| CDX16-01..05 | 49 | Partial (3/5 Complete) |
+| ARES16-01..05 | 50 | Complete |
 | OSP16-01..05 | 51 | Pending |
 | CLK16-01..05 | 52 | Pending |
 | AUD16-01..04 | 53 | Pending |
+| SCF16-01..06 | 61 | Pending |
 
-**v1.6 total: 35 — Mapped: 35 — Unmapped: 0 ✓**
+**v1.6 total: 41 — Mapped: 41 — Unmapped: 0 ✓**
 
 Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
 

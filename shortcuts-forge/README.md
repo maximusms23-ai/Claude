@@ -121,6 +121,18 @@ osascript "$HOME/Documents/Tom-Shortcuts/helpers/applescript/safari_current_page
 
 Neue Helper: Quelldatei unter `shortcuts-forge/helpers/<sprache>/` anlegen (deutscher Header: Zweck/Usage/Output), Vertrag einhalten, bei Swift `bin/build-shortcut-helpers` laufen lassen.
 
+## Quick-Templates: 0 Token, Sekunden statt Minuten
+
+Für Standard-Muster braucht es **kein LLM** — der Cherri-Compiler baut deterministisch (verifizierte Templates):
+
+```bash
+tom-shortcut quick notify "Titel" "Text"                    # Benachrichtigung
+tom-shortcut quick shell 'echo hi | $HOME/…/text_tools.py --mode upper'   # Shell/Helper-Aufruf (+ Fertig-Meldung; --no-notify)
+tom-shortcut quick url "https://…"                          # Link öffnen
+```
+
+Jeder Quick-Build erzeugt signierte Datei **und** XML-Draft (→ später per Remix erweiterbar). Bekannter Cherri-Bug: Action-Nesting verursacht Compiler-Panic — Templates sind deshalb sequentiell aufgebaut.
+
 ## Analyse zuerst: anpassen statt neu entwickeln
 
 ```bash

@@ -14,6 +14,7 @@
 #   tom-shortcut remix <name|xml> "Aenderung" [--name N]   # bestehenden Draft aendern
 #   tom-shortcut export "<Installierter Name>"  # installierten Kurzbefehl -> drafts/*.xml
 #   tom-shortcut fix "<Name>" "Vorgabe" [--name Neu]  # installierten korrigieren (export+remix)
+#   tom-shortcut quick notify|shell|url ...     # Template-Build via Cherri: 0 Token, Sekunden
 #   tom-shortcut salvage                        # unterbrochenen Build aus validem Draft retten (0 Token)
 #   tom-shortcut resume [draft]                 # unfertigen Draft nach Limit-Reset fertigstellen
 #   tom-shortcut ui [port]                      # lokales Web-Tool (Forge-UI, Default-Port 7461)
@@ -687,6 +688,71 @@ cmd_fix() {
   cmd_remix "$xml" "$change" "${passthru[@]}"
 }
 
+# ---------------------------------------------------------------- quick
+# Deterministische Templates via Cherri-Compiler: 0 Token, <5 s.
+# Verifizierte Muster (2026-07-20): notify, shell (sequentiell — Nesting
+# triggert Cherri-Panic), url. Erzeugt signierte Datei + Draft fuer Remix.
+CHERRI="$HOME/go/bin/cherri"
+
+cherri_escape() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+
+cmd_quick() {
+  local template="${1:-}"; shift || true
+  local name="" a1="" a2="" no_notify=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --name)      name="${2:?--name braucht einen Wert}"; shift 2 ;;
+      --no-notify) no_notify=1; shift ;;
+      -*)          err "Unbekanntes Flag: $1"; return 2 ;;
+      *) if [[ -z "$a1" ]]; then a1="$1"; else a2="$1"; fi; shift ;;
+    esac
+  done
+  [[ -x "$CHERRI" ]] || { err "Cherri fehlt ($CHERRI)"; return 1; }
+  ensure_dirs
+
+  local src=""
+  case "$template" in
+    notify)
+      [[ -z "$a1" || -z "$a2" ]] && { err "Usage: tom-shortcut quick notify \"Titel\" \"Text\""; return 2; }
+      [[ -z "$name" ]] && name="Hinweis $(printf '%.30s' "$a1")"
+      src="showNotification(\"$(cherri_escape "$a2")\", \"$(cherri_escape "$a1")\")"
+      ;;
+    shell)
+      [[ -z "$a1" ]] && { err "Usage: tom-shortcut quick shell \"kommando\" [--no-notify]"; return 2; }
+      [[ -z "$name" ]] && name="Quick-Shell-$(date +%H%M%S)"
+      src="#include 'actions/mac'
+runShellScript(\"$(cherri_escape "$a1")\", ShortcutInput)"
+      [[ "$no_notify" -eq 0 ]] && src+='
+showNotification("Kommando ausgefuehrt", "Fertig")'
+      ;;
+    url)
+      [[ -z "$a1" ]] && { err "Usage: tom-shortcut quick url \"https://...\""; return 2; }
+      [[ -z "$name" ]] && name="Oeffne $(printf '%s' "$a1" | sed 's|https\{0,1\}://||; s|/.*||' | cut -c1-30)"
+      src="#include 'actions/web'
+openURL(\"$(cherri_escape "$a1")\")"
+      ;;
+    *)
+      err "Usage: tom-shortcut quick notify|shell|url ... [--name N]  (0 Token, Sekunden)"
+      return 2 ;;
+  esac
+
+  local work
+  work=$(mktemp -d "${TMPDIR:-/tmp}/tom-quick.XXXXXX")
+  printf '#define name %s\n%s\n' "$name" "$src" > "$work/q.cherri"
+
+  # Signiert + unsigniert (Draft fuer spaeteres Remix) kompilieren
+  ( cd "$work" && "$CHERRI" q.cherri -s anyone )            >/dev/null 2>&1 || { err "Cherri-Compile fehlgeschlagen"; cat "$work/q.cherri" >&2; rm -rf "$work"; return 1; }
+  ( cd "$work" && "$CHERRI" q.cherri --skip-sign )          >/dev/null 2>&1 || true
+
+  mv -f "$work/${name}.shortcut" "$OUT/signed/${name}.shortcut"
+  if [[ -f "$work/${name}_unsigned.shortcut" ]]; then
+    plutil -convert xml1 -o "$OUT/drafts/${name}.xml" "$work/${name}_unsigned.shortcut" 2>/dev/null || true
+  fi
+  rm -rf "$work"
+  info "✓ Quick-Build (0 Token, Cherri): $OUT/signed/${name}.shortcut"
+  info "Import: tom-shortcut import \"${name}\""
+}
+
 # ---------------------------------------------------------------- salvage / resume
 # salvage: neuesten validen Draft ohne LLM signieren (nach Limit/Abbruch).
 cmd_salvage() {
@@ -699,13 +765,15 @@ cmd_salvage() {
 
 # resume: unfertigen Draft per LLM fertigstellen (nach Limit-Reset).
 cmd_resume() {
-  local src="${1:-}"
+  local src=""
+  if [[ $# -gt 0 && "$1" != -* ]]; then
+    src="$1"; shift
+  fi
   if [[ -z "$src" ]]; then
     src=$(ls -t "$OUT/drafts"/*.xml 2>/dev/null | head -1)
     [[ -z "$src" ]] && { err "Kein Draft in $OUT/drafts"; return 1; }
     info "Setze neuesten Draft fort: $(basename "$src")"
   fi
-  shift 2>/dev/null || true
   cmd_remix "$src" "Pruefe diesen Entwurf, behebe alle Validierungsfehler und stelle ihn fertig — der urspruengliche Zweck des Kurzbefehls bleibt unveraendert" "$@"
 }
 
@@ -721,7 +789,7 @@ cmd_ui() {
 
 # ---------------------------------------------------------------- dispatch
 usage() {
-  sed -n '3,33p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,34p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 main() {
@@ -734,6 +802,7 @@ main() {
     remix)   cmd_remix "$@" ;;
     export)  cmd_export "$@" ;;
     fix)     cmd_fix "$@" ;;
+    quick)   cmd_quick "$@" ;;
     salvage) cmd_salvage "$@" ;;
     resume)  cmd_resume "$@" ;;
     ui)      cmd_ui "$@" ;;

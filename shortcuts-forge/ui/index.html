@@ -60,9 +60,11 @@
 <div class="sub">Anforderung eintippen → signierter Apple-Kurzbefehl. Änderungen per Remix. <span class="badge">Phase 61</span></div>
 
 <div class="card" style="margin-bottom:16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
-  <b style="font-size:0.9rem">🧠 Build-Modell:</b>
-  <select id="model" style="max-width:420px;flex:1"></select>
-  <span class="muted">gilt für Bauen und Remix — Sonnet 5 spart Token</span>
+  <b style="font-size:0.9rem">⚙️ Engine:</b>
+  <select id="engine" style="max-width:340px;flex:1"></select>
+  <b style="font-size:0.9rem">🧠 Modell:</b>
+  <select id="model" style="max-width:340px;flex:1"></select>
+  <span class="muted" style="flex-basis:100%">Engine + Modell gelten für Bauen, Remix und Korrektur · Modellwahl nur bei Claude-Engine · Sonnet 5 spart Token</span>
 </div>
 
 <div class="cols">
@@ -77,7 +79,19 @@
   </div>
 
   <div class="card">
-    <h2>🔧 Bestehenden ändern (Remix)</h2>
+    <h2>🩹 Installierten korrigieren</h2>
+    <label for="fixName">Kurzbefehl aus deiner Bibliothek</label>
+    <select id="fixName"></select>
+    <label for="fixChange">Deine Vorgabe (was soll anders sein?)</label>
+    <textarea id="fixChange" placeholder="z. B.: Die Benachrichtigung soll den Titel 'Tom' bekommen und danach das Ergebnis in die Zwischenablage kopieren"></textarea>
+    <label for="fixNew">Neuer Name (optional — Original in der App bleibt unberührt)</label>
+    <input id="fixNew" placeholder="z. B. Hallo Tom v2">
+    <button id="btnFix" onclick="fixShortcut()">🩹 Korrigieren</button>
+    <div class="hint">Holt den Kurzbefehl aus der App (Export), wendet die Vorgabe an und signiert neu.</div>
+  </div>
+
+  <div class="card">
+    <h2>🔧 Draft ändern (Remix)</h2>
     <label for="draft">Draft auswählen (unsignierte XML aus drafts/)</label>
     <select id="draft"></select>
     <label for="change">Änderungswunsch</label>
@@ -126,16 +140,23 @@ function toast(msg) {
   const t = $("toast"); t.textContent = msg; t.style.display = "block";
   clearTimeout(t._h); t._h = setTimeout(()=> t.style.display="none", 3500);
 }
+function opts() { return {model: $("model").value, engine: $("engine").value}; }
 async function build() {
   const brief = $("brief").value.trim();
   if (!brief) return toast("Bitte Anforderung eingeben");
-  if (await post("/api/build", {brief, name: $("bname").value, model: $("model").value})) { toast("Build gestartet — Log unten"); $("brief").value=""; }
+  if (await post("/api/build", {brief, name: $("bname").value, ...opts()})) { toast("Build gestartet — Log unten"); $("brief").value=""; }
 }
 async function remix() {
   const draft = $("draft").value, change = $("change").value.trim();
   if (!draft) return toast("Kein Draft vorhanden — erst einen Kurzbefehl bauen");
   if (!change) return toast("Bitte Änderungswunsch eingeben");
-  if (await post("/api/remix", {draft, change, name: $("rname").value, model: $("model").value})) { toast("Remix gestartet"); $("change").value=""; }
+  if (await post("/api/remix", {draft, change, name: $("rname").value, ...opts()})) { toast("Remix gestartet"); $("change").value=""; }
+}
+async function fixShortcut() {
+  const installed = $("fixName").value, change = $("fixChange").value.trim();
+  if (!installed) return toast("Kein Kurzbefehl gewählt");
+  if (!change) return toast("Bitte Vorgabe eingeben");
+  if (await post("/api/fix", {installed, change, name: $("fixNew").value, ...opts()})) { toast("Korrektur gestartet — Log unten"); $("fixChange").value=""; }
 }
 async function doImport(file) { if (await post("/api/import", {file})) toast("Import-Dialog geöffnet — bitte bestätigen"); }
 async function doRun(name) {
@@ -175,6 +196,20 @@ async function poll() {
       msel.innerHTML = Object.entries(s.models).map(([v,l]) => `<option value="${v}">${l}</option>`).join("");
       msel.value = "claude-sonnet-5";
     }
+    const esel = $("engine");
+    if (s.engines && esel.options.length === 0) {
+      esel.innerHTML = Object.entries(s.engines).map(([v,e]) =>
+        `<option value="${v}" ${e.available ? "" : "disabled"}>${e.label}${e.available ? "" : " — nicht eingerichtet"}</option>`).join("");
+      esel.value = "claude";
+    }
+    $("model").disabled = $("engine").value !== "claude";
+
+    const fsel = $("fixName"), fcur = fsel.value;
+    if (s.installed) {
+      fsel.innerHTML = s.installed.map(n => `<option value="${n.replace(/"/g,"&quot;")}">${n}</option>`).join("");
+      if ([...fsel.options].some(o => o.value === fcur)) fsel.value = fcur;
+    }
+    $("btnFix").disabled = busy;
 
     $("clock").textContent = "· Stand " + s.now;
     document.querySelector("#signedTbl tbody").innerHTML = s.signed.map(f => `

@@ -474,6 +474,9 @@ Maxim gibt eine Beschreibung → signierter `.shortcut` in `~/Documents/Tom-Shor
 | `tom-shortcut setup` | Ablage + Helpers-Symlink + Env-Vars (`CLAUDE_PLUGIN_OPTION_OUTPUT_DIR`, `SHORTCUTS_PLAYGROUND_PYTHON`) + Doctor. Idempotent |
 | `tom-shortcut build "Angabe" [--name N] [--model M] [--open] [--fallback-prompt]` | Headless-Build via `claude --print` mit Fallback-Kette + Artefakt-Verifikation. **Modell-Default: `claude-sonnet-5`** (Token-sparend; `--model ""` = bestes CLI-Modell; Env `TOM_SHORTCUT_MODEL`) |
 | `tom-shortcut remix <name\|xml> "Änderung" [--name N] [--model M]` | Bestehenden Draft ändern (`/shortcuts-playground:remix`, Original bleibt) |
+| `tom-shortcut export "<Name>"` | Installierten Kurzbefehl → `drafts/*.xml` (Wrapper um `eivs-shortcut-template-export`) |
+| `tom-shortcut fix "<Name>" "Vorgabe" [--name Neu]` | **Installierten Kurzbefehl korrigieren** (Export + Remix in einem; Original bleibt) |
+| `--engine claude\|codex\|codex-oss` (überall) | Multi-Engine: Claude (Default) · ChatGPT/Codex (nach `codex login`) · gpt-oss lokal (Stufe 2, Opt-in). Plan: `.planning/phases/61-shortcuts-forge/61-02-MULTI-ENGINE-PLAN.md` |
 | `tom-shortcut ui [port]` | **Forge-UI**: lokales Web-Tool (127.0.0.1:7461) — Formular, Live-Log, Remix, Import/Run |
 | `tom-shortcut tidy` | Ablage-Wurzel normalisieren (`signed/`, `archive/`) |
 | `tom-shortcut list / run / import` | Übersicht, Ausführen, Import-Dialog |

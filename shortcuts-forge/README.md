@@ -121,6 +121,28 @@ osascript "$HOME/Documents/Tom-Shortcuts/helpers/applescript/safari_current_page
 
 Neue Helper: Quelldatei unter `shortcuts-forge/helpers/<sprache>/` anlegen (deutscher Header: Zweck/Usage/Output), Vertrag einhalten, bei Swift `bin/build-shortcut-helpers` laufen lassen.
 
+## Installierte Kurzbefehle korrigieren
+
+```bash
+tom-shortcut export "Mein Kurzbefehl"                 # App → drafts/*.xml (via eivs-shortcut-template-export)
+tom-shortcut fix "Mein Kurzbefehl" "Vorgabe…" --name "Mein Kurzbefehl v2"   # Export + Remix in einem
+```
+
+In der Forge-UI: Karte **„Installierten korrigieren"** — Kurzbefehl aus der Bibliothek wählen, Vorgabe eintippen, fertig. Das Original in der App bleibt unberührt; die korrigierte Version kommt als neue signierte Datei.
+
+## Multi-Engine: Claude · ChatGPT/Codex · Open Source
+
+Umsetzungsplan + Recherche: [`.planning/phases/61-shortcuts-forge/61-02-MULTI-ENGINE-PLAN.md`](../.planning/phases/61-shortcuts-forge/61-02-MULTI-ENGINE-PLAN.md)
+
+| Engine | Aufruf | Voraussetzung | Status |
+|---|---|---|---|
+| **claude** (Default) | `--engine claude` + `--model` | claude CLI (da) | ✅ produktiv |
+| **codex** (ChatGPT-Cloud) | `--engine codex` | `codex` CLI (installiert, `~/.local/bin`) + **einmalig `codex login`** | ⏳ Login ausstehend |
+| **codex-oss** (lokal, gpt-oss:20b) | `--engine codex-oss` | zusätzlich Ollama + `ollama pull gpt-oss:20b` (~13 GB) | 💤 Stufe 2, Opt-in — 16-GB-RAM-Warnung: nicht parallel zu Cursor/Obsidian |
+| Apple Intelligence | — | „Modell verwenden"-Action **im Brief anfordern** (On-Device/Private Cloud/ChatGPT); native NL-Erstellung erst macOS 27 | Action heute nutzbar |
+
+Alle Engines: gleicher Prompt, gleiche Ablage, gleiche Artefakt-Verifikation. Codex-Skill liegt als Symlink in `~/.codex/skills/` (Setup pflegt ihn). Env-Default: `TOM_SHORTCUT_ENGINE`.
+
 ## Engine-Wahl: Playground vs. Cherri
 
 | | shortcuts-playground (Default) | Cherri |

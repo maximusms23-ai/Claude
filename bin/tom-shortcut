@@ -11,7 +11,10 @@
 #   tom-shortcut setup                          # Ablage + Symlink + Env-Vars + Doctor (idempotent)
 #   tom-shortcut build "Beschreibung" [--name N] [--open] [--fallback-prompt]
 #   tom-shortcut remix <name|xml> "Aenderung" [--name N]   # bestehenden Draft aendern
+#   tom-shortcut export "<Installierter Name>"  # installierten Kurzbefehl -> drafts/*.xml
+#   tom-shortcut fix "<Name>" "Vorgabe" [--name Neu]  # installierten korrigieren (export+remix)
 #   tom-shortcut ui [port]                      # lokales Web-Tool (Forge-UI, Default-Port 7461)
+#   Engine-Wahl ueberall: --engine claude|codex|codex-oss (Env TOM_SHORTCUT_ENGINE)
 #   tom-shortcut tidy                           # Wurzel-Artefakte nach signed/ + archive/
 #   tom-shortcut list                           # Installiert vs. Ablage
 #   tom-shortcut run <name>                     # shortcuts run
@@ -37,6 +40,9 @@ BUILD_LOG="$OUT/.last-build.log"
 # Build-Modell: Sonnet 5 als Token-sparender Default; Override via --model oder Env.
 # Leerer Wert ("") = CLI-Default-Modell des claude-Logins.
 MODEL="${TOM_SHORTCUT_MODEL-claude-sonnet-5}"
+# Engine: claude (Default) | codex (ChatGPT-Cloud) | codex-oss (lokal gpt-oss via Ollama).
+# Siehe .planning/phases/61-shortcuts-forge/61-02-MULTI-ENGINE-PLAN.md
+ENGINE="${TOM_SHORTCUT_ENGINE-claude}"
 
 err()  { printf 'tom-shortcut: %s\n' "$*" >&2; }
 info() { printf '%s\n' "$*"; }
@@ -165,6 +171,22 @@ PYEOF
   fi
   [[ -x "$FORGE_ROOT/helpers/swift/build/battery_info" ]] \
                                            && info "[ok] Swift-Helper gebaut"                      || info "[--] Swift-Helper fehlt — bin/build-shortcut-helpers"
+  # Multi-Engine (optional, siehe 61-02-MULTI-ENGINE-PLAN.md)
+  if command -v codex >/dev/null 2>&1; then
+    info "[ok] Engine codex: $(command -v codex) (Login-Check: codex login status)"
+    [[ -e "$HOME/.codex/skills/shortcuts-playground" ]] \
+                                           && info "[ok] Codex-Skill verlinkt"                     || info "[--] Codex-Skill fehlt — tom-shortcut setup verlinkt ihn"
+    ln -sfn "$HOME/.claude/plugins/shortcuts-playground-plugin/codex/skills/shortcuts-playground" \
+            "$HOME/.codex/skills/shortcuts-playground" 2>/dev/null || true
+  else
+    info "[--] Engine codex fehlt (optional): npm i -g @openai/codex && codex login"
+  fi
+  if command -v ollama >/dev/null 2>&1; then
+    ollama list 2>/dev/null | grep -q "gpt-oss" \
+                                           && info "[ok] Engine codex-oss: gpt-oss lokal vorhanden" || info "[--] codex-oss: ollama da, aber gpt-oss fehlt (ollama pull gpt-oss:20b — 13 GB, 16-GB-RAM knapp)"
+  else
+    info "[--] Engine codex-oss fehlt (optional, Stufe 2): brew install ollama"
+  fi
 
   info ""
   info "Manuell (einmalig): Kurzbefehle-App -> Einstellungen -> Erweitert -> 'Ausfuehren von Skripten erlauben'"
@@ -264,23 +286,32 @@ make_prompt() {
   printf '%s' "$p"
 }
 
+# Engine-Dispatch: gleicher Prompt, gleiche Env, gleiche Artefakt-Verifikation —
+# nur die Agent-Harness wechselt (claude --print vs. codex exec [--oss]).
 run_claude_build() {
   local prompt="$1" append="$2"
   local rc=0
-  local model_args=()
-  [[ -n "$MODEL" ]] && model_args=(--model "$MODEL")
+  local cmd=()
+  case "$ENGINE" in
+    claude)
+      cmd=(claude --print --permission-mode acceptEdits --allowedTools "Write,Edit,Read,Bash,Glob,Grep")
+      [[ -n "$MODEL" ]] && cmd+=(--model "$MODEL")
+      ;;
+    codex)
+      command -v codex >/dev/null 2>&1 || { err "codex CLI fehlt (npm i -g @openai/codex; dann: codex login)"; return 1; }
+      cmd=(codex exec --full-auto --skip-git-repo-check -)
+      ;;
+    codex-oss)
+      command -v codex  >/dev/null 2>&1 || { err "codex CLI fehlt (npm i -g @openai/codex)"; return 1; }
+      command -v ollama >/dev/null 2>&1 || { err "ollama fehlt (Stufe 2, Opt-in: brew install ollama; ollama pull gpt-oss:20b — 16-GB-RAM-Warnung beachten)"; return 1; }
+      cmd=(codex exec --oss --full-auto --skip-git-repo-check -)
+      ;;
+    *) err "Unbekannte Engine: $ENGINE (claude|codex|codex-oss)"; return 2 ;;
+  esac
   if [[ "$append" == "append" ]]; then
-    ( cd "$OUT" && printf '%s' "$prompt" | claude --print \
-        "${model_args[@]}" \
-        --permission-mode acceptEdits \
-        --allowedTools "Write,Edit,Read,Bash,Glob,Grep" \
-      ) >>"$BUILD_LOG" 2>&1 || rc=$?
+    ( cd "$OUT" && printf '%s' "$prompt" | "${cmd[@]}" ) >>"$BUILD_LOG" 2>&1 || rc=$?
   else
-    ( cd "$OUT" && printf '%s' "$prompt" | claude --print \
-        "${model_args[@]}" \
-        --permission-mode acceptEdits \
-        --allowedTools "Write,Edit,Read,Bash,Glob,Grep" \
-      ) >"$BUILD_LOG" 2>&1 || rc=$?
+    ( cd "$OUT" && printf '%s' "$prompt" | "${cmd[@]}" ) >"$BUILD_LOG" 2>&1 || rc=$?
   fi
   return $rc
 }
@@ -291,6 +322,7 @@ cmd_build() {
     case "$1" in
       --name)            name="${2:?--name braucht einen Wert}"; shift 2 ;;
       --model)           MODEL="${2?--model braucht einen Wert (leer = CLI-Default)}"; shift 2 ;;
+      --engine)          ENGINE="${2:?--engine braucht claude|codex|codex-oss}"; shift 2 ;;
       --open)            do_open=1; shift ;;
       --fallback-prompt) use_fallback=1; shift ;;
       -*)                err "Unbekanntes Flag: $1"; return 2 ;;
@@ -298,6 +330,8 @@ cmd_build() {
     esac
   done
   [[ -z "$brief" ]] && { err "Beschreibung fehlt: tom-shortcut build \"...\""; return 2; }
+  # Slash-Commands sind Claude-Code-Syntax — andere Engines fahren immer den Plain-Prompt
+  [[ "$ENGINE" != "claude" ]] && use_fallback=1
 
   # Rekursions-Guard: nicht aus laufender Claude-Session
   if [[ -n "${CLAUDECODE:-}" && -z "${TOM_SHORTCUT_FORCE:-}" ]]; then
@@ -376,6 +410,7 @@ cmd_remix() {
     case "$1" in
       --name)            name="${2:?--name braucht einen Wert}"; shift 2 ;;
       --model)           MODEL="${2?--model braucht einen Wert (leer = CLI-Default)}"; shift 2 ;;
+      --engine)          ENGINE="${2:?--engine braucht claude|codex|codex-oss}"; shift 2 ;;
       --fallback-prompt) use_fallback=1; shift ;;
       -*)                err "Unbekanntes Flag: $1"; return 2 ;;
       *)
@@ -384,6 +419,7 @@ cmd_remix() {
     esac
   done
   [[ -z "$src" || -z "$change" ]] && { err "Usage: tom-shortcut remix <name|drafts-xml> \"Aenderungswunsch\""; return 2; }
+  [[ "$ENGINE" != "claude" ]] && use_fallback=1
 
   # Quelle aufloesen: Pfad direkt, sonst drafts/<name>.xml
   local xml=""
@@ -457,6 +493,50 @@ cmd_remix() {
   return 1
 }
 
+# ---------------------------------------------------------------- export
+# Installierten Kurzbefehl als unsignierte XML nach drafts/ holen.
+# Duenner Wrapper um bin/eivs-shortcut-template-export (shortcuts share + SQLite-Fallback).
+cmd_export() {
+  local name="${1:?Name fehlt: tom-shortcut export \"<Installierter Name>\"}"
+  ensure_dirs
+  local target="$OUT/drafts/${name}.xml"
+  if ! /Users/maxim/Claude/bin/eivs-shortcut-template-export "$name" --output "$target"; then
+    err "Export fehlgeschlagen — ist '$name' installiert? (shortcuts list)"
+    return 1
+  fi
+  # Immer XML-Plist erzwingen (SQLite-Weg kann binaer liefern)
+  plutil -convert xml1 "$target" 2>/dev/null || true
+  if ! plutil -lint "$target" >/dev/null 2>&1; then
+    err "Export ist kein valides Plist: $target"
+    return 1
+  fi
+  info "Exportiert: $target"
+  printf '%s\n' "$target"
+}
+
+# ---------------------------------------------------------------- fix
+# Korrektur eines INSTALLIERTEN Kurzbefehls nach Vorgabe: export -> remix.
+cmd_fix() {
+  local name="" change=""
+  local passthru=()
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --name|--model|--engine) passthru+=("$1" "${2:?$1 braucht einen Wert}"); shift 2 ;;
+      --fallback-prompt)       passthru+=("$1"); shift ;;
+      -*) err "Unbekanntes Flag: $1"; return 2 ;;
+      *)
+        if [[ -z "$name" ]]; then name="$1"; else change="$1"; fi
+        shift ;;
+    esac
+  done
+  [[ -z "$name" || -z "$change" ]] && { err "Usage: tom-shortcut fix \"<Installierter Name>\" \"Vorgabe\" [--name Neu] [--engine E] [--model M]"; return 2; }
+
+  info "== Korrektur: '$name' nach Vorgabe =="
+  local xml
+  xml=$(cmd_export "$name" | tail -1) || return 1
+  cmd_remix "$xml" "$change" "${passthru[@]}"
+}
+
 # ---------------------------------------------------------------- ui
 cmd_ui() {
   local port="${1:-7461}"
@@ -469,7 +549,7 @@ cmd_ui() {
 
 # ---------------------------------------------------------------- dispatch
 usage() {
-  sed -n '3,27p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,30p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 main() {
@@ -479,6 +559,8 @@ main() {
     setup)   cmd_setup "$@" ;;
     build)   cmd_build "$@" ;;
     remix)   cmd_remix "$@" ;;
+    export)  cmd_export "$@" ;;
+    fix)     cmd_fix "$@" ;;
     ui)      cmd_ui "$@" ;;
     tidy)    cmd_tidy "$@" ;;
     list)    cmd_list "$@" ;;

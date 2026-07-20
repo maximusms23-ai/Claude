@@ -41,6 +41,22 @@ MODELS = {
     "": "CLI-Default — bestes Modell (teuer)",
 }
 
+
+def shutil_which(cmd):
+    from shutil import which
+    return which(cmd) or which(cmd, path=str(Path.home() / ".local" / "bin"))
+
+
+def engines_available():
+    """Engine-Verfuegbarkeit fuer das UI-Dropdown (siehe 61-02-MULTI-ENGINE-PLAN.md)."""
+    codex = bool(shutil_which("codex"))
+    ollama = bool(shutil_which("ollama"))
+    return {
+        "claude": {"label": "Claude (Standard — Modellwahl oben)", "available": True},
+        "codex": {"label": "ChatGPT/Codex (Cloud — braucht codex login)", "available": codex},
+        "codex-oss": {"label": "Open Source lokal (gpt-oss via Ollama — Stufe 2)", "available": codex and ollama},
+    }
+
 # ------------------------------------------------------------------ Job-State
 _lock = threading.Lock()
 _job = {
@@ -137,7 +153,8 @@ def state_payload():
     with _lock:
         job = dict(_job)
     return {"job": job, "signed": signed, "drafts": list_dir("drafts", ".xml"),
-            "models": MODELS, "now": time.strftime("%H:%M:%S")}
+            "models": MODELS, "engines": engines_available(),
+            "installed": sorted(installed), "now": time.strftime("%H:%M:%S")}
 
 
 # ------------------------------------------------------------------ HTTP
@@ -175,6 +192,11 @@ class Handler(BaseHTTPRequestHandler):
         if model not in MODELS:
             model = "claude-sonnet-5"
         model_args = ["--model", model] if model else []
+        engine = (p.get("engine") or "claude").strip()
+        if engine not in engines_available():
+            engine = "claude"
+        if engine != "claude":
+            model_args = ["--engine", engine]  # Modellwahl gilt nur fuer Claude-Engine
         if self.path == "/api/build":
             brief = (p.get("brief") or "").strip()
             if not brief:
@@ -199,6 +221,20 @@ class Handler(BaseHTTPRequestHandler):
             if name:
                 args += ["--name", name]
             ok = start_job("remix", args, f"Remix: {src.stem}")
+            return self._send(200 if ok else 409,
+                              {"ok": ok} if ok else {"error": "Es laeuft bereits ein Job"})
+        if self.path == "/api/fix":
+            name = (p.get("installed") or "").strip()
+            change = (p.get("change") or "").strip()
+            if not name or not change:
+                return self._send(400, {"error": "Kurzbefehl und Vorgabe noetig"})
+            if name not in installed_shortcuts():
+                return self._send(400, {"error": "Nicht installiert: " + name})
+            args = [name, change] + model_args
+            new_name = (p.get("name") or "").strip()
+            if new_name:
+                args += ["--name", new_name]
+            ok = start_job("fix", args, f"Korrektur: {name}")
             return self._send(200 if ok else 409,
                               {"ok": ok} if ok else {"error": "Es laeuft bereits ein Job"})
         if self.path == "/api/import":

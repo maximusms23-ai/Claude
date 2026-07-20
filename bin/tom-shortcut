@@ -1,0 +1,387 @@
+#!/usr/bin/env bash
+#
+# tom-shortcut — AI → Apple Shortcuts Pipeline (shortcuts-forge, Phase 61)
+#
+# Zweck:
+#   Maxim gibt eine Beschreibung → signierter .shortcut in ~/Documents/Tom-Shortcuts/.
+#   Orchestriert das shortcuts-playground Plugin (headless via `claude --print`),
+#   normalisiert die Ablage und verwaltet die Helper-Bibliothek.
+#
+# Usage:
+#   tom-shortcut setup                          # Ablage + Symlink + Env-Vars + Doctor (idempotent)
+#   tom-shortcut build "Beschreibung" [--name N] [--open] [--fallback-prompt]
+#   tom-shortcut tidy                           # Wurzel-Artefakte nach signed/ + archive/
+#   tom-shortcut list                           # Installiert vs. Ablage
+#   tom-shortcut run <name>                     # shortcuts run
+#   tom-shortcut import <name|datei>            # open -a Shortcuts (Import-Dialog)
+#   tom-shortcut helpers deploy [--copy]        # Symlink (Default) oder rsync-Kopie
+#
+# Beispiele:
+#   tom-shortcut build "Zeige eine Benachrichtigung mit dem Text Hallo Tom" --name "Hallo Tom"
+#   tom-shortcut import "Hallo Tom" && tom-shortcut run "Hallo Tom"
+#
+# WICHTIG: `build` startet einen eigenen claude-Prozess — NICHT aus einer laufenden
+# Claude-Session aufrufen (dort: /shortcuts-playground:build). Override: TOM_SHORTCUT_FORCE=1
+#
+# Dependencies: claude (Claude Code CLI), /usr/bin/shortcuts, python3, plugin shortcuts-playground
+# Doku: shortcuts-forge/README.md · GSD: .planning/phases/61-shortcuts-forge/
+
+set -euo pipefail
+
+FORGE_ROOT="/Users/maxim/Claude/shortcuts-forge"
+OUT="$HOME/Documents/Tom-Shortcuts"
+SETTINGS="$HOME/.claude/settings.json"
+BUILD_LOG="$OUT/.last-build.log"
+
+err()  { printf 'tom-shortcut: %s\n' "$*" >&2; }
+info() { printf '%s\n' "$*"; }
+
+ensure_dirs() {
+  mkdir -p "$OUT/drafts" "$OUT/signed" "$OUT/archive"
+}
+
+# Bestes Python >=3.10 fuer den Plugin-Validator finden
+find_playground_python() {
+  local cand
+  for cand in /opt/homebrew/bin/python3.14 /opt/homebrew/bin/python3.13 \
+              /opt/homebrew/bin/python3.12 /opt/homebrew/bin/python3 \
+              "$HOME/.local/bin/python3.13" "$HOME/.local/bin/python3" \
+              /usr/local/bin/python3; do
+    if [[ -x "$cand" ]] && "$cand" -c 'import sys; sys.exit(0 if sys.version_info >= (3,10) else 1)' 2>/dev/null; then
+      printf '%s' "$cand"
+      return 0
+    fi
+  done
+  return 1
+}
+
+export_build_env() {
+  # Beide Varianten: Plugin <=1.0.1 liest CLAUDE_PLUGIN_OPTION_*, >=1.2.x bevorzugt SHORTCUTS_PLAYGROUND_*
+  export CLAUDE_PLUGIN_OPTION_OUTPUT_DIR="$OUT"
+  export SHORTCUTS_PLAYGROUND_OUTPUT_DIR="$OUT"
+  local py
+  if py=$(find_playground_python); then
+    export SHORTCUTS_PLAYGROUND_PYTHON="$py"
+  else
+    err "WARNUNG: kein Python >=3.10 gefunden — Validator koennte scheitern"
+  fi
+}
+
+# Ground-Truth-Referenz in die Ablage spiegeln: das build-Command erlaubt dem
+# Agent nur Reads im Plugin-Dir + Output-Dir — Repo-Pfade sind dort tabu.
+sync_reference() {
+  mkdir -p "$OUT/reference"
+  cp -f "$FORGE_ROOT/reference/script-actions.md" "$OUT/reference/script-actions.md" 2>/dev/null || true
+}
+
+# ---------------------------------------------------------------- helpers deploy
+cmd_helpers_deploy() {
+  local mode="${1:-}"
+  ensure_dirs
+  if [[ "$mode" == "--copy" ]]; then
+    [[ -L "$OUT/helpers" ]] && rm "$OUT/helpers"
+    mkdir -p "$OUT/helpers"
+    rsync -a "$FORGE_ROOT/helpers/" "$OUT/helpers/"
+    info "Helpers als Kopie deployed (rsync): $OUT/helpers"
+    info "Hinweis: Kopien koennen von iCloud evakuiert werden — Symlink ist der Default."
+  else
+    if [[ -e "$OUT/helpers" && ! -L "$OUT/helpers" ]]; then
+      local bak="$OUT/helpers.bak-$(date +%Y%m%d-%H%M%S)"
+      mv "$OUT/helpers" "$bak"
+      info "Bestehendes helpers-Verzeichnis gesichert: $bak"
+    fi
+    ln -sfn "$FORGE_ROOT/helpers" "$OUT/helpers"
+    info "Helpers-Symlink: $OUT/helpers -> $FORGE_ROOT/helpers"
+  fi
+}
+
+# ---------------------------------------------------------------- setup
+cmd_setup() {
+  info "== tom-shortcut setup =="
+  ensure_dirs
+  info "Ablage: $OUT (drafts/ signed/ archive/)"
+  cmd_helpers_deploy
+
+  # Env-Vars idempotent in ~/.claude/settings.json mergen (Backup + Parse-Check)
+  local py
+  py=$(find_playground_python || echo "")
+  python3 - "$SETTINGS" "$OUT" "$py" <<'PYEOF'
+import json, os, shutil, sys, time
+
+settings_path, out_dir, playground_py = sys.argv[1], sys.argv[2], sys.argv[3]
+data = {}
+if os.path.exists(settings_path):
+    with open(settings_path, encoding="utf-8") as f:
+        data = json.load(f)
+    backup = f"{settings_path}.bak-{time.strftime('%Y%m%d-%H%M%S')}"
+    shutil.copy2(settings_path, backup)
+    print(f"Backup: {backup}")
+
+env = data.setdefault("env", {})
+changed = False
+# Plugin <=1.0.1: CLAUDE_PLUGIN_OPTION_*; >=1.2.x bevorzugt SHORTCUTS_PLAYGROUND_*
+for key in ("CLAUDE_PLUGIN_OPTION_OUTPUT_DIR", "SHORTCUTS_PLAYGROUND_OUTPUT_DIR"):
+    if env.get(key) != out_dir:
+        env[key] = out_dir
+        changed = True
+if playground_py and env.get("SHORTCUTS_PLAYGROUND_PYTHON") != playground_py:
+    env["SHORTCUTS_PLAYGROUND_PYTHON"] = playground_py
+    changed = True
+
+if changed:
+    with open(settings_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    print("settings.json: env-Block aktualisiert")
+else:
+    print("settings.json: bereits aktuell")
+
+# Sicherheitsnetz: Datei muss valides JSON bleiben
+with open(settings_path, encoding="utf-8") as f:
+    json.load(f)
+print("settings.json: JSON valide")
+PYEOF
+
+  # Doctor
+  info ""
+  info "== Doctor =="
+  local ok=1
+  command -v claude >/dev/null 2>&1        && info "[ok] claude CLI: $(command -v claude)"        || { info "[!!] claude CLI fehlt"; ok=0; }
+  [[ -x /usr/bin/shortcuts ]]              && info "[ok] shortcuts CLI: /usr/bin/shortcuts"        || { info "[!!] /usr/bin/shortcuts fehlt"; ok=0; }
+  command -v swiftc >/dev/null 2>&1        && info "[ok] swiftc vorhanden"                          || info "[--] swiftc fehlt (nur fuer Swift-Helper-Build noetig)"
+  [[ -n "$py" ]]                           && info "[ok] Playground-Python: $py"                   || { info "[!!] kein Python >=3.10 (brew install python)"; ok=0; }
+  [[ -d "$HOME/.claude/plugins/shortcuts-playground-plugin" || -d "$HOME/.claude/plugins/cache/shortcuts-playground" ]] \
+                                           && info "[ok] Plugin shortcuts-playground installiert"  || { info "[!!] Plugin shortcuts-playground fehlt (bin/install-shortcuts-playground.sh)"; ok=0; }
+  if [[ -L "$OUT/helpers" && "$(readlink "$OUT/helpers")" == "$FORGE_ROOT/helpers" ]]; then
+    info "[ok] Helpers-Symlink intakt"
+  else
+    info "[!!] Helpers-Symlink fehlt/falsch — tom-shortcut helpers deploy"
+    ok=0
+  fi
+  [[ -x "$FORGE_ROOT/helpers/swift/build/battery_info" ]] \
+                                           && info "[ok] Swift-Helper gebaut"                      || info "[--] Swift-Helper fehlt — bin/build-shortcut-helpers"
+
+  info ""
+  info "Manuell (einmalig): Kurzbefehle-App -> Einstellungen -> Erweitert -> 'Ausfuehren von Skripten erlauben'"
+  info "Optional: /plugin -> shortcuts-playground -> output_dir = $OUT (Env-Var deckt das bereits ab)"
+  [[ "$ok" -eq 1 ]] && info "Setup vollstaendig." || { err "Setup mit offenen Punkten (siehe [!!])"; return 1; }
+}
+
+# ---------------------------------------------------------------- tidy
+cmd_tidy() {
+  ensure_dirs
+  local moved=0 f d base target
+  shopt -s nullglob
+  for f in "$OUT"/*.shortcut; do
+    mv -n "$f" "$OUT/signed/"
+    info "signed/  <- $(basename "$f")"
+    moved=1
+  done
+  for d in "$OUT"/20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]; do
+    [[ -d "$d" ]] || continue
+    base=$(basename "$d")
+    target="$OUT/archive/$base"
+    mkdir -p "$target"
+    for f in "$d"/*; do
+      [[ -e "$f" ]] && mv -n "$f" "$target/"
+    done
+    rmdir "$d" 2>/dev/null || true
+    info "archive/$base <- Datums-Ordner"
+    moved=1
+  done
+  shopt -u nullglob
+  [[ "$moved" -eq 0 ]] && info "Ablage-Wurzel bereits sauber."
+  return 0
+}
+
+# ---------------------------------------------------------------- list
+cmd_list() {
+  info "== Installiert (Kurzbefehle-App) =="
+  /usr/bin/shortcuts list 2>/dev/null | sed 's/^/  /' || info "  (shortcuts list fehlgeschlagen)"
+  info ""
+  info "== Ablage: signed/ =="
+  ls -lt "$OUT/signed" 2>/dev/null | tail -n +2 | awk '{printf "  %s %s %s  %s\n", $6, $7, $8, $9}' || true
+  [[ -z "$(ls -A "$OUT/signed" 2>/dev/null)" ]] && info "  (leer)"
+  info ""
+  info "== Ablage: drafts/ =="
+  ls -lt "$OUT/drafts" 2>/dev/null | tail -n +2 | awk '{printf "  %s %s %s  %s\n", $6, $7, $8, $9}' || true
+  [[ -z "$(ls -A "$OUT/drafts" 2>/dev/null)" ]] && info "  (leer)"
+}
+
+# ---------------------------------------------------------------- run
+cmd_run() {
+  local name="${1:?Name fehlt: tom-shortcut run <name>}"
+  if ! /usr/bin/shortcuts run "$name"; then
+    err "Ausfuehrung fehlgeschlagen. Ist '$name' installiert? -> tom-shortcut import \"$name\""
+    return 1
+  fi
+}
+
+# ---------------------------------------------------------------- import
+cmd_import() {
+  local arg="${1:?Name oder Datei fehlt: tom-shortcut import <name|datei>}"
+  local file=""
+  if [[ -f "$arg" ]]; then
+    file="$arg"
+  elif [[ -f "$OUT/signed/$arg.shortcut" ]]; then
+    file="$OUT/signed/$arg.shortcut"
+  elif [[ -f "$OUT/signed/$arg" ]]; then
+    file="$OUT/signed/$arg"
+  else
+    err "Nicht gefunden: '$arg' (weder Datei noch signed/$arg.shortcut)"
+    err "Vorhanden in signed/:"
+    ls "$OUT/signed" 2>/dev/null | sed 's/^/  /' >&2 || true
+    return 1
+  fi
+  info "Import-Dialog: $file"
+  open -a Shortcuts "$file"
+}
+
+# ---------------------------------------------------------------- build
+# Prompt-Baustein: Headless-Autonomie + Ground-Truth-Referenz fuer Skript-Actions
+build_autonomy_note() {
+  printf '%s' "WICHTIG (Headless-Modus): Arbeite vollstaendig autonom, stelle KEINE Rueckfragen — triff bei Unsicherheit die beste dokumentierte Annahme und baue durch bis zur signierten .shortcut-Datei. Falls Run Shell Script oder Run AppleScript gebraucht wird: die exakte Action-Struktur per Read aus ${OUT}/reference/script-actions.md uebernehmen (liegt im Output-Verzeichnis)."
+}
+
+make_prompt() {
+  local kind="$1" brief="$2" name="$3"
+  local p
+  if [[ "$kind" == "fallback" ]]; then
+    p="Nutze die Skill shortcuts-playground (shortcuts-playground:shortcuts-playground), um folgenden macOS-Kurzbefehl zu bauen: ${brief}."
+    [[ -n "$name" ]] && p+=" Der Kurzbefehl soll '${name}' heissen."
+    p+=" Schreibe den XML-Entwurf nach ${OUT}/drafts/, validiere per Craig Loop und signiere mit sign-shortcut."
+  else
+    p="/shortcuts-playground:build ${brief}"
+    [[ -n "$name" ]] && p+="; Name des Kurzbefehls: ${name}"
+    p+="."
+  fi
+  p+=" $(build_autonomy_note)"
+  printf '%s' "$p"
+}
+
+run_claude_build() {
+  local prompt="$1" append="$2"
+  local rc=0
+  if [[ "$append" == "append" ]]; then
+    ( cd "$OUT" && printf '%s' "$prompt" | claude --print \
+        --permission-mode acceptEdits \
+        --allowedTools "Write,Edit,Read,Bash,Glob,Grep" \
+      ) >>"$BUILD_LOG" 2>&1 || rc=$?
+  else
+    ( cd "$OUT" && printf '%s' "$prompt" | claude --print \
+        --permission-mode acceptEdits \
+        --allowedTools "Write,Edit,Read,Bash,Glob,Grep" \
+      ) >"$BUILD_LOG" 2>&1 || rc=$?
+  fi
+  return $rc
+}
+
+cmd_build() {
+  local brief="" name="" do_open=0 use_fallback=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --name)            name="${2:?--name braucht einen Wert}"; shift 2 ;;
+      --open)            do_open=1; shift ;;
+      --fallback-prompt) use_fallback=1; shift ;;
+      -*)                err "Unbekanntes Flag: $1"; return 2 ;;
+      *)                 brief="$1"; shift ;;
+    esac
+  done
+  [[ -z "$brief" ]] && { err "Beschreibung fehlt: tom-shortcut build \"...\""; return 2; }
+
+  # Rekursions-Guard: nicht aus laufender Claude-Session
+  if [[ -n "${CLAUDECODE:-}" && -z "${TOM_SHORTCUT_FORCE:-}" ]]; then
+    err "Du bist in einer Claude-Session — nutze dort /shortcuts-playground:build."
+    err "Override (bewusst): TOM_SHORTCUT_FORCE=1 tom-shortcut build ..."
+    return 2
+  fi
+
+  command -v claude >/dev/null 2>&1 || { err "claude CLI fehlt"; return 1; }
+  ensure_dirs
+  sync_reference
+  export_build_env
+
+  local stamp
+  stamp=$(mktemp "${TMPDIR:-/tmp}/tom-shortcut-stamp.XXXXXX")
+
+  local prompt
+  if [[ "$use_fallback" -eq 1 ]]; then
+    prompt=$(make_prompt fallback "$brief" "$name")
+  else
+    prompt=$(make_prompt slash "$brief" "$name")
+  fi
+
+  info "== Build startet (headless, kann einige Minuten dauern) =="
+  info "Brief: $brief"
+  [[ -n "$name" ]] && info "Name:  $name"
+  info "Log:   $BUILD_LOG"
+
+  # In der Ablage arbeiten (nicht im Tom-Repo — vermeidet Projekt-Hooks/-Kontext)
+  local exit_code=0
+  run_claude_build "$prompt" fresh || exit_code=$?
+
+  cmd_tidy >/dev/null
+
+  # Artefakt-Verifikation: neue signierte Datei?
+  local new_files
+  new_files=$(find "$OUT/signed" -type f -name '*.shortcut' -newer "$stamp" 2>/dev/null || true)
+
+  if [[ -z "$new_files" && "$use_fallback" -eq 0 ]]; then
+    info "Kein Artefakt ueber Slash-Command — automatischer Fallback-Prompt..."
+    prompt=$(make_prompt fallback "$brief" "$name")
+    exit_code=0
+    run_claude_build "$prompt" append || exit_code=$?
+    cmd_tidy >/dev/null
+    new_files=$(find "$OUT/signed" -type f -name '*.shortcut' -newer "$stamp" 2>/dev/null || true)
+  fi
+
+  rm -f "$stamp"
+
+  if [[ -n "$new_files" ]]; then
+    info ""
+    info "== Fertig: signierter Kurzbefehl =="
+    while IFS= read -r f; do
+      info "  $f ($(du -h "$f" | cut -f1 | tr -d ' '))"
+      [[ "$do_open" -eq 1 ]] && open -R "$f"
+    done <<< "$new_files"
+    info ""
+    info "Import: tom-shortcut import \"$(basename "${new_files%%$'\n'*}" .shortcut)\""
+    return 0
+  fi
+
+  err "Kein signierter Kurzbefehl entstanden (claude exit: $exit_code)."
+  err "Diagnose — letzte Log-Zeilen ($BUILD_LOG):"
+  tail -15 "$BUILD_LOG" >&2 || true
+  err ""
+  err "drafts/ pruefen (XML da, aber Signierung gescheitert?):"
+  ls -lt "$OUT/drafts" 2>/dev/null | head -5 >&2 || true
+  return 1
+}
+
+# ---------------------------------------------------------------- dispatch
+usage() {
+  sed -n '3,25p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+main() {
+  local cmd="${1:-}"
+  shift || true
+  case "$cmd" in
+    setup)   cmd_setup "$@" ;;
+    build)   cmd_build "$@" ;;
+    tidy)    cmd_tidy "$@" ;;
+    list)    cmd_list "$@" ;;
+    run)     cmd_run "$@" ;;
+    import)  cmd_import "$@" ;;
+    helpers)
+      case "${1:-}" in
+        deploy) shift; cmd_helpers_deploy "$@" ;;
+        *) err "Usage: tom-shortcut helpers deploy [--copy]"; return 2 ;;
+      esac
+      ;;
+    -h|--help|help|"") usage ;;
+    *) err "Unbekannter Subcommand: $cmd"; usage; return 2 ;;
+  esac
+}
+
+main "$@"

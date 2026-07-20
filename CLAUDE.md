@@ -472,6 +472,7 @@ Maxim gibt eine Beschreibung → signierter `.shortcut` in `~/Documents/Tom-Shor
 | Subcommand | Verhalten |
 |---|---|
 | `tom-shortcut setup` | Ablage + Helpers-Symlink + Env-Vars (`CLAUDE_PLUGIN_OPTION_OUTPUT_DIR`, `SHORTCUTS_PLAYGROUND_PYTHON`) + Doctor. Idempotent |
+| `tom-shortcut advise "Angabe" [--youtube URL]` | **Analyse VOR dem Bauen**: WebSearch nach ähnlichen Projekten (RoutineHub/GitHub), Werkzeug-Empfehlung (Kurzbefehl/Python/Pages/Numbers), lokale Reuse-Kandidaten, optimierter Bau-Brief → `advice/*.md` (Plan: `61-03-ADVISE-REUSE-PLAN.md`) |
 | `tom-shortcut build "Angabe" [--name N] [--model M] [--open] [--fallback-prompt]` | Headless-Build via `claude --print` mit Fallback-Kette + Artefakt-Verifikation. **Modell-Default: `claude-sonnet-5`** (Token-sparend; `--model ""` = bestes CLI-Modell; Env `TOM_SHORTCUT_MODEL`) |
 | `tom-shortcut remix <name\|xml> "Änderung" [--name N] [--model M]` | Bestehenden Draft ändern (`/shortcuts-playground:remix`, Original bleibt) |
 | `tom-shortcut export "<Name>"` | Installierten Kurzbefehl → `drafts/*.xml` (Wrapper um `eivs-shortcut-template-export`) |

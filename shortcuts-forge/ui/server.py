@@ -183,6 +183,13 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, html, "text/html; charset=utf-8")
         elif self.path == "/api/state":
             self._send(200, state_payload())
+        elif self.path == "/api/advice":
+            adv = OUT / "advice"
+            files = sorted(adv.glob("*.md"), key=lambda f: f.stat().st_mtime, reverse=True) if adv.is_dir() else []
+            if not files:
+                return self._send(200, {"file": None, "text": ""})
+            self._send(200, {"file": files[0].name,
+                             "text": files[0].read_text(encoding="utf-8", errors="replace")[:20000]})
         else:
             self._send(404, {"error": "not found"})
 
@@ -251,6 +258,32 @@ class Handler(BaseHTTPRequestHandler):
                                capture_output=True, text=True, timeout=120)
             return self._send(200, {"ok": r.returncode == 0,
                                     "stderr": r.stderr.strip()[:300]})
+        if self.path == "/api/advise":
+            brief = (p.get("brief") or "").strip()
+            youtube = (p.get("youtube") or "").strip()
+            if not brief and not youtube:
+                return self._send(400, {"error": "Angabe oder YouTube-Link noetig"})
+            if youtube and not youtube.startswith(("https://www.youtube.com/", "https://youtu.be/", "https://youtube.com/")):
+                return self._send(400, {"error": "Nur YouTube-URLs erlaubt"})
+            args = [brief] if brief else [""]
+            if youtube:
+                args += ["--youtube", youtube]
+            if model:
+                args += ["--model", model]
+            ok = start_job("advise", args, "Analyse: " + (brief[:50] or youtube))
+            return self._send(200 if ok else 409,
+                              {"ok": ok} if ok else {"error": "Es laeuft bereits ein Job"})
+        if self.path == "/api/export":
+            name = (p.get("installed") or "").strip()
+            if not name or name not in installed_shortcuts():
+                return self._send(400, {"error": "Nicht installiert: " + name})
+            env = dict(os.environ)
+            env.pop("CLAUDECODE", None)
+            r = subprocess.run([str(TOM_SHORTCUT), "export", name],
+                               capture_output=True, text=True, timeout=60, env=env)
+            if r.returncode != 0:
+                return self._send(500, {"error": (r.stderr or r.stdout).strip()[:300]})
+            return self._send(200, {"ok": True, "draft": name + ".xml"})
         if self.path == "/api/cancel":
             ok = cancel_job()
             return self._send(200 if ok else 409,

@@ -121,6 +121,23 @@ osascript "$HOME/Documents/Tom-Shortcuts/helpers/applescript/safari_current_page
 
 Neue Helper: Quelldatei unter `shortcuts-forge/helpers/<sprache>/` anlegen (deutscher Header: Zweck/Usage/Output), Vertrag einhalten, bei Swift `bin/build-shortcut-helpers` laufen lassen.
 
+## Analyse zuerst: anpassen statt neu entwickeln
+
+```bash
+tom-shortcut advise "Rechnung fotografieren und Betrag in Übersicht eintragen"
+tom-shortcut advise "" --youtube "https://www.youtube.com/watch?v=…"   # Video als Quelle
+```
+
+Die Experten-Analyse (Sonnet 5 + WebSearch, ~1–2 Min, Plan: [`61-03-ADVISE-REUSE-PLAN.md`](../.planning/phases/61-shortcuts-forge/61-03-ADVISE-REUSE-PLAN.md)) liefert **vor** dem Bauen:
+
+1. **Empfohlenes Werkzeug** — Kurzbefehl · Python-Helper · AppleScript · Pages · Numbers · Kombination (mit Begründung)
+2. **Ähnliche existierende Projekte** — RoutineHub/GitHub/r/shortcuts/MacStories mit Links (übernehmen statt neu bauen)
+3. **Lokale Wiederverwendung** — welcher deiner installierten Kurzbefehle/Drafts als Basis taugt (→ `fix`)
+4. **Optimierter Bau-Brief** — fertig für `build`/`fix` (UI-Button „→ Bau-Brief übernehmen")
+5. **Einschätzung** — Erfolgswahrscheinlichkeit, Aufwand, Risiken
+
+Ergebnisse liegen in `~/Documents/Tom-Shortcuts/advice/*.md`. In der Forge-UI: Karte **„🎓 Analyse zuerst"** (mit YouTube-Feld). Hinweis: 100-%-Garantien gibt es nicht — die Analyse maximiert die Trefferquote, der Craig-Loop-Validator fängt den Rest.
+
 ## Installierte Kurzbefehle korrigieren
 
 ```bash

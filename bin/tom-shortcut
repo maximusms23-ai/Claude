@@ -9,6 +9,7 @@
 #
 # Usage:
 #   tom-shortcut setup                          # Ablage + Symlink + Env-Vars + Doctor (idempotent)
+#   tom-shortcut advise "Angabe" [--youtube URL]  # Experten-Analyse VOR dem Bauen (Web-Suche)
 #   tom-shortcut build "Beschreibung" [--name N] [--open] [--fallback-prompt]
 #   tom-shortcut remix <name|xml> "Aenderung" [--name N]   # bestehenden Draft aendern
 #   tom-shortcut export "<Installierter Name>"  # installierten Kurzbefehl -> drafts/*.xml
@@ -493,6 +494,66 @@ cmd_remix() {
   return 1
 }
 
+# ---------------------------------------------------------------- advise
+# Experten-Analyse VOR dem Bauen: Web/GitHub-Suche nach aehnlichen Projekten,
+# Werkzeug-Empfehlung (Kurzbefehl/Python/AppleScript/Pages/Numbers), lokale
+# Reuse-Kandidaten, optimierter Bau-Brief. Siehe 61-03-ADVISE-REUSE-PLAN.md
+cmd_advise() {
+  local brief="" youtube=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --youtube) youtube="${2:?--youtube braucht eine URL}"; shift 2 ;;
+      --model)   MODEL="${2?--model braucht einen Wert}"; shift 2 ;;
+      -*)        err "Unbekanntes Flag: $1"; return 2 ;;
+      *)         brief="$1"; shift ;;
+    esac
+  done
+  [[ -z "$brief" && -z "$youtube" ]] && { err "Usage: tom-shortcut advise \"Angabe\" [--youtube URL]"; return 2; }
+
+  if [[ -n "${CLAUDECODE:-}" && -z "${TOM_SHORTCUT_FORCE:-}" ]]; then
+    err "Du bist in einer Claude-Session — Analyse dort direkt erfragen."
+    return 2
+  fi
+  command -v claude >/dev/null 2>&1 || { err "claude CLI fehlt"; return 1; }
+  ensure_dirs
+  mkdir -p "$OUT/advice"
+
+  local slug ts outfile installed drafts
+  slug=$(printf '%s' "${brief:-youtube}" | tr '[:upper:] ' '[:lower:]-' | tr -cd 'a-z0-9-' | cut -c1-40)
+  ts=$(date +%Y%m%d-%H%M%S)
+  outfile="$OUT/advice/${ts}-${slug}.md"
+  installed=$(/usr/bin/shortcuts list 2>/dev/null | head -60 | tr '\n' ';')
+  drafts=$(ls "$OUT/drafts" 2>/dev/null | tr '\n' ';')
+
+  local prompt="Du bist Experten-Berater fuer Apple-Automatisierung (Kurzbefehle, Python, AppleScript, Pages/Numbers/Excel). Analysiere folgende Anforderung von Maxim, BEVOR etwas gebaut wird. Anforderung: ${brief}."
+  [[ -n "$youtube" ]] && prompt+=" Zusaetzliche Anforderungsquelle ist dieses YouTube-Video: ${youtube} — hole per WebFetch/WebSearch Titel, Beschreibung und (falls auffindbar) Transkript-Inhalte und extrahiere daraus die konkrete Anforderung."
+  prompt+=" Nutze WebSearch, um AEHNLICHE EXISTIERENDE Projekte zu finden (RoutineHub, GitHub, r/shortcuts, MacStories, ShareShortcuts) — Ziel: anpassen statt neu entwickeln. Bereits installierte Kurzbefehle von Maxim (Reuse-Kandidaten fuer 'tom-shortcut fix'): ${installed}. Vorhandene Drafts in der Ablage: ${drafts}. Lokale Helper-Bibliothek: text_tools.py (Python, Text-Transformationen), safari_current_page (AppleScript), battery_info (Swift). Antworte auf Deutsch als Markdown mit GENAU diesen Sektionen: ## 1. Empfohlenes Werkzeug (Kurzbefehl / Python-Helper / AppleScript / Pages / Numbers / Kombination — mit Begruendung), ## 2. Aehnliche existierende Projekte (mit Links, je 1 Satz was uebernehmbar ist), ## 3. Lokale Wiederverwendung (welcher installierte Kurzbefehl/Draft als Basis taugt, oder 'keiner'), ## 4. Optimierter Bau-Brief (fertig formulierter Text fuer tom-shortcut build bzw. fix — konkret, mit Action-Hinweisen), ## 5. Einschaetzung (Erfolgswahrscheinlichkeit als Kurzbefehl in %, Aufwand, Risiken). Arbeite autonom, keine Rueckfragen."
+
+  info "== Analyse startet (Web-Suche, ~1-2 Min) =="
+  [[ -n "$brief"   ]] && info "Angabe:  $brief"
+  [[ -n "$youtube" ]] && info "YouTube: $youtube"
+  info "Modell:  ${MODEL:-CLI-Default}"
+
+  local model_args=()
+  [[ -n "$MODEL" ]] && model_args=(--model "$MODEL")
+  local rc=0
+  ( cd "$OUT" && printf '%s' "$prompt" | claude --print \
+      "${model_args[@]}" \
+      --allowedTools "WebSearch,WebFetch,Read" \
+    ) >"$outfile" 2>"$OUT/.last-advise-err.log" || rc=$?
+
+  if [[ "$rc" -ne 0 || ! -s "$outfile" ]]; then
+    err "Analyse fehlgeschlagen (exit $rc) — $OUT/.last-advise-err.log"
+    tail -5 "$OUT/.last-advise-err.log" >&2 || true
+    rm -f "$outfile"
+    return 1
+  fi
+  info ""
+  cat "$outfile"
+  info ""
+  info "Gespeichert: $outfile"
+}
+
 # ---------------------------------------------------------------- export
 # Installierten Kurzbefehl als unsignierte XML nach drafts/ holen.
 # Duenner Wrapper um bin/eivs-shortcut-template-export (shortcuts share + SQLite-Fallback).
@@ -549,7 +610,7 @@ cmd_ui() {
 
 # ---------------------------------------------------------------- dispatch
 usage() {
-  sed -n '3,30p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,31p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 main() {
@@ -557,6 +618,7 @@ main() {
   shift || true
   case "$cmd" in
     setup)   cmd_setup "$@" ;;
+    advise)  cmd_advise "$@" ;;
     build)   cmd_build "$@" ;;
     remix)   cmd_remix "$@" ;;
     export)  cmd_export "$@" ;;

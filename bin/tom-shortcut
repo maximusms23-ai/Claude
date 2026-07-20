@@ -14,6 +14,8 @@
 #   tom-shortcut remix <name|xml> "Aenderung" [--name N]   # bestehenden Draft aendern
 #   tom-shortcut export "<Installierter Name>"  # installierten Kurzbefehl -> drafts/*.xml
 #   tom-shortcut fix "<Name>" "Vorgabe" [--name Neu]  # installierten korrigieren (export+remix)
+#   tom-shortcut salvage                        # unterbrochenen Build aus validem Draft retten (0 Token)
+#   tom-shortcut resume [draft]                 # unfertigen Draft nach Limit-Reset fertigstellen
 #   tom-shortcut ui [port]                      # lokales Web-Tool (Forge-UI, Default-Port 7461)
 #   Engine-Wahl ueberall: --engine claude|codex|codex-oss (Env TOM_SHORTCUT_ENGINE)
 #   tom-shortcut tidy                           # Wurzel-Artefakte nach signed/ + archive/
@@ -84,6 +86,50 @@ export_build_env() {
 sync_reference() {
   mkdir -p "$OUT/reference"
   cp -f "$FORGE_ROOT/reference/script-actions.md" "$OUT/reference/script-actions.md" 2>/dev/null || true
+}
+
+# ---- Limit-Resilienz (Anlass: 2026-07-20, Build durch Nutzungslimit unterbrochen) ----
+PLUGIN_BIN="$HOME/.claude/plugins/shortcuts-playground-plugin/claude/bin"
+
+# Nutzungslimit/Rate-Limit im Build-Log erkennen; gibt die Meldungszeile aus.
+detect_limit() {
+  grep -m1 -iE "hit your (session|usage|weekly) limit|usage limit reached|rate.?limit|resets [0-9]" "$BUILD_LOG" 2>/dev/null || true
+}
+
+# Draft-Rettung OHNE weiteren Token-Verbrauch: neuesten (ggf. seit Stamp neuen)
+# Draft validieren + direkt signieren. Rettet Builds, die nach dem XML-Schreiben
+# unterbrochen wurden (Limit, Abbruch, Absturz).
+do_salvage() {
+  local stamp="${1:-}"
+  local draft=""
+  if [[ -n "$stamp" && -f "$stamp" ]]; then
+    draft=$(find "$OUT/drafts" -name '*.xml' -newer "$stamp" 2>/dev/null | while IFS= read -r f; do stat -f "%m %N" "$f"; done | sort -rn | head -1 | cut -d' ' -f2-)
+  else
+    draft=$(ls -t "$OUT/drafts"/*.xml 2>/dev/null | head -1)
+  fi
+  [[ -z "$draft" ]] && return 1
+  if ! "$PLUGIN_BIN/validate-shortcut" "$draft" >/dev/null 2>&1; then
+    err "Draft vorhanden, aber (noch) nicht valide: $(basename "$draft")"
+    err "Nach Limit-Reset fertigstellen: tom-shortcut resume"
+    return 1
+  fi
+  local name
+  name=$(basename "$draft" .xml)
+  "$PLUGIN_BIN/sign-shortcut" "$draft" --name "$name" >/dev/null 2>&1 || return 1
+  cmd_tidy >/dev/null
+  info "✓ Aus Draft gerettet (0 Token): $OUT/signed/${name}.shortcut"
+  return 0
+}
+
+# Klare Abschluss-Meldung bei Limit statt kryptischem Fehler.
+report_limit() {
+  local limit_line="$1"
+  err "CLAUDE-NUTZUNGSLIMIT ERREICHT — Build unterbrochen."
+  err "Meldung: ${limit_line}"
+  err "Optionen:"
+  err "  1. Warten bis zum genannten Reset, dann erneut (oder: tom-shortcut resume)"
+  err "  2. Andere Engine: tom-shortcut ... --engine codex  (einmalig: codex login)"
+  err "  3. Liegt schon ein valider Draft vor: tom-shortcut salvage  (0 Token)"
 }
 
 # ---------------------------------------------------------------- helpers deploy
@@ -372,18 +418,34 @@ cmd_build() {
   local new_files
   new_files=$(find "$OUT/signed" -type f -name '*.shortcut' -newer "$stamp" 2>/dev/null || true)
 
-  if [[ -z "$new_files" && "$use_fallback" -eq 0 ]]; then
+  # Limit-Check VOR dem Fallback-Versuch: bei erreichtem Limit wuerde der
+  # zweite LLM-Lauf nur erneut scheitern und Kontingent verbrennen.
+  local limit_line=""
+  if [[ -z "$new_files" ]]; then
+    limit_line=$(detect_limit)
+  fi
+
+  if [[ -z "$new_files" && -z "$limit_line" && "$use_fallback" -eq 0 ]]; then
     info "Kein Artefakt ueber Slash-Command — automatischer Fallback-Prompt..."
     prompt=$(make_prompt fallback "$brief" "$name")
     exit_code=0
     run_claude_build "$prompt" append || exit_code=$?
     cmd_tidy >/dev/null
     new_files=$(find "$OUT/signed" -type f -name '*.shortcut' -newer "$stamp" 2>/dev/null || true)
+    [[ -z "$new_files" ]] && limit_line=$(detect_limit)
+  fi
+
+  # Letzte Chance ohne Token: unterbrochenen Build aus validem Draft retten
+  if [[ -z "$new_files" ]]; then
+    if do_salvage "$stamp"; then
+      new_files=$(find "$OUT/signed" -type f -name '*.shortcut' -newer "$stamp" 2>/dev/null || true)
+    fi
   fi
 
   rm -f "$stamp"
 
   if [[ -n "$new_files" ]]; then
+    [[ -n "$limit_line" ]] && info "(Hinweis: Limit erreicht — Artefakt stammt aus der Draft-Rettung)"
     info ""
     info "== Fertig: signierter Kurzbefehl =="
     while IFS= read -r f; do
@@ -395,6 +457,10 @@ cmd_build() {
     return 0
   fi
 
+  if [[ -n "$limit_line" ]]; then
+    report_limit "$limit_line"
+    return 1
+  fi
   err "Kein signierter Kurzbefehl entstanden (claude exit: $exit_code)."
   err "Diagnose — letzte Log-Zeilen ($BUILD_LOG):"
   tail -15 "$BUILD_LOG" >&2 || true
@@ -472,22 +538,38 @@ cmd_remix() {
   local new_files
   new_files=$(find "$OUT/signed" -type f -name '*.shortcut' -newer "$stamp" 2>/dev/null || true)
 
-  if [[ -z "$new_files" && "$use_fallback" -eq 0 ]]; then
+  local limit_line=""
+  [[ -z "$new_files" ]] && limit_line=$(detect_limit)
+
+  if [[ -z "$new_files" && -z "$limit_line" && "$use_fallback" -eq 0 ]]; then
     info "Kein Artefakt ueber Slash-Command — automatischer Fallback-Prompt..."
     prompt="Nutze die Skill shortcuts-playground (shortcuts-playground:shortcuts-playground), um den bestehenden Kurzbefehl-Entwurf ${xml} zu remixen: ${change}.${extra} Schreibe den neuen XML-Entwurf unter neuem Namen nach ${OUT}/drafts/, validiere per Craig Loop und signiere mit sign-shortcut. Original nicht ueberschreiben. $(build_autonomy_note)"
     exit_code=0
     run_claude_build "$prompt" append || exit_code=$?
     cmd_tidy >/dev/null
     new_files=$(find "$OUT/signed" -type f -name '*.shortcut' -newer "$stamp" 2>/dev/null || true)
+    [[ -z "$new_files" ]] && limit_line=$(detect_limit)
+  fi
+
+  # Draft-Rettung: nur Drafts, die NEUER als der Start sind (nie die Quelle signieren)
+  if [[ -z "$new_files" ]]; then
+    if do_salvage "$stamp"; then
+      new_files=$(find "$OUT/signed" -type f -name '*.shortcut' -newer "$stamp" 2>/dev/null || true)
+    fi
   fi
 
   rm -f "$stamp"
 
   if [[ -n "$new_files" ]]; then
+    [[ -n "$limit_line" ]] && info "(Hinweis: Limit erreicht — Artefakt stammt aus der Draft-Rettung)"
     info ""
     info "== Fertig: remixter Kurzbefehl =="
     while IFS= read -r f; do info "  $f ($(du -h "$f" | cut -f1 | tr -d ' '))"; done <<< "$new_files"
     return 0
+  fi
+  if [[ -n "$limit_line" ]]; then
+    report_limit "$limit_line"
+    return 1
   fi
   err "Kein signierter Kurzbefehl entstanden (claude exit: $exit_code). Log: $BUILD_LOG"
   tail -12 "$BUILD_LOG" >&2 || true
@@ -542,6 +624,13 @@ cmd_advise() {
       --allowedTools "WebSearch,WebFetch,Read" \
     ) >"$outfile" 2>"$OUT/.last-advise-err.log" || rc=$?
 
+  local limit_line
+  limit_line=$(grep -m1 -iE "hit your (session|usage|weekly) limit|usage limit reached|resets [0-9]" "$outfile" 2>/dev/null || true)
+  if [[ -n "$limit_line" ]]; then
+    rm -f "$outfile"
+    report_limit "$limit_line"
+    return 1
+  fi
   if [[ "$rc" -ne 0 || ! -s "$outfile" ]]; then
     err "Analyse fehlgeschlagen (exit $rc) — $OUT/.last-advise-err.log"
     tail -5 "$OUT/.last-advise-err.log" >&2 || true
@@ -598,6 +687,28 @@ cmd_fix() {
   cmd_remix "$xml" "$change" "${passthru[@]}"
 }
 
+# ---------------------------------------------------------------- salvage / resume
+# salvage: neuesten validen Draft ohne LLM signieren (nach Limit/Abbruch).
+cmd_salvage() {
+  ensure_dirs
+  export_build_env
+  if do_salvage ""; then return 0; fi
+  err "Nichts zu retten (kein valider Draft in $OUT/drafts)."
+  return 1
+}
+
+# resume: unfertigen Draft per LLM fertigstellen (nach Limit-Reset).
+cmd_resume() {
+  local src="${1:-}"
+  if [[ -z "$src" ]]; then
+    src=$(ls -t "$OUT/drafts"/*.xml 2>/dev/null | head -1)
+    [[ -z "$src" ]] && { err "Kein Draft in $OUT/drafts"; return 1; }
+    info "Setze neuesten Draft fort: $(basename "$src")"
+  fi
+  shift 2>/dev/null || true
+  cmd_remix "$src" "Pruefe diesen Entwurf, behebe alle Validierungsfehler und stelle ihn fertig — der urspruengliche Zweck des Kurzbefehls bleibt unveraendert" "$@"
+}
+
 # ---------------------------------------------------------------- ui
 cmd_ui() {
   local port="${1:-7461}"
@@ -610,7 +721,7 @@ cmd_ui() {
 
 # ---------------------------------------------------------------- dispatch
 usage() {
-  sed -n '3,31p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,33p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 main() {
@@ -623,6 +734,8 @@ main() {
     remix)   cmd_remix "$@" ;;
     export)  cmd_export "$@" ;;
     fix)     cmd_fix "$@" ;;
+    salvage) cmd_salvage "$@" ;;
+    resume)  cmd_resume "$@" ;;
     ui)      cmd_ui "$@" ;;
     tidy)    cmd_tidy "$@" ;;
     list)    cmd_list "$@" ;;

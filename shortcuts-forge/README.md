@@ -177,10 +177,26 @@ cherri --import <datei|icloud-link>                     # bestehenden Shortcut �
 
 Siehe auch `bin/cherri-sign-import-all.sh`. Ein `tom-shortcut build --engine cherri` ist bewusst **nicht** implementiert (Deferred, siehe `61-01-PLAN.md`).
 
+## Limit-Resilienz (seit 2026-07-20)
+
+Wenn das Claude-Nutzungslimit **mitten im Build** zuschlägt, gilt automatisch:
+
+1. **Kein Doppel-Verbrauch:** Der Fallback-Zweitversuch wird bei erkanntem Limit übersprungen
+2. **Draft-Rettung (0 Token):** Liegt schon ein valider XML-Entwurf vor, wird er direkt signiert — Build gerettet
+3. **Klare Meldung** statt kryptischem Fehler: Reset-Zeit + Optionen (warten / `--engine codex` / `salvage`)
+
+```bash
+tom-shortcut salvage          # neuesten validen Draft ohne LLM signieren
+tom-shortcut resume [draft]   # unfertigen Draft nach Limit-Reset fertigstellen lassen
+```
+
+Hinweis: `salvage` validiert vor dem Signieren — halbfertige (invalide) Drafts werden nicht blind signiert, sondern auf `resume` verwiesen. Exportierte App-Kurzbefehle fallen durch die strenge Validator-Prüfung (ungenutzte Input-Klassen) — die gehen über `fix`, nicht über `salvage`.
+
 ## Troubleshooting
 
 | Problem | Lösung |
 |---|---|
+| Build bricht mit „hit your session limit" ab | Passiert automatisch: Rettung + klare Meldung (s. o.). Danach: warten bis Reset oder `--engine codex` |
 | Run-Shell-Script-Shortcut tut nichts | Kurzbefehle → Einstellungen → Erweitert → „Ausführen von Skripten erlauben" |
 | AppleScript-Helper: Fehler -1743 | macOS-Automation-Consent bestätigen (Systemeinstellungen → Datenschutz → Automation) |
 | `build` findet keinen signierten Output | `--fallback-prompt` probieren; `drafts/` prüfen (XML da, aber Sign gescheitert?); `tom-shortcut setup` (Doctor) |

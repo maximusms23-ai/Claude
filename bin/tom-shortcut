@@ -10,6 +10,8 @@
 # Usage:
 #   tom-shortcut setup                          # Ablage + Symlink + Env-Vars + Doctor (idempotent)
 #   tom-shortcut build "Beschreibung" [--name N] [--open] [--fallback-prompt]
+#   tom-shortcut remix <name|xml> "Aenderung" [--name N]   # bestehenden Draft aendern
+#   tom-shortcut ui [port]                      # lokales Web-Tool (Forge-UI, Default-Port 7461)
 #   tom-shortcut tidy                           # Wurzel-Artefakte nach signed/ + archive/
 #   tom-shortcut list                           # Installiert vs. Ablage
 #   tom-shortcut run <name>                     # shortcuts run
@@ -358,9 +360,105 @@ cmd_build() {
   return 1
 }
 
+# ---------------------------------------------------------------- remix
+cmd_remix() {
+  local src="" change="" name="" use_fallback=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --name)            name="${2:?--name braucht einen Wert}"; shift 2 ;;
+      --fallback-prompt) use_fallback=1; shift ;;
+      -*)                err "Unbekanntes Flag: $1"; return 2 ;;
+      *)
+        if [[ -z "$src" ]]; then src="$1"; else change="$1"; fi
+        shift ;;
+    esac
+  done
+  [[ -z "$src" || -z "$change" ]] && { err "Usage: tom-shortcut remix <name|drafts-xml> \"Aenderungswunsch\""; return 2; }
+
+  # Quelle aufloesen: Pfad direkt, sonst drafts/<name>.xml
+  local xml=""
+  if [[ -f "$src" ]]; then
+    xml="$src"
+  elif [[ -f "$OUT/drafts/$src.xml" ]]; then
+    xml="$OUT/drafts/$src.xml"
+  elif [[ -f "$OUT/drafts/$src" ]]; then
+    xml="$OUT/drafts/$src"
+  else
+    err "Draft nicht gefunden: '$src'. Vorhanden in drafts/:"
+    ls "$OUT/drafts" 2>/dev/null | sed 's/^/  /' >&2 || true
+    return 1
+  fi
+  case "$xml" in *.shortcut) err "Signierte .shortcut-Dateien sind verschluesselt — bitte den Draft aus drafts/ angeben"; return 2 ;; esac
+
+  if [[ -n "${CLAUDECODE:-}" && -z "${TOM_SHORTCUT_FORCE:-}" ]]; then
+    err "Du bist in einer Claude-Session — nutze dort /shortcuts-playground:remix."
+    err "Override (bewusst): TOM_SHORTCUT_FORCE=1 tom-shortcut remix ..."
+    return 2
+  fi
+  command -v claude >/dev/null 2>&1 || { err "claude CLI fehlt"; return 1; }
+  ensure_dirs
+  sync_reference
+  export_build_env
+
+  local stamp
+  stamp=$(mktemp "${TMPDIR:-/tmp}/tom-shortcut-stamp.XXXXXX")
+
+  local extra=""
+  [[ -n "$name" ]] && extra=" Der neue Kurzbefehl soll '${name}' heissen."
+  local prompt
+  if [[ "$use_fallback" -eq 1 ]]; then
+    prompt="Nutze die Skill shortcuts-playground (shortcuts-playground:shortcuts-playground), um den bestehenden Kurzbefehl-Entwurf ${xml} zu remixen: ${change}.${extra} Schreibe den neuen XML-Entwurf unter neuem Namen nach ${OUT}/drafts/, validiere per Craig Loop und signiere mit sign-shortcut. Original nicht ueberschreiben. $(build_autonomy_note)"
+  else
+    prompt="/shortcuts-playground:remix ${xml} ${change}.${extra} $(build_autonomy_note)"
+  fi
+
+  info "== Remix startet (headless, kann einige Minuten dauern) =="
+  info "Quelle:    $xml"
+  info "Aenderung: $change"
+  info "Log:       $BUILD_LOG"
+
+  local exit_code=0
+  run_claude_build "$prompt" fresh || exit_code=$?
+  cmd_tidy >/dev/null
+
+  local new_files
+  new_files=$(find "$OUT/signed" -type f -name '*.shortcut' -newer "$stamp" 2>/dev/null || true)
+
+  if [[ -z "$new_files" && "$use_fallback" -eq 0 ]]; then
+    info "Kein Artefakt ueber Slash-Command — automatischer Fallback-Prompt..."
+    prompt="Nutze die Skill shortcuts-playground (shortcuts-playground:shortcuts-playground), um den bestehenden Kurzbefehl-Entwurf ${xml} zu remixen: ${change}.${extra} Schreibe den neuen XML-Entwurf unter neuem Namen nach ${OUT}/drafts/, validiere per Craig Loop und signiere mit sign-shortcut. Original nicht ueberschreiben. $(build_autonomy_note)"
+    exit_code=0
+    run_claude_build "$prompt" append || exit_code=$?
+    cmd_tidy >/dev/null
+    new_files=$(find "$OUT/signed" -type f -name '*.shortcut' -newer "$stamp" 2>/dev/null || true)
+  fi
+
+  rm -f "$stamp"
+
+  if [[ -n "$new_files" ]]; then
+    info ""
+    info "== Fertig: remixter Kurzbefehl =="
+    while IFS= read -r f; do info "  $f ($(du -h "$f" | cut -f1 | tr -d ' '))"; done <<< "$new_files"
+    return 0
+  fi
+  err "Kein signierter Kurzbefehl entstanden (claude exit: $exit_code). Log: $BUILD_LOG"
+  tail -12 "$BUILD_LOG" >&2 || true
+  return 1
+}
+
+# ---------------------------------------------------------------- ui
+cmd_ui() {
+  local port="${1:-7461}"
+  local py
+  py=$(find_playground_python || command -v python3)
+  info "Forge-UI startet auf http://127.0.0.1:${port} (Beenden: Ctrl+C)"
+  ( sleep 1 && open "http://127.0.0.1:${port}" ) &
+  exec "$py" "$FORGE_ROOT/ui/server.py" --port "$port"
+}
+
 # ---------------------------------------------------------------- dispatch
 usage() {
-  sed -n '3,25p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,27p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 main() {
@@ -369,6 +467,8 @@ main() {
   case "$cmd" in
     setup)   cmd_setup "$@" ;;
     build)   cmd_build "$@" ;;
+    remix)   cmd_remix "$@" ;;
+    ui)      cmd_ui "$@" ;;
     tidy)    cmd_tidy "$@" ;;
     list)    cmd_list "$@" ;;
     run)     cmd_run "$@" ;;

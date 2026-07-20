@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge-UI — Kurzbefehle bauen</title>
+<style>
+  :root {
+    --bg:#f6f7f9; --card:#fff; --text:#1a1d21; --muted:#6b7280; --accent:#7c3aed;
+    --ok:#16a34a; --err:#dc2626; --warn:#d97706; --line:#e5e7eb; --chip:#f3f0ff; --code:#f1f3f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#101216; --card:#1a1e24; --text:#e8eaed; --muted:#9aa2ad; --accent:#a78bfa;
+      --ok:#4ade80; --err:#f87171; --warn:#fbbf24; --line:#2a3038; --chip:#2a2438; --code:#22262d;
+    }
+  }
+  *{box-sizing:border-box;margin:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.55;max-width:1060px;margin:0 auto;padding:28px 20px 60px}
+  h1{font-size:1.7rem;letter-spacing:-0.02em}
+  .sub{color:var(--muted);margin:4px 0 24px}
+  h2{font-size:1.05rem;margin:0 0 12px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:760px){.cols{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+  label{display:block;font-size:0.82rem;color:var(--muted);margin:10px 0 4px}
+  textarea,input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);
+    border-radius:9px;padding:10px 12px;font-size:0.95rem;font-family:inherit}
+  textarea{min-height:92px;resize:vertical}
+  textarea:focus,input:focus,select:focus{outline:2px solid var(--accent);border-color:transparent}
+  button{background:var(--accent);color:#fff;border:none;border-radius:9px;padding:10px 18px;
+    font-size:0.95rem;font-weight:600;cursor:pointer;margin-top:14px}
+  button:disabled{opacity:0.45;cursor:not-allowed}
+  button.small{padding:5px 12px;font-size:0.8rem;margin:0}
+  button.ghost{background:var(--chip);color:var(--accent)}
+  .status{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--muted)}
+  .dot.running{background:var(--warn);animation:pulse 1s infinite}
+  .dot.success{background:var(--ok)} .dot.error{background:var(--err)}
+  @keyframes pulse{50%{opacity:0.35}}
+  pre{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:0.78rem;background:var(--code);
+    border-radius:9px;padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+  table{width:100%;border-collapse:collapse;font-size:0.9rem}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+  th{color:var(--accent);font-size:0.76rem;text-transform:uppercase;letter-spacing:0.05em}
+  tr:last-child td{border-bottom:none}
+  .muted{color:var(--muted);font-size:0.82rem}
+  .badge{font-size:0.72rem;padding:2px 8px;border-radius:999px;background:var(--chip);color:var(--accent)}
+  .badge.on{background:color-mix(in srgb, var(--ok) 18%, transparent);color:var(--ok)}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card);
+    border:1px solid var(--line);border-radius:10px;padding:10px 18px;font-size:0.9rem;
+    box-shadow:0 6px 24px rgba(0,0,0,0.18);display:none;z-index:9}
+  .hint{font-size:0.78rem;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+
+<h1>⚒️ Forge-UI</h1>
+<div class="sub">Anforderung eintippen → signierter Apple-Kurzbefehl. Änderungen per Remix. <span class="badge">Phase 61</span></div>
+
+<div class="cols">
+  <div class="card">
+    <h2>🆕 Kurzbefehl bauen</h2>
+    <label for="brief">Anforderung (was soll der Kurzbefehl tun?)</label>
+    <textarea id="brief" placeholder="z. B.: Frage mich nach einem Text, wandle ihn per Helper text_tools.py in einen Slug um und kopiere das Ergebnis in die Zwischenablage"></textarea>
+    <label for="bname">Name (optional)</label>
+    <input id="bname" placeholder="z. B. Slug-Maker">
+    <button id="btnBuild" onclick="build()">⚒️ Bauen &amp; signieren</button>
+    <div class="hint">Dauer ~2 Min. Helper-Aufrufe: <code>$HOME/Documents/Tom-Shortcuts/helpers/…</code></div>
+  </div>
+
+  <div class="card">
+    <h2>🔧 Bestehenden ändern (Remix)</h2>
+    <label for="draft">Draft auswählen (unsignierte XML aus drafts/)</label>
+    <select id="draft"></select>
+    <label for="change">Änderungswunsch</label>
+    <textarea id="change" placeholder="z. B.: Ändere den Benachrichtigungstext auf 'Hallo Maxim' und füge davor einen Bestätigungs-Dialog ein"></textarea>
+    <label for="rname">Neuer Name (optional — Original bleibt erhalten)</label>
+    <input id="rname" placeholder="z. B. Hallo Tom v2">
+    <button id="btnRemix" onclick="remix()">🔧 Änderung bauen</button>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <div class="status">
+    <div id="dot" class="dot"></div>
+    <b id="jobLabel">Bereit</b>
+    <span id="jobTime" class="muted"></span>
+  </div>
+  <pre id="log">Noch kein Job gelaufen. Log erscheint hier live.</pre>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h2>📦 Fertige Kurzbefehle <span class="muted" id="clock"></span>
+    <button class="small ghost" style="float:right" onclick="post('/api/reveal',{})">Im Finder zeigen</button></h2>
+  <table id="signedTbl">
+    <thead><tr><th>Name</th><th>Stand</th><th>Größe</th><th>Status</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <div class="hint">„Importieren" öffnet den Apple-Dialog (dein Klick nötig — Apples Sicherheitsgrenze). Danach „Ausführen".</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let busy = false;
+
+async function post(url, body) {
+  const r = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+  const j = await r.json().catch(()=>({}));
+  if (!r.ok) toast(j.error || "Fehler");
+  return r.ok ? j : null;
+}
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.style.display = "block";
+  clearTimeout(t._h); t._h = setTimeout(()=> t.style.display="none", 3500);
+}
+async function build() {
+  const brief = $("brief").value.trim();
+  if (!brief) return toast("Bitte Anforderung eingeben");
+  if (await post("/api/build", {brief, name: $("bname").value})) { toast("Build gestartet — Log unten"); $("brief").value=""; }
+}
+async function remix() {
+  const draft = $("draft").value, change = $("change").value.trim();
+  if (!draft) return toast("Kein Draft vorhanden — erst einen Kurzbefehl bauen");
+  if (!change) return toast("Bitte Änderungswunsch eingeben");
+  if (await post("/api/remix", {draft, change, name: $("rname").value})) { toast("Remix gestartet"); $("change").value=""; }
+}
+async function doImport(file) { if (await post("/api/import", {file})) toast("Import-Dialog geöffnet — bitte bestätigen"); }
+async function doRun(name) {
+  toast("Führe aus: " + name);
+  const j = await post("/api/run", {name});
+  if (j) toast(j.ok ? "✓ Ausgeführt: " + name : "Fehler: " + (j.stderr || "unbekannt"));
+}
+
+function fmtDur(job) {
+  if (!job.started) return "";
+  const end = job.finished || Date.now()/1000;
+  const s = Math.round(end - job.started);
+  return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")} Min`;
+}
+
+async function poll() {
+  try {
+    const s = await (await fetch("/api/state")).json();
+    const job = s.job;
+    busy = job.status === "running";
+    $("dot").className = "dot " + (job.status === "idle" ? "" : job.status);
+    $("jobLabel").textContent = job.status === "idle" ? "Bereit"
+      : (job.status === "running" ? "Läuft: " : job.status === "success" ? "Fertig: " : "Fehler: ") + (job.label || job.kind);
+    $("jobTime").textContent = fmtDur(job);
+    if (job.log) { const l = $("log"); const stick = l.scrollTop + l.clientHeight >= l.scrollHeight - 8;
+      l.textContent = job.log; if (stick) l.scrollTop = l.scrollHeight; }
+    $("btnBuild").disabled = busy; $("btnRemix").disabled = busy;
+
+    const sel = $("draft"), cur = sel.value;
+    sel.innerHTML = s.drafts.map(d => `<option value="${d.name}">${d.stem}  (${d.mtime})</option>`).join("");
+    if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+
+    $("clock").textContent = "· Stand " + s.now;
+    document.querySelector("#signedTbl tbody").innerHTML = s.signed.map(f => `
+      <tr><td><b>${f.stem}</b></td><td class="muted">${f.mtime}</td><td class="muted">${f.size_kb} KB</td>
+      <td>${f.installed ? '<span class="badge on">installiert</span>' : '<span class="badge">nur Ablage</span>'}</td>
+      <td style="white-space:nowrap">
+        ${f.installed ? `<button class="small" onclick="doRun('${f.stem.replace(/'/g,"\\'")}')">▶︎ Ausführen</button>`
+                      : `<button class="small ghost" onclick="doImport('${f.name.replace(/'/g,"\\'")}')">⬇ Importieren</button>`}
+      </td></tr>`).join("") || '<tr><td colspan="5" class="muted">Noch keine — baue oben den ersten!</td></tr>';
+  } catch (e) { $("jobLabel").textContent = "Server nicht erreichbar — tom-shortcut ui neu starten"; }
+}
+poll(); setInterval(poll, 2000);
+</script>
+</body>
+</html>

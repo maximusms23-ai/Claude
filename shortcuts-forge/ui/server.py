@@ -1,0 +1,204 @@
+#!/usr/bin/env python3
+"""
+server.py — Forge-UI: lokales Web-Tool fuer die AI→Apple-Shortcuts-Pipeline
+
+Zweck:
+    Browser-Oberflaeche fuer tom-shortcut: Anforderung eintippen → Kurzbefehl
+    wird gebaut (build) oder ein bestehender Draft geaendert (remix).
+    Import/Run direkt aus der Liste. Ein Job zur Zeit, Live-Log per Polling.
+
+Start:
+    tom-shortcut ui [port]          # Default 7461, oeffnet Browser
+    python3 server.py --port 7461
+
+Sicherheit:
+    Bindet NUR an 127.0.0.1 (kein LAN-Zugriff). Import/Run validieren gegen
+    die Ablage. Der Build-Subprozess laeuft ohne CLAUDECODE-Env — die UI ist
+    ein eigener Kontext, kein Claude-in-Claude (bewusster Guard-Bypass).
+
+Dependencies: Python 3 stdlib only.
+"""
+
+import argparse
+import json
+import os
+import subprocess
+import threading
+import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+FORGE_ROOT = Path(__file__).resolve().parent.parent
+UI_DIR = Path(__file__).resolve().parent
+OUT = Path.home() / "Documents" / "Tom-Shortcuts"
+TOM_SHORTCUT = Path("/Users/maxim/Claude/bin/tom-shortcut")
+
+# ------------------------------------------------------------------ Job-State
+_lock = threading.Lock()
+_job = {
+    "id": 0, "kind": None, "label": "", "status": "idle",   # idle|running|success|error
+    "started": None, "finished": None, "log": "",
+}
+
+
+def _run_job(kind: str, args: list, label: str, job_id: int):
+    env = dict(os.environ)
+    env.pop("CLAUDECODE", None)  # UI = eigener Kontext, siehe Docstring
+    env["TOM_SHORTCUT_FORCE"] = "1"
+    proc = subprocess.Popen(
+        [str(TOM_SHORTCUT), kind] + args,
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env,
+    )
+    log_lines = []
+    for line in proc.stdout:
+        log_lines.append(line)
+        with _lock:
+            if _job["id"] == job_id:
+                _job["log"] = "".join(log_lines[-80:])
+    proc.wait()
+    with _lock:
+        if _job["id"] == job_id:
+            _job["status"] = "success" if proc.returncode == 0 else "error"
+            _job["finished"] = time.time()
+
+
+def start_job(kind: str, args: list, label: str) -> bool:
+    with _lock:
+        if _job["status"] == "running":
+            return False
+        _job.update({
+            "id": _job["id"] + 1, "kind": kind, "label": label,
+            "status": "running", "started": time.time(), "finished": None, "log": "",
+        })
+        job_id = _job["id"]
+    threading.Thread(target=_run_job, args=(kind, args, label, job_id), daemon=True).start()
+    return True
+
+
+# ------------------------------------------------------------------ Ablage
+def list_dir(sub: str, suffix: str):
+    d = OUT / sub
+    if not d.is_dir():
+        return []
+    items = []
+    for f in sorted(d.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True):
+        if f.is_file() and f.name.endswith(suffix):
+            items.append({
+                "name": f.name, "stem": f.name[: -len(suffix)],
+                "mtime": time.strftime("%d.%m. %H:%M", time.localtime(f.stat().st_mtime)),
+                "size_kb": round(f.stat().st_size / 1024),
+            })
+    return items
+
+
+def installed_shortcuts():
+    try:
+        out = subprocess.run(["/usr/bin/shortcuts", "list"], capture_output=True,
+                             text=True, timeout=15).stdout
+        return set(l.strip() for l in out.splitlines() if l.strip())
+    except Exception:
+        return set()
+
+
+def state_payload():
+    installed = installed_shortcuts()
+    signed = list_dir("signed", ".shortcut")
+    for s in signed:
+        s["installed"] = s["stem"] in installed
+    with _lock:
+        job = dict(_job)
+    return {"job": job, "signed": signed, "drafts": list_dir("drafts", ".xml"),
+            "now": time.strftime("%H:%M:%S")}
+
+
+# ------------------------------------------------------------------ HTTP
+class Handler(BaseHTTPRequestHandler):
+    def _send(self, code, body, ctype="application/json; charset=utf-8"):
+        data = body if isinstance(body, bytes) else json.dumps(body, ensure_ascii=False).encode()
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def _body(self):
+        length = int(self.headers.get("Content-Length", 0) or 0)
+        try:
+            return json.loads(self.rfile.read(length).decode() or "{}")
+        except Exception:
+            return {}
+
+    def log_message(self, fmt, *args):  # ruhiges Terminal
+        pass
+
+    def do_GET(self):
+        if self.path in ("/", "/index.html"):
+            html = (UI_DIR / "index.html").read_bytes()
+            self._send(200, html, "text/html; charset=utf-8")
+        elif self.path == "/api/state":
+            self._send(200, state_payload())
+        else:
+            self._send(404, {"error": "not found"})
+
+    def do_POST(self):
+        p = self._body()
+        if self.path == "/api/build":
+            brief = (p.get("brief") or "").strip()
+            if not brief:
+                return self._send(400, {"error": "Beschreibung fehlt"})
+            args = [brief]
+            name = (p.get("name") or "").strip()
+            if name:
+                args += ["--name", name]
+            ok = start_job("build", args, name or brief[:60])
+            return self._send(200 if ok else 409,
+                              {"ok": ok} if ok else {"error": "Es laeuft bereits ein Job"})
+        if self.path == "/api/remix":
+            draft = (p.get("draft") or "").strip()
+            change = (p.get("change") or "").strip()
+            if not draft or not change:
+                return self._send(400, {"error": "Draft und Aenderungswunsch noetig"})
+            src = OUT / "drafts" / draft
+            if not src.is_file() or src.suffix != ".xml":
+                return self._send(400, {"error": "Draft nicht gefunden"})
+            args = [str(src), change]
+            name = (p.get("name") or "").strip()
+            if name:
+                args += ["--name", name]
+            ok = start_job("remix", args, f"Remix: {src.stem}")
+            return self._send(200 if ok else 409,
+                              {"ok": ok} if ok else {"error": "Es laeuft bereits ein Job"})
+        if self.path == "/api/import":
+            f = OUT / "signed" / (p.get("file") or "")
+            if not f.is_file() or f.suffix != ".shortcut" or f.parent != OUT / "signed":
+                return self._send(400, {"error": "Datei nicht gefunden"})
+            subprocess.Popen(["open", "-a", "Shortcuts", str(f)])
+            return self._send(200, {"ok": True})
+        if self.path == "/api/run":
+            name = (p.get("name") or "").strip()
+            if not name or name not in installed_shortcuts():
+                return self._send(400, {"error": "Nicht installiert — erst importieren"})
+            r = subprocess.run(["/usr/bin/shortcuts", "run", name],
+                               capture_output=True, text=True, timeout=120)
+            return self._send(200, {"ok": r.returncode == 0,
+                                    "stderr": r.stderr.strip()[:300]})
+        if self.path == "/api/reveal":
+            subprocess.Popen(["open", str(OUT)])
+            return self._send(200, {"ok": True})
+        self._send(404, {"error": "not found"})
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--port", type=int, default=7461)
+    args = ap.parse_args()
+    srv = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    print(f"Forge-UI: http://127.0.0.1:{args.port}  (Ablage: {OUT})")
+    try:
+        srv.serve_forever()
+    except KeyboardInterrupt:
+        print("\nForge-UI beendet.")
+
+
+if __name__ == "__main__":
+    main()

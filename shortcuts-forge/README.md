@@ -16,6 +16,7 @@ Die eigentliche Generierung macht das [shortcuts-playground Plugin](https://gith
 /Users/maxim/Claude/shortcuts-forge/            # Repo = Quelle (git, NICHT iCloud)
 ├── README.md                                    # diese Datei
 ├── reference/script-actions.md                  # Ground-Truth: runshellscript/runapplescript XML
+├── ui/                                          # Forge-UI: server.py (stdlib) + index.html
 └── helpers/
     ├── python/text_tools.py                     # stdin→Transform (upper|slug|stats|lines)
     ├── applescript/safari_current_page.applescript  # URL<TAB>Titel des Safari-Tabs
@@ -31,13 +32,26 @@ Die eigentliche Generierung macht das [shortcuts-playground Plugin](https://gith
 
 **Warum Symlink statt Kopie?** `~/Documents` ist iCloud-synced. iCloud „Speicher optimieren" kann Dateikopien zu dataless files evakuieren — ein Kurzbefehl, der offline einen evakuierten Helper aufruft, scheitert. Der Symlink (22 B) wird nie evakuiert; das Ziel liegt in `/Users/maxim/Claude` außerhalb iCloud. Caveat: auf iPhone/iPad (Files.app) erscheint der Symlink defekt — irrelevant, die Helper laufen Mac-only. Fallback bei Sync-Problemen: `tom-shortcut helpers deploy --copy` (rsync-Kopie).
 
-## Nutzung — drei Wege
+## Nutzung — vier Wege
 
 | Weg | Wann | Befehl |
 |---|---|---|
+| **Forge-UI (Browser)** | Komfortabel mit Formular, Live-Log, Remix, Import/Run-Buttons | `tom-shortcut ui` → http://127.0.0.1:7461 |
 | **Claude/Cursor-Session** | Beim Arbeiten in einer Session | `/shortcuts-playground:build <Beschreibung>` — danach ggf. `tom-shortcut tidy` |
 | **Terminal (headless)** | Schnell aus dem Terminal | `tom-shortcut build "Beschreibung" [--name N] [--open]` |
 | **Stream Deck** | Ein Knopfdruck | Button auf `bin/streamdeck/tom-shortcut-build.command` → Eingabe-Dialog |
+
+### Forge-UI
+
+`tom-shortcut ui` startet einen lokalen Server (`shortcuts-forge/ui/server.py`, Python stdlib, **nur 127.0.0.1**) und öffnet die Oberfläche:
+
+- **Bauen**: Anforderung + optionaler Name → Build läuft mit Live-Log
+- **Ändern (Remix)**: Draft aus `drafts/` wählen + Änderungswunsch → neuer Kurzbefehl unter neuem Namen (Original bleibt)
+- **Liste**: fertige `.shortcut` mit Status (installiert / nur Ablage) + Import-/Ausführen-Buttons
+- Ein Job zur Zeit; der Build-Subprozess läuft ohne `CLAUDECODE`-Env (UI ist eigener Kontext, bewusster Guard-Bypass)
+- Jobs leben mit dem Server: Server beenden bricht einen laufenden Build ab
+
+CLI-Pendant für Änderungen: `tom-shortcut remix <name|drafts-xml> "Änderungswunsch" [--name N]` (nutzt `/shortcuts-playground:remix`; Quelle muss unsignierte XML aus `drafts/` sein — signierte `.shortcut` sind verschlüsselt).
 
 **Wichtig:** `tom-shortcut build` startet einen eigenen `claude`-Prozess — **nie aus einer laufenden Claude-Session aufrufen** (Rekursion). In Sessions immer `/shortcuts-playground:build` nutzen.
 

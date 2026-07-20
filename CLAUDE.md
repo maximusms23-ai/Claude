@@ -473,6 +473,8 @@ Maxim gibt eine Beschreibung → signierter `.shortcut` in `~/Documents/Tom-Shor
 |---|---|
 | `tom-shortcut setup` | Ablage + Helpers-Symlink + Env-Vars (`CLAUDE_PLUGIN_OPTION_OUTPUT_DIR`, `SHORTCUTS_PLAYGROUND_PYTHON`) + Doctor. Idempotent |
 | `tom-shortcut build "Angabe" [--name N] [--open] [--fallback-prompt]` | Headless-Build via `claude --print` mit Fallback-Kette + Artefakt-Verifikation |
+| `tom-shortcut remix <name\|xml> "Änderung" [--name N]` | Bestehenden Draft ändern (`/shortcuts-playground:remix`, Original bleibt) |
+| `tom-shortcut ui [port]` | **Forge-UI**: lokales Web-Tool (127.0.0.1:7461) — Formular, Live-Log, Remix, Import/Run |
 | `tom-shortcut tidy` | Ablage-Wurzel normalisieren (`signed/`, `archive/`) |
 | `tom-shortcut list / run / import` | Übersicht, Ausführen, Import-Dialog |
 | `tom-shortcut helpers deploy [--copy]` | Symlink (Default) oder rsync-Kopie |

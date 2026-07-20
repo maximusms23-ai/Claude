@@ -22,6 +22,7 @@ Dependencies: Python 3 stdlib only.
 import argparse
 import json
 import os
+import signal
 import subprocess
 import threading
 import time
@@ -33,22 +34,34 @@ UI_DIR = Path(__file__).resolve().parent
 OUT = Path.home() / "Documents" / "Tom-Shortcuts"
 TOM_SHORTCUT = Path("/Users/maxim/Claude/bin/tom-shortcut")
 
+# Modell-Allowlist fuer die UI. "" = CLI-Default (grosses Modell des Logins).
+MODELS = {
+    "claude-sonnet-5": "Sonnet 5 — Token-sparend (Standard)",
+    "claude-haiku-4-5-20251001": "Haiku 4.5 — maximal sparsam (einfache Kurzbefehle)",
+    "": "CLI-Default — bestes Modell (teuer)",
+}
+
 # ------------------------------------------------------------------ Job-State
 _lock = threading.Lock()
 _job = {
-    "id": 0, "kind": None, "label": "", "status": "idle",   # idle|running|success|error
+    "id": 0, "kind": None, "label": "", "status": "idle",   # idle|running|success|error|cancelled
     "started": None, "finished": None, "log": "",
 }
+_proc = None  # laufender Subprozess (nicht JSON-serialisierbar, daher getrennt)
 
 
 def _run_job(kind: str, args: list, label: str, job_id: int):
+    global _proc
     env = dict(os.environ)
     env.pop("CLAUDECODE", None)  # UI = eigener Kontext, siehe Docstring
     env["TOM_SHORTCUT_FORCE"] = "1"
     proc = subprocess.Popen(
         [str(TOM_SHORTCUT), kind] + args,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env,
+        start_new_session=True,  # eigene Prozessgruppe -> Cancel killt auch claude-Kind
     )
+    with _lock:
+        _proc = proc
     log_lines = []
     for line in proc.stdout:
         log_lines.append(line)
@@ -57,9 +70,25 @@ def _run_job(kind: str, args: list, label: str, job_id: int):
                 _job["log"] = "".join(log_lines[-80:])
     proc.wait()
     with _lock:
-        if _job["id"] == job_id:
+        _proc = None
+        if _job["id"] == job_id and _job["status"] == "running":
             _job["status"] = "success" if proc.returncode == 0 else "error"
             _job["finished"] = time.time()
+
+
+def cancel_job() -> bool:
+    global _proc
+    with _lock:
+        if _job["status"] != "running" or _proc is None:
+            return False
+        try:
+            os.killpg(os.getpgid(_proc.pid), signal.SIGTERM)
+        except (ProcessLookupError, PermissionError):
+            pass
+        _job["status"] = "cancelled"
+        _job["finished"] = time.time()
+        _job["log"] += "\n[abgebrochen durch Nutzer]\n"
+    return True
 
 
 def start_job(kind: str, args: list, label: str) -> bool:
@@ -108,7 +137,7 @@ def state_payload():
     with _lock:
         job = dict(_job)
     return {"job": job, "signed": signed, "drafts": list_dir("drafts", ".xml"),
-            "now": time.strftime("%H:%M:%S")}
+            "models": MODELS, "now": time.strftime("%H:%M:%S")}
 
 
 # ------------------------------------------------------------------ HTTP
@@ -142,11 +171,15 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         p = self._body()
+        model = (p.get("model") or "claude-sonnet-5").strip()
+        if model not in MODELS:
+            model = "claude-sonnet-5"
+        model_args = ["--model", model] if model else []
         if self.path == "/api/build":
             brief = (p.get("brief") or "").strip()
             if not brief:
                 return self._send(400, {"error": "Beschreibung fehlt"})
-            args = [brief]
+            args = [brief] + model_args
             name = (p.get("name") or "").strip()
             if name:
                 args += ["--name", name]
@@ -161,7 +194,7 @@ class Handler(BaseHTTPRequestHandler):
             src = OUT / "drafts" / draft
             if not src.is_file() or src.suffix != ".xml":
                 return self._send(400, {"error": "Draft nicht gefunden"})
-            args = [str(src), change]
+            args = [str(src), change] + model_args
             name = (p.get("name") or "").strip()
             if name:
                 args += ["--name", name]
@@ -182,6 +215,10 @@ class Handler(BaseHTTPRequestHandler):
                                capture_output=True, text=True, timeout=120)
             return self._send(200, {"ok": r.returncode == 0,
                                     "stderr": r.stderr.strip()[:300]})
+        if self.path == "/api/cancel":
+            ok = cancel_job()
+            return self._send(200 if ok else 409,
+                              {"ok": ok} if ok else {"error": "Kein laufender Job"})
         if self.path == "/api/reveal":
             subprocess.Popen(["open", str(OUT)])
             return self._send(200, {"ok": True})

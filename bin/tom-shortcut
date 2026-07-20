@@ -34,6 +34,9 @@ FORGE_ROOT="/Users/maxim/Claude/shortcuts-forge"
 OUT="$HOME/Documents/Tom-Shortcuts"
 SETTINGS="$HOME/.claude/settings.json"
 BUILD_LOG="$OUT/.last-build.log"
+# Build-Modell: Sonnet 5 als Token-sparender Default; Override via --model oder Env.
+# Leerer Wert ("") = CLI-Default-Modell des claude-Logins.
+MODEL="${TOM_SHORTCUT_MODEL-claude-sonnet-5}"
 
 err()  { printf 'tom-shortcut: %s\n' "$*" >&2; }
 info() { printf '%s\n' "$*"; }
@@ -264,13 +267,17 @@ make_prompt() {
 run_claude_build() {
   local prompt="$1" append="$2"
   local rc=0
+  local model_args=()
+  [[ -n "$MODEL" ]] && model_args=(--model "$MODEL")
   if [[ "$append" == "append" ]]; then
     ( cd "$OUT" && printf '%s' "$prompt" | claude --print \
+        "${model_args[@]}" \
         --permission-mode acceptEdits \
         --allowedTools "Write,Edit,Read,Bash,Glob,Grep" \
       ) >>"$BUILD_LOG" 2>&1 || rc=$?
   else
     ( cd "$OUT" && printf '%s' "$prompt" | claude --print \
+        "${model_args[@]}" \
         --permission-mode acceptEdits \
         --allowedTools "Write,Edit,Read,Bash,Glob,Grep" \
       ) >"$BUILD_LOG" 2>&1 || rc=$?
@@ -283,6 +290,7 @@ cmd_build() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --name)            name="${2:?--name braucht einen Wert}"; shift 2 ;;
+      --model)           MODEL="${2?--model braucht einen Wert (leer = CLI-Default)}"; shift 2 ;;
       --open)            do_open=1; shift ;;
       --fallback-prompt) use_fallback=1; shift ;;
       -*)                err "Unbekanntes Flag: $1"; return 2 ;;
@@ -314,9 +322,10 @@ cmd_build() {
   fi
 
   info "== Build startet (headless, kann einige Minuten dauern) =="
-  info "Brief: $brief"
-  [[ -n "$name" ]] && info "Name:  $name"
-  info "Log:   $BUILD_LOG"
+  info "Brief:  $brief"
+  [[ -n "$name" ]] && info "Name:   $name"
+  info "Modell: ${MODEL:-CLI-Default}"
+  info "Log:    $BUILD_LOG"
 
   # In der Ablage arbeiten (nicht im Tom-Repo — vermeidet Projekt-Hooks/-Kontext)
   local exit_code=0
@@ -366,6 +375,7 @@ cmd_remix() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --name)            name="${2:?--name braucht einen Wert}"; shift 2 ;;
+      --model)           MODEL="${2?--model braucht einen Wert (leer = CLI-Default)}"; shift 2 ;;
       --fallback-prompt) use_fallback=1; shift ;;
       -*)                err "Unbekanntes Flag: $1"; return 2 ;;
       *)
@@ -415,6 +425,7 @@ cmd_remix() {
   info "== Remix startet (headless, kann einige Minuten dauern) =="
   info "Quelle:    $xml"
   info "Aenderung: $change"
+  info "Modell:    ${MODEL:-CLI-Default}"
   info "Log:       $BUILD_LOG"
 
   local exit_code=0

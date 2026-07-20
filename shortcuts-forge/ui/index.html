@@ -59,6 +59,12 @@
 <h1>⚒️ Forge-UI</h1>
 <div class="sub">Anforderung eintippen → signierter Apple-Kurzbefehl. Änderungen per Remix. <span class="badge">Phase 61</span></div>
 
+<div class="card" style="margin-bottom:16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+  <b style="font-size:0.9rem">🧠 Build-Modell:</b>
+  <select id="model" style="max-width:420px;flex:1"></select>
+  <span class="muted">gilt für Bauen und Remix — Sonnet 5 spart Token</span>
+</div>
+
 <div class="cols">
   <div class="card">
     <h2>🆕 Kurzbefehl bauen</h2>
@@ -87,7 +93,10 @@
     <div id="dot" class="dot"></div>
     <b id="jobLabel">Bereit</b>
     <span id="jobTime" class="muted"></span>
+    <button id="btnCancel" class="small ghost" style="display:none;margin-left:auto"
+      onclick="post('/api/cancel',{}).then(j=>j&&toast('Job abgebrochen'))">✕ Abbrechen</button>
   </div>
+  <div class="hint" style="margin-bottom:8px">Einfache Kurzbefehle: ~2–4 Min · Komplexe (Scan, KI, mehrere Schritte): 5–12 Min sind normal — der Agent liest Doku und validiert iterativ. Log unten zeigt den Fortschritt.</div>
   <pre id="log">Noch kein Job gelaufen. Log erscheint hier live.</pre>
 </div>
 
@@ -120,13 +129,13 @@ function toast(msg) {
 async function build() {
   const brief = $("brief").value.trim();
   if (!brief) return toast("Bitte Anforderung eingeben");
-  if (await post("/api/build", {brief, name: $("bname").value})) { toast("Build gestartet — Log unten"); $("brief").value=""; }
+  if (await post("/api/build", {brief, name: $("bname").value, model: $("model").value})) { toast("Build gestartet — Log unten"); $("brief").value=""; }
 }
 async function remix() {
   const draft = $("draft").value, change = $("change").value.trim();
   if (!draft) return toast("Kein Draft vorhanden — erst einen Kurzbefehl bauen");
   if (!change) return toast("Bitte Änderungswunsch eingeben");
-  if (await post("/api/remix", {draft, change, name: $("rname").value})) { toast("Remix gestartet"); $("change").value=""; }
+  if (await post("/api/remix", {draft, change, name: $("rname").value, model: $("model").value})) { toast("Remix gestartet"); $("change").value=""; }
 }
 async function doImport(file) { if (await post("/api/import", {file})) toast("Import-Dialog geöffnet — bitte bestätigen"); }
 async function doRun(name) {
@@ -147,10 +156,12 @@ async function poll() {
     const s = await (await fetch("/api/state")).json();
     const job = s.job;
     busy = job.status === "running";
-    $("dot").className = "dot " + (job.status === "idle" ? "" : job.status);
+    $("dot").className = "dot " + (job.status === "idle" ? "" : job.status === "cancelled" ? "error" : job.status);
     $("jobLabel").textContent = job.status === "idle" ? "Bereit"
-      : (job.status === "running" ? "Läuft: " : job.status === "success" ? "Fertig: " : "Fehler: ") + (job.label || job.kind);
+      : (job.status === "running" ? "Läuft: " : job.status === "success" ? "Fertig: "
+         : job.status === "cancelled" ? "Abgebrochen: " : "Fehler: ") + (job.label || job.kind);
     $("jobTime").textContent = fmtDur(job);
+    $("btnCancel").style.display = busy ? "inline-block" : "none";
     if (job.log) { const l = $("log"); const stick = l.scrollTop + l.clientHeight >= l.scrollHeight - 8;
       l.textContent = job.log; if (stick) l.scrollTop = l.scrollHeight; }
     $("btnBuild").disabled = busy; $("btnRemix").disabled = busy;
@@ -158,6 +169,12 @@ async function poll() {
     const sel = $("draft"), cur = sel.value;
     sel.innerHTML = s.drafts.map(d => `<option value="${d.name}">${d.stem}  (${d.mtime})</option>`).join("");
     if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+
+    const msel = $("model");
+    if (s.models && msel.options.length === 0) {
+      msel.innerHTML = Object.entries(s.models).map(([v,l]) => `<option value="${v}">${l}</option>`).join("");
+      msel.value = "claude-sonnet-5";
+    }
 
     $("clock").textContent = "· Stand " + s.now;
     document.querySelector("#signedTbl tbody").innerHTML = s.signed.map(f => `

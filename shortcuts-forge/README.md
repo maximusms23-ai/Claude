@@ -50,6 +50,20 @@ Die eigentliche Generierung macht das [shortcuts-playground Plugin](https://gith
 - **Liste**: fertige `.shortcut` mit Status (installiert / nur Ablage) + Import-/Ausführen-Buttons
 - Ein Job zur Zeit; der Build-Subprozess läuft ohne `CLAUDECODE`-Env (UI ist eigener Kontext, bewusster Guard-Bypass)
 - Jobs leben mit dem Server: Server beenden bricht einen laufenden Build ab
+- **Modell-Auswahl** (Dropdown, gilt für Bauen + Remix): Sonnet 5 (Standard, Token-sparend) · Haiku 4.5 (maximal sparsam) · CLI-Default (bestes Modell, teuer)
+
+### Token sparen: Build-Modell
+
+Headless-Builds laufen standardmäßig mit **Sonnet 5** (`claude-sonnet-5`) statt dem großen CLI-Default — der Craig-Loop-Validator fängt Modellschwächen ab. Steuerung:
+
+```bash
+tom-shortcut build "…"                          # Sonnet 5 (Default)
+tom-shortcut build "…" --model claude-haiku-4-5-20251001   # noch sparsamer
+tom-shortcut build "…" --model ""               # CLI-Default (bestes Modell)
+TOM_SHORTCUT_MODEL="" tom-shortcut build "…"    # dito per Env (persistent setzbar)
+```
+
+Bei komplexen Kurzbefehlen, die mit Sonnet scheitern (Log prüfen): einmalig mit `--model ""` wiederholen. Session-Weg `/shortcuts-playground:build` nutzt immer das Modell der laufenden Session.
 
 CLI-Pendant für Änderungen: `tom-shortcut remix <name|drafts-xml> "Änderungswunsch" [--name N]` (nutzt `/shortcuts-playground:remix`; Quelle muss unsignierte XML aus `drafts/` sein — signierte `.shortcut` sind verschlüsselt).
 

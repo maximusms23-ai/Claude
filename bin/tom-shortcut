@@ -14,6 +14,8 @@
 #   tom-shortcut remix <name|xml> "Aenderung" [--name N]   # bestehenden Draft aendern
 #   tom-shortcut export "<Installierter Name>"  # installierten Kurzbefehl -> drafts/*.xml
 #   tom-shortcut fix "<Name>" "Vorgabe" [--name Neu]  # installierten korrigieren (export+remix)
+#   tom-shortcut optimize "<Name>" ["Hinweis"]  # installierten aufraeumen/robuster (Funktion identisch)
+#   tom-shortcut extend "<Name>" "Erweiterung"  # installierten um neue Funktion erweitern
 #   tom-shortcut quick notify|shell|url ...     # Template-Build via Cherri: 0 Token, Sekunden
 #   tom-shortcut salvage                        # unterbrochenen Build aus validem Draft retten (0 Token)
 #   tom-shortcut resume [draft]                 # unfertigen Draft nach Limit-Reset fertigstellen
@@ -688,6 +690,39 @@ cmd_fix() {
   cmd_remix "$xml" "$change" "${passthru[@]}"
 }
 
+# ---------------------------------------------------------------- optimize / extend
+# Beide nutzen die fix-Kette (export -> remix) mit festem Auftrags-Rahmen.
+cmd_optimize() {
+  local name="" hint=""
+  local passthru=()
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --name|--model|--engine) passthru+=("$1" "${2:?$1 braucht einen Wert}"); shift 2 ;;
+      -*) err "Unbekanntes Flag: $1"; return 2 ;;
+      *) if [[ -z "$name" ]]; then name="$1"; else hint="$1"; fi; shift ;;
+    esac
+  done
+  [[ -z "$name" ]] && { err "Usage: tom-shortcut optimize \"<Installierter Name>\" [\"Hinweis\"] [--name Neu]"; return 2; }
+  local change="Optimiere diesen Kurzbefehl OHNE Funktionsaenderung: entferne ueberfluessige oder doppelte Actions, vereinfache die Logik, verbessere Robustheit und Benennungen. Funktionsumfang und Ergebnis muessen identisch bleiben."
+  [[ -n "$hint" ]] && change+=" Zusatzhinweis von Maxim: ${hint}."
+  cmd_fix "$name" "$change" "${passthru[@]}"
+}
+
+cmd_extend() {
+  local name="" wish=""
+  local passthru=()
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --name|--model|--engine) passthru+=("$1" "${2:?$1 braucht einen Wert}"); shift 2 ;;
+      -*) err "Unbekanntes Flag: $1"; return 2 ;;
+      *) if [[ -z "$name" ]]; then name="$1"; else wish="$1"; fi; shift ;;
+    esac
+  done
+  [[ -z "$name" || -z "$wish" ]] && { err "Usage: tom-shortcut extend \"<Installierter Name>\" \"Erweiterung\" [--name Neu]"; return 2; }
+  local change="Erweitere diesen Kurzbefehl um: ${wish}. Die bestehende Funktionalitaet bleibt vollstaendig und unveraendert erhalten; die Erweiterung fuegt sich sauber in den Ablauf ein."
+  cmd_fix "$name" "$change" "${passthru[@]}"
+}
+
 # ---------------------------------------------------------------- quick
 # Deterministische Templates via Cherri-Compiler: 0 Token, <5 s.
 # Verifizierte Muster (2026-07-20): notify, shell (sequentiell — Nesting
@@ -789,7 +824,7 @@ cmd_ui() {
 
 # ---------------------------------------------------------------- dispatch
 usage() {
-  sed -n '3,34p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,36p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 main() {
@@ -802,6 +837,8 @@ main() {
     remix)   cmd_remix "$@" ;;
     export)  cmd_export "$@" ;;
     fix)     cmd_fix "$@" ;;
+    optimize) cmd_optimize "$@" ;;
+    extend)   cmd_extend "$@" ;;
     quick)   cmd_quick "$@" ;;
     salvage) cmd_salvage "$@" ;;
     resume)  cmd_resume "$@" ;;

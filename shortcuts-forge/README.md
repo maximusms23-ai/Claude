@@ -157,7 +157,14 @@ tom-shortcut export "Mein Kurzbefehl"                 # App → drafts/*.xml (vi
 tom-shortcut fix "Mein Kurzbefehl" "Vorgabe…" --name "Mein Kurzbefehl v2"   # Export + Remix in einem
 ```
 
-In der Forge-UI: Karte **„Installierten korrigieren"** — Kurzbefehl aus der Bibliothek wählen, Vorgabe eintippen, fertig. Das Original in der App bleibt unberührt; die korrigierte Version kommt als neue signierte Datei.
+Dazu zwei weitere Modi auf derselben Kette (Export → Remix):
+
+```bash
+tom-shortcut optimize "Mein Kurzbefehl" ["Hinweis"]      # aufräumen & robuster — Funktion bleibt identisch
+tom-shortcut extend "Mein Kurzbefehl" "neue Funktion…"   # erweitern — Bestehendes bleibt vollständig erhalten
+```
+
+In der Forge-UI: Karte **„Bestehende Kurzbefehle bearbeiten"** — Kurzbefehl wählen, Modus wählen (🩹 Korrigieren · ⚡ Optimieren · ➕ Erweitern), Text eintippen (bei Optimieren optional), fertig. Das Original in der App bleibt immer unberührt; das Ergebnis kommt als neue signierte Datei.
 
 ## Multi-Engine: Claude · ChatGPT/Codex · Open Source
 
@@ -201,6 +208,13 @@ Wenn das Claude-Nutzungslimit **mitten im Build** zuschlägt, gilt automatisch:
 tom-shortcut salvage          # neuesten validen Draft ohne LLM signieren
 tom-shortcut resume [draft]   # unfertigen Draft nach Limit-Reset fertigstellen lassen
 ```
+
+**Restart in der Forge-UI (seit 2026-07-20):** Jeder Job wird mit Parametern in `.last-job.json` persistiert — das überlebt auch Server-Neustarts und Abstürze. Bricht ein Job ab (Limit, ✕ Abbrechen, Absturz), zeigt die Status-Zeile:
+
+- **▶ Fortsetzen** — wenn seit Job-Start ein Draft entstand: die Kompilierung macht genau dort weiter (Draft wird fertiggestellt)
+- **↻ Neu starten** — gleicher Auftrag mit denselben Parametern nochmal von vorn
+
+Nach einem Server-Neustart erscheint der unterbrochene Job automatisch wieder mit beiden Optionen.
 
 Hinweis: `salvage` validiert vor dem Signieren — halbfertige (invalide) Drafts werden nicht blind signiert, sondern auf `resume` verwiesen. Exportierte App-Kurzbefehle fallen durch die strenge Validator-Prüfung (ungenutzte Input-Klassen) — die gehen über `fix`, nicht über `salvage`.
 

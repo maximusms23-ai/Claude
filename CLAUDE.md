@@ -477,6 +477,7 @@ Maxim gibt eine Beschreibung → signierter `.shortcut` in `~/Documents/Tom-Shor
 | `tom-shortcut remix <name\|xml> "Änderung" [--name N] [--model M]` | Bestehenden Draft ändern (`/shortcuts-playground:remix`, Original bleibt) |
 | `tom-shortcut export "<Name>"` | Installierten Kurzbefehl → `drafts/*.xml` (Wrapper um `eivs-shortcut-template-export`) |
 | `tom-shortcut fix "<Name>" "Vorgabe" [--name Neu]` | **Installierten Kurzbefehl korrigieren** (Export + Remix in einem; Original bleibt) |
+| `tom-shortcut optimize "<Name>" ["Hinweis"]` / `extend "<Name>" "Funktion"` | Installierten **optimieren** (Funktion identisch) bzw. **erweitern** (Bestehendes bleibt) — gleiche Export+Remix-Kette |
 | `tom-shortcut quick notify\|shell\|url …` | **0-Token-Templates via Cherri** (<5 s, signiert + Draft) — immer zuerst prüfen, ob ein Quick-Template reicht |
 | `tom-shortcut salvage` / `resume [draft]` | Unterbrochene Builds retten (0 Token) / nach Limit-Reset fertigstellen |
 | `--engine claude\|codex\|codex-oss` (überall) | Multi-Engine: Claude (Default) · ChatGPT/Codex (nach `codex login`) · gpt-oss lokal (Stufe 2, Opt-in). Plan: `.planning/phases/61-shortcuts-forge/61-02-MULTI-ENGINE-PLAN.md` |

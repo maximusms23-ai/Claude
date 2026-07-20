@@ -62,8 +62,53 @@ _lock = threading.Lock()
 _job = {
     "id": 0, "kind": None, "label": "", "status": "idle",   # idle|running|success|error|cancelled
     "started": None, "finished": None, "log": "",
+    "args": [],           # Original-Argumente -> ermoeglicht Neu-Starten
+    "resume_draft": None, # seit Job-Start entstandener Draft -> ermoeglicht Fortsetzen
 }
 _proc = None  # laufender Subprozess (nicht JSON-serialisierbar, daher getrennt)
+JOB_STATE_FILE = OUT / ".last-job.json"
+
+
+def _persist_job():
+    """Job-Metadaten auf Platte — ueberlebt Server-Neustarts (Maxim: 'Restart, damit
+    die Kompilierung wieder da anfaengt, wo sie aufgehoert hatte')."""
+    try:
+        JOB_STATE_FILE.write_text(json.dumps(
+            {k: _job[k] for k in ("kind", "label", "status", "started", "finished", "args", "resume_draft")},
+            ensure_ascii=False), encoding="utf-8")
+    except OSError:
+        pass
+
+
+def _find_resume_draft(started):
+    """Neuester Draft, der seit Job-Start entstand (= unterbrochene Kompilierung)."""
+    if not started:
+        return None
+    d = OUT / "drafts"
+    cand = [f for f in d.glob("*.xml") if f.stat().st_mtime >= started - 1] if d.is_dir() else []
+    if not cand:
+        return None
+    return max(cand, key=lambda f: f.stat().st_mtime).name
+
+
+def _load_persisted_job():
+    """Beim Server-Start: unterbrochenen Job wiederherstellen (Status war 'running'
+    -> Server/Rechner starb mittendrin) und als fortsetzbar anbieten."""
+    try:
+        data = json.loads(JOB_STATE_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return
+    if data.get("status") == "running":
+        data["status"] = "error"
+        data["finished"] = time.time()
+        data["resume_draft"] = _find_resume_draft(data.get("started"))
+        data["log"] = "[Server wurde beendet, waehrend dieser Job lief — unten Fortsetzen oder Neu starten]\n"
+    if data.get("status") in ("error", "cancelled"):
+        with _lock:
+            _job.update({k: data.get(k) for k in
+                         ("kind", "label", "status", "started", "finished", "args", "resume_draft")})
+            _job["log"] = data.get("log", "")
+        _persist_job()
 
 
 def _run_job(kind: str, args: list, label: str, job_id: int):
@@ -90,6 +135,9 @@ def _run_job(kind: str, args: list, label: str, job_id: int):
         if _job["id"] == job_id and _job["status"] == "running":
             _job["status"] = "success" if proc.returncode == 0 else "error"
             _job["finished"] = time.time()
+        if _job["id"] == job_id and _job["status"] in ("error", "cancelled"):
+            _job["resume_draft"] = _find_resume_draft(_job["started"])
+        _persist_job()
 
 
 def cancel_job() -> bool:
@@ -114,8 +162,10 @@ def start_job(kind: str, args: list, label: str) -> bool:
         _job.update({
             "id": _job["id"] + 1, "kind": kind, "label": label,
             "status": "running", "started": time.time(), "finished": None, "log": "",
+            "args": list(args), "resume_draft": None,
         })
         job_id = _job["id"]
+        _persist_job()
     threading.Thread(target=_run_job, args=(kind, args, label, job_id), daemon=True).start()
     return True
 
@@ -233,15 +283,22 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/api/fix":
             name = (p.get("installed") or "").strip()
             change = (p.get("change") or "").strip()
-            if not name or not change:
-                return self._send(400, {"error": "Kurzbefehl und Vorgabe noetig"})
+            mode = (p.get("mode") or "fix").strip()
+            if mode not in ("fix", "optimize", "extend"):
+                mode = "fix"
+            if not name:
+                return self._send(400, {"error": "Kurzbefehl noetig"})
+            # optimize: Vorgabe optional (Hinweis); fix/extend: Pflicht
+            if mode != "optimize" and not change:
+                return self._send(400, {"error": "Vorgabe/Erweiterung noetig"})
             if name not in installed_shortcuts():
                 return self._send(400, {"error": "Nicht installiert: " + name})
-            args = [name, change] + model_args
+            args = [name] + ([change] if change else []) + model_args
             new_name = (p.get("name") or "").strip()
             if new_name:
                 args += ["--name", new_name]
-            ok = start_job("fix", args, f"Korrektur: {name}")
+            labels = {"fix": "Korrektur", "optimize": "Optimierung", "extend": "Erweiterung"}
+            ok = start_job(mode, args, f"{labels[mode]}: {name}")
             return self._send(200 if ok else 409,
                               {"ok": ok} if ok else {"error": "Es laeuft bereits ein Job"})
         if self.path == "/api/import":
@@ -284,6 +341,25 @@ class Handler(BaseHTTPRequestHandler):
             if r.returncode != 0:
                 return self._send(500, {"error": (r.stderr or r.stdout).strip()[:300]})
             return self._send(200, {"ok": True, "draft": name + ".xml"})
+        if self.path == "/api/retry":
+            with _lock:
+                kind, args, label, status = _job["kind"], list(_job["args"] or []), _job["label"], _job["status"]
+            if status not in ("error", "cancelled") or not kind:
+                return self._send(409, {"error": "Kein unterbrochener Job zum Neustarten"})
+            ok = start_job(kind, args, "Neustart: " + (label or kind))
+            return self._send(200 if ok else 409,
+                              {"ok": ok} if ok else {"error": "Es laeuft bereits ein Job"})
+        if self.path == "/api/resume":
+            with _lock:
+                draft, status = _job["resume_draft"], _job["status"]
+            if status not in ("error", "cancelled") or not draft:
+                return self._send(409, {"error": "Kein fortsetzbarer Draft vorhanden"})
+            if not (OUT / "drafts" / draft).is_file():
+                return self._send(409, {"error": "Draft nicht mehr da: " + draft})
+            args = [str(OUT / "drafts" / draft)] + (model_args if model else [])
+            ok = start_job("resume", args, "Fortsetzen: " + draft)
+            return self._send(200 if ok else 409,
+                              {"ok": ok} if ok else {"error": "Es laeuft bereits ein Job"})
         if self.path == "/api/cancel":
             ok = cancel_job()
             return self._send(200 if ok else 409,
@@ -298,6 +374,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=7461)
     args = ap.parse_args()
+    _load_persisted_job()
     srv = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
     print(f"Forge-UI: http://127.0.0.1:{args.port}  (Ablage: {OUT})")
     try:

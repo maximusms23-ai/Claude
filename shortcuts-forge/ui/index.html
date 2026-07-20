@@ -102,18 +102,24 @@
   </div>
 
   <div class="card">
-    <h2>🩹 Installierten korrigieren</h2>
+    <h2>🩹 Bestehende Kurzbefehle bearbeiten</h2>
     <label for="fixName">Kurzbefehl aus deiner Bibliothek (inkl. extern hinzugefügter)</label>
     <div style="display:flex;gap:8px;align-items:center">
       <select id="fixName" style="flex:1"></select>
       <button class="small ghost" onclick="exportDraft()" title="Als unsignierte XML nach drafts/ exportieren — dann per Remix nutzbar">⬇ Export</button>
     </div>
-    <label for="fixChange">Deine Vorgabe (was soll anders sein?)</label>
+    <label for="fixMode">Modus</label>
+    <select id="fixMode" onchange="fixModeChanged()">
+      <option value="fix">🩹 Korrigieren — nach deiner Vorgabe ändern</option>
+      <option value="optimize">⚡ Optimieren — aufräumen &amp; robuster, Funktion bleibt gleich</option>
+      <option value="extend">➕ Erweitern — neue Funktion hinzufügen</option>
+    </select>
+    <label for="fixChange" id="fixChangeLabel">Deine Vorgabe (was soll anders sein?)</label>
     <textarea id="fixChange" placeholder="z. B.: Die Benachrichtigung soll den Titel 'Tom' bekommen und danach das Ergebnis in die Zwischenablage kopieren"></textarea>
     <label for="fixNew">Neuer Name (optional — Original in der App bleibt unberührt)</label>
     <input id="fixNew" placeholder="z. B. Hallo Tom v2">
-    <button id="btnFix" onclick="fixShortcut()">🩹 Korrigieren</button>
-    <div class="hint">Holt den Kurzbefehl aus der App (Export), wendet die Vorgabe an und signiert neu.</div>
+    <button id="btnFix" onclick="fixShortcut()">🩹 Ausführen</button>
+    <div class="hint">Holt den Kurzbefehl aus der App (Export), wendet den Modus an und signiert neu.</div>
   </div>
 
   <div class="card">
@@ -135,6 +141,10 @@
     <span id="jobTime" class="muted"></span>
     <button id="btnCancel" class="small ghost" style="display:none;margin-left:auto"
       onclick="post('/api/cancel',{}).then(j=>j&&toast('Job abgebrochen'))">✕ Abbrechen</button>
+    <button id="btnResume" class="small" style="display:none;margin-left:auto"
+      onclick="post('/api/resume',{model:$('model').value}).then(j=>j&&toast('Setze Kompilierung fort'))">▶ Fortsetzen</button>
+    <button id="btnRetry" class="small ghost" style="display:none"
+      onclick="post('/api/retry',{}).then(j=>j&&toast('Starte Job neu'))">↻ Neu starten</button>
   </div>
   <div class="hint" style="margin-bottom:8px">Einfache Kurzbefehle: ~2–4 Min · Komplexe (Scan, KI, mehrere Schritte): 5–12 Min sind normal — der Agent liest Doku und validiert iterativ. Log unten zeigt den Fortschritt.</div>
   <pre id="log">Noch kein Job gelaufen. Log erscheint hier live.</pre>
@@ -178,11 +188,24 @@ async function remix() {
   if (!change) return toast("Bitte Änderungswunsch eingeben");
   if (await post("/api/remix", {draft, change, name: $("rname").value, ...opts()})) { toast("Remix gestartet"); $("change").value=""; }
 }
+const FIX_MODES = {
+  fix:      {label:"Deine Vorgabe (was soll anders sein?)", ph:"z. B.: Die Benachrichtigung soll den Titel 'Tom' bekommen und danach das Ergebnis in die Zwischenablage kopieren", btn:"🩹 Korrigieren", need:true},
+  optimize: {label:"Optionaler Hinweis (worauf soll die Optimierung achten?)", ph:"leer lassen = allgemein aufräumen · oder z. B.: Fokus auf Geschwindigkeit beim Start", btn:"⚡ Optimieren", need:false},
+  extend:   {label:"Erweiterung (welche neue Funktion soll dazu?)", ph:"z. B.: Danach das Ergebnis zusätzlich per Nachricht an Olga senden", btn:"➕ Erweitern", need:true},
+};
+function fixModeChanged() {
+  const m = FIX_MODES[$("fixMode").value];
+  $("fixChangeLabel").textContent = m.label;
+  $("fixChange").placeholder = m.ph;
+  $("btnFix").textContent = m.btn;
+}
 async function fixShortcut() {
-  const installed = $("fixName").value, change = $("fixChange").value.trim();
+  const installed = $("fixName").value, change = $("fixChange").value.trim(), mode = $("fixMode").value;
   if (!installed) return toast("Kein Kurzbefehl gewählt");
-  if (!change) return toast("Bitte Vorgabe eingeben");
-  if (await post("/api/fix", {installed, change, name: $("fixNew").value, ...opts()})) { toast("Korrektur gestartet — Log unten"); $("fixChange").value=""; }
+  if (FIX_MODES[mode].need && !change) return toast("Bitte Text eingeben");
+  if (await post("/api/fix", {installed, change, mode, name: $("fixNew").value, ...opts()})) {
+    toast(FIX_MODES[mode].btn + " gestartet — Log unten"); $("fixChange").value="";
+  }
 }
 async function advise() {
   const brief = $("aBrief").value.trim(), youtube = $("aYoutube").value.trim();
@@ -236,6 +259,10 @@ async function poll() {
          : job.status === "cancelled" ? "Abgebrochen: " : "Fehler: ") + (job.label || job.kind);
     $("jobTime").textContent = fmtDur(job);
     $("btnCancel").style.display = busy ? "inline-block" : "none";
+    const broken = job.status === "error" || job.status === "cancelled";
+    $("btnResume").style.display = (broken && job.resume_draft) ? "inline-block" : "none";
+    $("btnResume").title = job.resume_draft ? "Draft fertigstellen: " + job.resume_draft : "";
+    $("btnRetry").style.display = (broken && job.kind && job.kind !== "resume") ? "inline-block" : "none";
     if (job.log) { const l = $("log"); const stick = l.scrollTop + l.clientHeight >= l.scrollHeight - 8;
       l.textContent = job.log; if (stick) l.scrollTop = l.scrollHeight; }
     $("btnBuild").disabled = busy; $("btnRemix").disabled = busy; $("btnAdvise").disabled = busy;
@@ -277,7 +304,7 @@ async function poll() {
       </td></tr>`).join("") || '<tr><td colspan="5" class="muted">Noch keine — baue oben den ersten!</td></tr>';
   } catch (e) { $("jobLabel").textContent = "Server nicht erreichbar — tom-shortcut ui neu starten"; }
 }
-poll(); setInterval(poll, 2000); loadAdvice();
+poll(); setInterval(poll, 2000); loadAdvice(); fixModeChanged();
 </script>
 </body>
 </html>

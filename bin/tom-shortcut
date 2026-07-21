@@ -584,16 +584,44 @@ cmd_remix() {
 # Werkzeug-Empfehlung (Kurzbefehl/Python/AppleScript/Pages/Numbers), lokale
 # Reuse-Kandidaten, optimierter Bau-Brief. Siehe 61-03-ADVISE-REUSE-PLAN.md
 cmd_advise() {
-  local brief="" youtube=""
+  local brief="" youtube="" ctx_shortcut="" ctx_draft=""
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --youtube) youtube="${2:?--youtube braucht eine URL}"; shift 2 ;;
-      --model)   MODEL="${2?--model braucht einen Wert}"; shift 2 ;;
-      -*)        err "Unbekanntes Flag: $1"; return 2 ;;
-      *)         brief="$1"; shift ;;
+      --youtube)  youtube="${2:?--youtube braucht eine URL}"; shift 2 ;;
+      --shortcut) ctx_shortcut="${2:?--shortcut braucht einen Namen}"; shift 2 ;;
+      --draft)    ctx_draft="${2:?--draft braucht Name/Pfad}"; shift 2 ;;
+      --model)    MODEL="${2?--model braucht einen Wert}"; shift 2 ;;
+      -*)         err "Unbekanntes Flag: $1"; return 2 ;;
+      *)          brief="$1"; shift ;;
     esac
   done
-  [[ -z "$brief" && -z "$youtube" ]] && { err "Usage: tom-shortcut advise \"Angabe\" [--youtube URL]"; return 2; }
+  [[ -z "$brief" && -z "$youtube" && -z "$ctx_shortcut" && -z "$ctx_draft" ]] && { err "Usage: tom-shortcut advise \"Angabe\" [--youtube URL] [--shortcut \"Name\"] [--draft x.xml]"; return 2; }
+
+  # Kontext: installierter Kurzbefehl -> erst exportieren; Draft -> aufloesen
+  local ctx_xml=""
+  if [[ -n "$ctx_shortcut" ]]; then
+    ctx_xml=$(cmd_export "$ctx_shortcut" | tail -1) || return 1
+  elif [[ -n "$ctx_draft" ]]; then
+    if [[ -f "$ctx_draft" ]]; then ctx_xml="$ctx_draft"
+    elif [[ -f "$OUT/drafts/$ctx_draft" ]]; then ctx_xml="$OUT/drafts/$ctx_draft"
+    elif [[ -f "$OUT/drafts/$ctx_draft.xml" ]]; then ctx_xml="$OUT/drafts/$ctx_draft.xml"
+    else err "Draft nicht gefunden: $ctx_draft"; return 1; fi
+  fi
+  local ctx_actions=""
+  if [[ -n "$ctx_xml" ]]; then
+    ctx_actions=$(/usr/bin/python3 - "$ctx_xml" <<'PYEOF' 2>/dev/null
+import plistlib, sys
+with open(sys.argv[1], "rb") as f:
+    p = plistlib.load(f)
+out = []
+for a in p.get("WFWorkflowActions", [])[:40]:
+    ident = a.get("WFWorkflowActionIdentifier", "?").split(".")[-1]
+    keys = ",".join(k for k in a.get("WFWorkflowActionParameters", {}) if k != "UUID")
+    out.append(f"{ident}({keys})")
+print(" -> ".join(out))
+PYEOF
+)
+  fi
 
   if [[ -n "${CLAUDECODE:-}" && -z "${TOM_SHORTCUT_FORCE:-}" ]]; then
     err "Du bist in einer Claude-Session — Analyse dort direkt erfragen."
@@ -604,18 +632,26 @@ cmd_advise() {
   mkdir -p "$OUT/advice"
 
   local slug ts outfile installed drafts
-  slug=$(printf '%s' "${brief:-youtube}" | tr '[:upper:] ' '[:lower:]-' | tr -cd 'a-z0-9-' | cut -c1-40)
+  slug=$(printf '%s' "${brief:-${ctx_shortcut:-${ctx_draft:-youtube}}}" | tr '[:upper:] ' '[:lower:]-' | tr -cd 'a-z0-9-' | cut -c1-40)
   ts=$(date +%Y%m%d-%H%M%S)
   outfile="$OUT/advice/${ts}-${slug}.md"
   installed=$(/usr/bin/shortcuts list 2>/dev/null | head -60 | tr '\n' ';')
   drafts=$(ls "$OUT/drafts" 2>/dev/null | tr '\n' ';')
 
-  local prompt="Du bist Experten-Berater fuer Apple-Automatisierung (Kurzbefehle, Python, AppleScript, Pages/Numbers/Excel). Analysiere folgende Anforderung von Maxim, BEVOR etwas gebaut wird. Anforderung: ${brief}."
+  local prompt="Du bist Experten-Berater fuer Apple-Automatisierung (Kurzbefehle, Python, AppleScript, Pages/Numbers/Excel)."
+  if [[ -n "$ctx_xml" ]]; then
+    prompt+=" Analysiere den BESTEHENDEN Kurzbefehl '$(basename "$ctx_xml" .xml)' von Maxim. Seine aktuelle Action-Struktur: ${ctx_actions:-unbekannt}."
+    [[ -n "$brief" ]] && prompt+=" Maxims Anliegen dazu: ${brief}."
+    prompt+=" Bewerte: Was laesst sich optimieren, was sinnvoll erweitern, wo liegen Schwaechen? Sektion 4 soll ein fertiger AENDERUNGS-Brief fuer 'tom-shortcut fix/remix' sein (kein Neubau)."
+  else
+    prompt+=" Analysiere folgende Anforderung von Maxim, BEVOR etwas gebaut wird. Anforderung: ${brief}."
+  fi
   [[ -n "$youtube" ]] && prompt+=" Zusaetzliche Anforderungsquelle ist dieses YouTube-Video: ${youtube} — hole per WebFetch/WebSearch Titel, Beschreibung und (falls auffindbar) Transkript-Inhalte und extrahiere daraus die konkrete Anforderung."
-  prompt+=" Nutze WebSearch, um AEHNLICHE EXISTIERENDE Projekte zu finden (RoutineHub, GitHub, r/shortcuts, MacStories, ShareShortcuts) — Ziel: anpassen statt neu entwickeln. Bereits installierte Kurzbefehle von Maxim (Reuse-Kandidaten fuer 'tom-shortcut fix'): ${installed}. Vorhandene Drafts in der Ablage: ${drafts}. Lokale Helper-Bibliothek: text_tools.py (Python, Text-Transformationen), safari_current_page (AppleScript), battery_info (Swift). Antworte auf Deutsch als Markdown mit GENAU diesen Sektionen: ## 1. Empfohlenes Werkzeug (Kurzbefehl / Python-Helper / AppleScript / Pages / Numbers / Kombination — mit Begruendung), ## 2. Aehnliche existierende Projekte (mit Links, je 1 Satz was uebernehmbar ist), ## 3. Lokale Wiederverwendung (welcher installierte Kurzbefehl/Draft als Basis taugt, oder 'keiner'), ## 4. Optimierter Bau-Brief (fertig formulierter Text fuer tom-shortcut build bzw. fix — konkret, mit Action-Hinweisen), ## 5. Einschaetzung (Erfolgswahrscheinlichkeit als Kurzbefehl in %, Aufwand, Risiken). Arbeite autonom, keine Rueckfragen."
+  prompt+=" Nutze WebSearch, um AEHNLICHE EXISTIERENDE Projekte zu finden (RoutineHub, GitHub, r/shortcuts, MacStories, ShareShortcuts) — Ziel: anpassen statt neu entwickeln. Bereits installierte Kurzbefehle von Maxim (Reuse-Kandidaten fuer 'tom-shortcut fix'): ${installed}. Vorhandene Drafts in der Ablage: ${drafts}. Lokale Helper-Bibliothek: text_tools.py (Python, Text-Transformationen), safari_current_page (AppleScript), battery_info (Swift). Antworte auf Deutsch als Markdown mit GENAU diesen Sektionen: ## 1. Empfohlenes Werkzeug (Kurzbefehl / Python-Helper / AppleScript / Pages / Numbers / Kombination — mit Begruendung), ## 2. Aehnliche existierende Projekte (mit Links, je 1 Satz was uebernehmbar ist), ## 3. Lokale Wiederverwendung (welcher installierte Kurzbefehl/Draft als Basis taugt, oder 'keiner'), ## 4. Optimierter Bau-Brief (fertig formulierter Text fuer tom-shortcut build bzw. fix — konkret, mit Action-Hinweisen), ## 5. Einschaetzung (Erfolgswahrscheinlichkeit als Kurzbefehl in %, Aufwand, Risiken), ## 6. APIs & Programme (konkrete externe APIs, die die Umsetzung ermoeglichen — je: Zweck, Endpunkt/Doku-Link, Auth-Art, kostenlos oder Preis — UND Apps/Programme mit Kurzbefehl-Actions oder App Intents, die helfen wuerden — je: Name, was sie beitragen, Link; nur per WebSearch verifizierte Vorschlaege, keine erfundenen; wenn keine noetig sind: 'native Actions reichen'). Arbeite autonom, keine Rueckfragen."
 
   info "== Analyse startet (Web-Suche, ~1-2 Min) =="
   [[ -n "$brief"   ]] && info "Angabe:  $brief"
+  [[ -n "$ctx_xml" ]] && info "Kontext: $(basename "$ctx_xml") ($(printf '%s' "$ctx_actions" | tr -cd '>' | wc -c | tr -d ' ') Uebergaenge)"
   [[ -n "$youtube" ]] && info "YouTube: $youtube"
   info "Modell:  ${MODEL:-CLI-Default}"
 

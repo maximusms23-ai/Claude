@@ -137,6 +137,9 @@ def _run_job(kind: str, args: list, label: str, job_id: int):
             _job["finished"] = time.time()
         if _job["id"] == job_id and _job["status"] in ("error", "cancelled"):
             _job["resume_draft"] = _find_resume_draft(_job["started"])
+        if _job["id"] == job_id and _job["status"] == "success" and kind != "advise":
+            # Ergebnis-Draft merken -> UI kann Optimierungsvorschlaege dazu anbieten
+            _job["resume_draft"] = _find_resume_draft(_job["started"])
         _persist_job()
 
 
@@ -318,16 +321,27 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/api/advise":
             brief = (p.get("brief") or "").strip()
             youtube = (p.get("youtube") or "").strip()
-            if not brief and not youtube:
-                return self._send(400, {"error": "Angabe oder YouTube-Link noetig"})
+            ctx_installed = (p.get("installed") or "").strip()
+            ctx_draft = (p.get("draft") or "").strip()
+            if not brief and not youtube and not ctx_installed and not ctx_draft:
+                return self._send(400, {"error": "Angabe, Kontext oder YouTube-Link noetig"})
             if youtube and not youtube.startswith(("https://www.youtube.com/", "https://youtu.be/", "https://youtube.com/")):
                 return self._send(400, {"error": "Nur YouTube-URLs erlaubt"})
+            if ctx_installed and ctx_installed not in installed_shortcuts():
+                return self._send(400, {"error": "Nicht installiert: " + ctx_installed})
+            if ctx_draft and not (OUT / "drafts" / ctx_draft).is_file():
+                return self._send(400, {"error": "Draft nicht gefunden: " + ctx_draft})
             args = [brief] if brief else [""]
+            if ctx_installed:
+                args += ["--shortcut", ctx_installed]
+            elif ctx_draft:
+                args += ["--draft", ctx_draft]
             if youtube:
                 args += ["--youtube", youtube]
             if model:
                 args += ["--model", model]
-            ok = start_job("advise", args, "Analyse: " + (brief[:50] or youtube))
+            label = "Analyse: " + (ctx_installed or ctx_draft or brief[:50] or youtube)
+            ok = start_job("advise", args, label)
             return self._send(200 if ok else 409,
                               {"ok": ok} if ok else {"error": "Es laeuft bereits ein Job"})
         if self.path == "/api/export":

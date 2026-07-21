@@ -145,8 +145,11 @@ Die Experten-Analyse (Sonnet 5 + WebSearch, ~1–2 Min, Plan: [`61-03-ADVISE-REU
 1. **Empfohlenes Werkzeug** — Kurzbefehl · Python-Helper · AppleScript · Pages · Numbers · Kombination (mit Begründung)
 2. **Ähnliche existierende Projekte** — RoutineHub/GitHub/r/shortcuts/MacStories mit Links (übernehmen statt neu bauen)
 3. **Lokale Wiederverwendung** — welcher deiner installierten Kurzbefehle/Drafts als Basis taugt (→ `fix`)
-4. **Optimierter Bau-Brief** — fertig für `build`/`fix` (UI-Button „→ Bau-Brief übernehmen")
+4. **Optimierter Bau-/Änderungs-Brief** — fertig für `build`/`fix`/`remix` (UI-Button „→ Übernehmen" routet in die richtige Karte)
 5. **Einschätzung** — Erfolgswahrscheinlichkeit, Aufwand, Risiken
+6. **APIs & Programme** — konkrete externe APIs (Zweck, Doku-Link, Auth, Kosten) und Apps mit Kurzbefehl-Actions/App Intents, die die Umsetzung ermöglichen — nur web-verifizierte Vorschläge
+
+**Kontext-Analyse** (seit 2026-07-20): `advise --shortcut "<Name>"` bzw. `--draft x.xml` analysiert einen **bestehenden** Kurzbefehl (echte Action-Struktur fließt ins Prompt) — in der UI als „🎓 Erst analysieren" in den Karten „Bestehende bearbeiten" und „Draft ändern", plus **„🎓 Optimierungsvorschläge zum Ergebnis"** nach jedem erfolgreichen Build (dein Testfall-Feedback-Loop).
 
 Ergebnisse liegen in `~/Documents/Tom-Shortcuts/advice/*.md`. In der Forge-UI: Karte **„🎓 Analyse zuerst"** (mit YouTube-Feld). Hinweis: 100-%-Garantien gibt es nicht — die Analyse maximiert die Trefferquote, der Craig-Loop-Validator fängt den Rest.
 

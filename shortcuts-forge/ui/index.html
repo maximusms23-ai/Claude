@@ -77,7 +77,7 @@
     <div>
       <label for="aYoutube">YouTube-Video als Quelle (optional)</label>
       <input id="aYoutube" placeholder="https://www.youtube.com/watch?v=…">
-      <div class="hint" style="margin-top:6px">Die Analyse sucht Web/GitHub/RoutineHub nach ähnlichen Projekten, empfiehlt das beste Werkzeug (Kurzbefehl · Python · AppleScript · Pages · Numbers) und liefert einen optimierten Bau-Brief.</div>
+      <div class="hint" style="margin-top:6px">Die Analyse sucht Web/GitHub/RoutineHub nach ähnlichen Projekten, empfiehlt das beste Werkzeug (Kurzbefehl · Python · AppleScript · Pages · Numbers), liefert einen optimierten Bau-Brief <b>und schlägt konkrete APIs &amp; Programme vor</b> (Endpunkt, Auth, Kosten · Apps mit Kurzbefehl-Actions).</div>
     </div>
   </div>
   <button id="btnAdvise" onclick="advise()">🎓 Analysieren (~1–2 Min)</button>
@@ -119,7 +119,8 @@
     <label for="fixNew">Neuer Name (optional — Original in der App bleibt unberührt)</label>
     <input id="fixNew" placeholder="z. B. Hallo Tom v2">
     <button id="btnFix" onclick="fixShortcut()">🩹 Ausführen</button>
-    <div class="hint">Holt den Kurzbefehl aus der App (Export), wendet den Modus an und signiert neu.</div>
+    <button id="btnFixAdvise" class="ghost" style="margin-left:8px" onclick="adviseCtx('fix')" title="Experten-Analyse mit Web/GitHub-Suche zum gewählten Kurzbefehl — Ergebnis oben, ein Klick übernimmt den Änderungs-Brief">🎓 Erst analysieren</button>
+    <div class="hint">Holt den Kurzbefehl aus der App (Export), wendet den Modus an und signiert neu. „Erst analysieren" prüft Struktur + sucht ähnliche Projekte im Web/GitHub, bevor Token für den Umbau fließen.</div>
   </div>
 
   <div class="card">
@@ -131,6 +132,7 @@
     <label for="rname">Neuer Name (optional — Original bleibt erhalten)</label>
     <input id="rname" placeholder="z. B. Hallo Tom v2">
     <button id="btnRemix" onclick="remix()">🔧 Änderung bauen</button>
+    <button id="btnRemixAdvise" class="ghost" style="margin-left:8px" onclick="adviseCtx('remix')" title="Experten-Analyse mit Web/GitHub-Suche zum gewählten Draft — Einschätzung + Änderungs-Brief">🎓 Erst analysieren</button>
   </div>
 </div>
 
@@ -145,6 +147,8 @@
       onclick="post('/api/resume',{model:$('model').value}).then(j=>j&&toast('Setze Kompilierung fort'))">▶ Fortsetzen</button>
     <button id="btnRetry" class="small ghost" style="display:none"
       onclick="post('/api/retry',{}).then(j=>j&&toast('Starte Job neu'))">↻ Neu starten</button>
+    <button id="btnSuggest" class="small ghost" style="display:none;margin-left:auto"
+      onclick="suggestForResult()" title="Testfall gelaufen? Experten-Analyse holt Optimierungs- und Erweiterungsvorschläge zum frisch gebauten Ergebnis (inkl. Web/GitHub-Suche)">🎓 Optimierungsvorschläge zum Ergebnis</button>
   </div>
   <div class="hint" style="margin-bottom:8px">Einfache Kurzbefehle: ~2–4 Min · Komplexe (Scan, KI, mehrere Schritte): 5–12 Min sind normal — der Agent liest Doku und validiert iterativ. Log unten zeigt den Fortschritt.</div>
   <pre id="log">Noch kein Job gelaufen. Log erscheint hier live.</pre>
@@ -210,7 +214,29 @@ async function fixShortcut() {
 async function advise() {
   const brief = $("aBrief").value.trim(), youtube = $("aYoutube").value.trim();
   if (!brief && !youtube) return toast("Anforderung oder YouTube-Link eingeben");
+  window.__adviceTarget = "build";
   if (await post("/api/advise", {brief, youtube, model: $("model").value})) { toast("Analyse gestartet — Ergebnis erscheint hier"); window.__awaitAdvice = true; }
+}
+async function adviseCtx(target) {
+  const payload = {model: $("model").value};
+  if (target === "fix") {
+    if (!$("fixName").value) return toast("Kein Kurzbefehl gewählt");
+    payload.installed = $("fixName").value;
+    payload.brief = $("fixChange").value.trim();
+  } else {
+    if (!$("draft").value) return toast("Kein Draft vorhanden");
+    payload.draft = $("draft").value;
+    payload.brief = $("change").value.trim();
+  }
+  window.__adviceTarget = target;
+  if (await post("/api/advise", payload)) { toast("Experten-Analyse gestartet — Ergebnis in der Analyse-Karte oben"); window.__awaitAdvice = true; }
+}
+async function suggestForResult() {
+  const draft = window.__resultDraft;
+  if (!draft) return toast("Kein Ergebnis-Draft gefunden");
+  window.__adviceTarget = "remix"; window.__suggestDraft = draft;
+  if (await post("/api/advise", {draft, brief: "Mache konkrete Optimierungs- und Erweiterungsvorschlaege nach dem ersten Testlauf", model: $("model").value}))
+    { toast("Hole Optimierungsvorschläge — Ergebnis oben"); window.__awaitAdvice = true; }
 }
 async function loadAdvice() {
   const a = await (await fetch("/api/advice")).json();
@@ -223,9 +249,23 @@ async function loadAdvice() {
 function takeoverAdvice() {
   const t = $("adviceText").textContent;
   const m = t.match(/## 4\.[^\n]*\n([\s\S]*?)(\n## 5\.|$)/);
-  $("brief").value = (m ? m[1] : t).trim().slice(0, 4000);
-  $("brief").scrollIntoView({behavior:"smooth"});
-  toast("Bau-Brief übernommen — unten prüfen und Bauen klicken");
+  const text = (m ? m[1] : t).trim().slice(0, 4000);
+  const target = window.__adviceTarget || "build";
+  if (target === "fix") {
+    $("fixChange").value = text;
+    $("fixName").scrollIntoView({behavior:"smooth"});
+    toast("Änderungs-Brief in die Bearbeiten-Karte übernommen");
+  } else if (target === "remix") {
+    if (window.__suggestDraft && [...$("draft").options].some(o => o.value === window.__suggestDraft))
+      $("draft").value = window.__suggestDraft;
+    $("change").value = text;
+    $("draft").scrollIntoView({behavior:"smooth"});
+    toast("Änderungs-Brief in die Remix-Karte übernommen");
+  } else {
+    $("brief").value = text;
+    $("brief").scrollIntoView({behavior:"smooth"});
+    toast("Bau-Brief übernommen — unten prüfen und Bauen klicken");
+  }
 }
 async function exportDraft() {
   const installed = $("fixName").value;
@@ -263,9 +303,13 @@ async function poll() {
     $("btnResume").style.display = (broken && job.resume_draft) ? "inline-block" : "none";
     $("btnResume").title = job.resume_draft ? "Draft fertigstellen: " + job.resume_draft : "";
     $("btnRetry").style.display = (broken && job.kind && job.kind !== "resume") ? "inline-block" : "none";
+    const built = job.status === "success" && job.resume_draft && job.kind !== "advise";
+    window.__resultDraft = built ? job.resume_draft : null;
+    $("btnSuggest").style.display = built ? "inline-block" : "none";
     if (job.log) { const l = $("log"); const stick = l.scrollTop + l.clientHeight >= l.scrollHeight - 8;
       l.textContent = job.log; if (stick) l.scrollTop = l.scrollHeight; }
     $("btnBuild").disabled = busy; $("btnRemix").disabled = busy; $("btnAdvise").disabled = busy;
+    $("btnFixAdvise").disabled = busy; $("btnRemixAdvise").disabled = busy;
     if (window.__awaitAdvice && job.kind === "advise" && job.status === "success") {
       window.__awaitAdvice = false; loadAdvice();
     }

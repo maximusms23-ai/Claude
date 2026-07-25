@@ -1,0 +1,675 @@
+#!/usr/bin/env python3
+"""
+tom-raw-inject — erzeugt aus einer read-only raw-Quelle eine neue Obsidian-Note.
+
+Zweck:
+- raw/ bleibt unveraendert
+- Text wird lokal extrahiert
+- optional wird generischer Web-Kontext ueber Ollama Web Search gezogen
+- Ergebnis landet als neue Note in 00_Inbox/ oder in einem expliziten Zielpfad
+"""
+
+import argparse
+import json
+import os
+import re
+import subprocess
+import sys
+import unicodedata
+from datetime import datetime
+from pathlib import Path
+
+TOM_VAULT = Path(
+    os.environ.get(
+        "TOM_VAULT",
+        "/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/"
+        "Obsidian_Valuet/Obsidian_Zentralw",
+    )
+)
+INBOX_DIR = TOM_VAULT / "00_Inbox"
+OLLAMA_CHAT_URL = "http://127.0.0.1:11434/api/chat"
+OLLAMA_WEB_URL = "http://127.0.0.1:11434/api/experimental/web_search"
+MODEL = os.environ.get("TOM_RAW_INJECT_MODEL", "qwen2.5:3b")
+MAX_SOURCE_CHARS_VALUE = int(os.environ.get("TOM_RAW_INJECT_MAX_CHARS", "12000"))
+MAX_SOURCE_CHARS = None if MAX_SOURCE_CHARS_VALUE <= 0 else MAX_SOURCE_CHARS_VALUE
+MAX_WEB_RESULTS = int(os.environ.get("TOM_RAW_INJECT_MAX_WEB_RESULTS", "4"))
+CHUNK_CHARS = int(os.environ.get("TOM_RAW_INJECT_CHUNK_CHARS", "10000"))
+MAX_CHUNKS_VALUE = int(os.environ.get("TOM_RAW_INJECT_MAX_CHUNKS", "0"))
+MAX_CHUNKS = None if MAX_CHUNKS_VALUE <= 0 else MAX_CHUNKS_VALUE
+MODEL_TIMEOUT_SECONDS = int(os.environ.get("TOM_RAW_INJECT_MODEL_TIMEOUT", "600"))
+WEB_TIMEOUT_SECONDS = int(os.environ.get("TOM_RAW_INJECT_WEB_TIMEOUT", "180"))
+
+TEXT_EXTS = {".md", ".txt", ".text", ".json", ".yaml", ".yml", ".csv"}
+OFFICE_EXTS = {".doc", ".docx", ".ppt", ".pptx", ".rtf"}
+PDF_EXTS = {".pdf"}
+
+DEFAULT_PROMPT = (
+    "Erstelle fuer Obsidian eine kurze Arbeitsnotiz auf Deutsch mit "
+    "Kurzfassung, wichtigsten Punkten und naechsten Schritten. "
+    "Nutze Web-Kontext nur, wenn er wirklich hilft, und trenne ihn sauber."
+)
+
+SYSTEM_PROMPT = (
+    "Du bist Tom's lokaler Dokument-Assistent fuer Obsidian. "
+    "Antworte auf Deutsch, praezise und ohne Meta-Geschwaetz. "
+    "Liefere Markdown mit den Abschnitten '## Kurzfassung', "
+    "'## Wichtige Punkte' und '## Naechste Schritte'. "
+    "Wenn Web-Kontext vorhanden und relevant ist, fuege '## Web-Kontext' hinzu. "
+    "Erfinde nichts; bei Unsicherheit schreibe 'unklar'."
+)
+
+
+def slugify(text: str) -> str:
+    normalized = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+    normalized = normalized.lower()
+    normalized = re.sub(r"[^a-z0-9]+", "-", normalized).strip("-")
+    return normalized or "raw-import"
+
+
+def yaml_escape(value: str) -> str:
+    return value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ").strip()
+
+
+def run_capture(cmd: list[str]) -> str:
+    result = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        stderr = result.stderr.strip() or "unbekannter Fehler"
+        raise RuntimeError(stderr)
+    return result.stdout
+
+
+def post_json(url: str, payload: dict, max_time: int = 600) -> dict:
+    cmd = [
+        "curl",
+        "-s",
+    ]
+    if max_time > 0:
+        cmd.extend(["--max-time", str(max_time)])
+    cmd.extend(
+        [
+            url,
+            "-H",
+            "Content-Type: application/json",
+            "-d",
+            json.dumps(payload),
+        ]
+    )
+    result = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        stderr = result.stderr.strip() or "curl fehlgeschlagen"
+        raise RuntimeError(stderr)
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"ungueltige JSON-Antwort: {exc}") from exc
+
+
+def fallback_mdls(source: Path) -> str:
+    try:
+        output = run_capture(
+            ["/usr/bin/mdls", "-raw", "-name", "kMDItemTextContent", str(source)]
+        ).strip()
+    except Exception:
+        return ""
+    if not output or output == "(null)":
+        return ""
+    return output
+
+
+def extract_text(source: Path) -> str:
+    suffix = source.suffix.lower()
+    text = ""
+
+    if suffix in TEXT_EXTS:
+        text = source.read_text(encoding="utf-8", errors="replace")
+    elif suffix in PDF_EXTS:
+        text = run_capture(
+            ["/opt/homebrew/bin/pdftotext", "-layout", "-nopgbrk", str(source), "-"]
+        )
+    elif suffix in OFFICE_EXTS:
+        text = run_capture(["/usr/bin/textutil", "-convert", "txt", "-stdout", str(source)])
+
+    if not text.strip():
+        text = fallback_mdls(source)
+
+    cleaned = text.replace("\r\n", "\n").replace("\r", "\n").strip()
+    if not cleaned:
+        raise RuntimeError(
+            "Kein extrahierbarer Text gefunden. Bei gescannten PDFs bitte erst OCR pruefen."
+        )
+    return cleaned
+
+
+def search_web(query: str, max_time: int) -> list[dict]:
+    payload = {"query": query, "max_results": MAX_WEB_RESULTS}
+    data = post_json(OLLAMA_WEB_URL, payload, max_time=max_time)
+    return data.get("results", [])
+
+
+def format_web_results(results: list[dict]) -> str:
+    blocks = []
+    for idx, item in enumerate(results, start=1):
+        title = (item.get("title") or "").strip()
+        url = (item.get("url") or "").strip()
+        content = " ".join((item.get("content") or "").split())
+        blocks.append(
+            f"{idx}. {title}\nURL: {url}\nSnippet: {content[:500]}"
+        )
+    return "\n\n".join(blocks)
+
+
+def chat_completion(user_parts: list[str], max_time: int) -> str:
+    payload = {
+        "model": MODEL,
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": "\n".join(user_parts)},
+        ],
+        "stream": False,
+    }
+    data = post_json(OLLAMA_CHAT_URL, payload, max_time=max_time)
+    return data["message"]["content"].strip()
+
+
+def chunk_text(raw_text: str, chunk_chars: int, max_chunks: int | None) -> list[str]:
+    cleaned = raw_text.strip()
+    if len(cleaned) <= chunk_chars:
+        return [cleaned]
+
+    chunks: list[str] = []
+    start = 0
+    while start < len(cleaned):
+        end = min(start + chunk_chars, len(cleaned))
+        boundary = cleaned.rfind("\n\n", start, end)
+        if boundary <= start:
+            boundary = end
+        chunks.append(cleaned[start:boundary].strip())
+        start = boundary if boundary > start else end
+        if max_chunks is not None and len(chunks) >= max_chunks:
+            break
+    return [chunk for chunk in chunks if chunk]
+
+
+def call_model_direct(source: Path, raw_text: str, prompt: str, web_context: str, max_time: int) -> str:
+    relative_source = display_source_path(source)
+    user_parts = [
+        f"Dateiname: {source.name}",
+        f"Quelle: {relative_source}",
+        f"Aufgabe: {prompt}",
+        "Rohtext-Auszug:",
+        "---",
+        raw_text if MAX_SOURCE_CHARS is None else raw_text[:MAX_SOURCE_CHARS],
+        "---",
+    ]
+    if web_context:
+        user_parts.extend(
+            [
+                "Web-Kontext:",
+                "---",
+                web_context,
+                "---",
+            ]
+        )
+
+    return chat_completion(user_parts, max_time=max_time)
+
+
+def summarize_chunk(
+    source: Path,
+    chunk: str,
+    part: int,
+    total: int,
+    prompt: str,
+    max_time: int,
+) -> str:
+    relative_source = display_source_path(source)
+    user_parts = [
+        f"Dateiname: {source.name}",
+        f"Quelle: {relative_source}",
+        f"Aufgabe: {prompt}",
+        f"Teil: {part} von {total}",
+        "Rohtext-Teil:",
+        "---",
+        chunk,
+        "---",
+        "Erstelle eine knappe Teilzusammenfassung mit Fakten, Kernaussagen und offenen Punkten.",
+    ]
+    return chat_completion(user_parts, max_time=max_time)
+
+
+def synthesize_chunks(
+    source: Path,
+    prompt: str,
+    partials: list[str],
+    web_context: str,
+    max_time: int,
+) -> str:
+    relative_source = display_source_path(source)
+    user_parts = [
+        f"Dateiname: {source.name}",
+        f"Quelle: {relative_source}",
+        f"Aufgabe: {prompt}",
+        "Zwischenzusammenfassungen:",
+        "---",
+        "\n\n---\n\n".join(partials),
+        "---",
+    ]
+    if web_context:
+        user_parts.extend(
+            [
+                "Web-Kontext:",
+                "---",
+                web_context,
+                "---",
+            ]
+        )
+    user_parts.append(
+        "Erstelle daraus eine saubere Obsidian-Arbeitsnotiz auf Deutsch."
+    )
+    return chat_completion(user_parts, max_time=max_time)
+
+
+def call_model(source: Path, raw_text: str, prompt: str, web_context: str, max_time: int) -> str:
+    if MAX_SOURCE_CHARS is not None:
+        return call_model_direct(source, raw_text, prompt, web_context, max_time=max_time)
+
+    chunks = chunk_text(raw_text, CHUNK_CHARS, MAX_CHUNKS)
+    if len(chunks) == 1:
+        return call_model_direct(source, chunks[0], prompt, web_context, max_time=max_time)
+
+    partials = [
+        summarize_chunk(source, chunk, idx + 1, len(chunks), prompt, max_time=max_time)
+        for idx, chunk in enumerate(chunks)
+    ]
+    return synthesize_chunks(source, prompt, partials, web_context, max_time=max_time)
+
+
+def display_source_path(source: Path) -> str:
+    try:
+        return str(source.relative_to(TOM_VAULT))
+    except ValueError:
+        return str(source)
+
+
+def build_target_path(source: Path, explicit_target: str | None) -> Path:
+    if explicit_target:
+        return Path(explicit_target).expanduser()
+
+    INBOX_DIR.mkdir(parents=True, exist_ok=True)
+    date_prefix = datetime.now().strftime("%Y-%m-%d")
+    stem = slugify(source.stem)
+    candidate = INBOX_DIR / f"{date_prefix}-{stem}.md"
+    counter = 2
+    while candidate.exists():
+        candidate = INBOX_DIR / f"{date_prefix}-{stem}-{counter}.md"
+        counter += 1
+    return candidate
+
+
+def build_note_text(source: Path, generated: str, web_query: str) -> str:
+    title = source.stem.strip() or source.name
+    created = datetime.now().strftime("%Y-%m-%d")
+    relative_source = display_source_path(source)
+    tag_list = "[raw, ollama, injection" + (", web]" if web_query else "]")
+    frontmatter = [
+        "---",
+        f'title: "{yaml_escape(title)}"',
+        f"created: {created}",
+        "type: raw-import",
+        f"tags: {tag_list}",
+        f'source_raw: "{yaml_escape(relative_source)}"',
+        f'source_file: "{yaml_escape(source.name)}"',
+        f'source_ext: "{source.suffix.lower()}"',
+        f'model: "{MODEL}"',
+        'injected_by: "tom-raw-inject"',
+        f'source_mode: "{"chunked" if MAX_SOURCE_CHARS is None else "excerpt"}"',
+    ]
+    if web_query:
+        frontmatter.append(f'web_query: "{yaml_escape(web_query)}"')
+    frontmatter.append("---")
+
+    meta_lines = [
+        "## Quelle",
+        f"- Rohdatei: `{relative_source}`",
+        f"- Modell: `{MODEL}`",
+        f"- Web-Kontext: `{'ja' if web_query else 'nein'}`",
+    ]
+    if web_query:
+        meta_lines.append(f"- Web-Frage: `{web_query}`")
+
+    body = "\n".join(
+        [
+            "\n".join(frontmatter),
+            "",
+            "# Raw Import",
+            "",
+            "\n".join(meta_lines),
+            "",
+            generated,
+            "",
+        ]
+    )
+    return body
+
+
+def extract_pdf_bookmarks(source: Path) -> list[dict]:
+    """Extract bookmarks/outline from PDF using PyPDF2. Returns list of {title, page}."""
+    try:
+        from PyPDF2 import PdfReader
+    except ImportError:
+        return []
+    try:
+        reader = PdfReader(str(source))
+    except Exception:
+        return []
+    outlines = reader.outline if hasattr(reader, 'outline') else []
+    bookmarks = []
+
+    def _walk(items, depth=0):
+        for item in items:
+            if isinstance(item, list):
+                _walk(item, depth + 1)
+            else:
+                title = item.title if hasattr(item, 'title') else str(item.get('/Title', ''))
+                page_num = 0
+                try:
+                    page_num = reader.get_destination_page_number(item)
+                except Exception:
+                    pass
+                bookmarks.append({"title": title.strip(), "page": page_num, "depth": depth})
+
+    _walk(outlines)
+    return bookmarks
+
+
+def split_text_by_bookmarks(raw_text: str, bookmarks: list[dict]) -> list[tuple[str, str]]:
+    """Split text into chapters using bookmark titles as delimiters.
+    Returns list of (chapter_title, chapter_text)."""
+    if not bookmarks:
+        return [("Volltext", raw_text)]
+
+    lines = raw_text.split("\n")
+    chapters = []
+    current_title = "Einleitung"
+    current_lines = []
+
+    bm_titles = [bm["title"] for bm in bookmarks if bm["title"]]
+    bm_set = set(bm_titles)
+
+    for line in lines:
+        stripped = line.strip()
+        matched = False
+        for bm_title in bm_set:
+            if stripped == bm_title or stripped.startswith(bm_title + " ") or stripped.endswith(bm_title):
+                if current_lines:
+                    chapters.append((current_title, "\n".join(current_lines)))
+                current_title = bm_title
+                current_lines = []
+                matched = True
+                break
+        if not matched:
+            current_lines.append(line)
+
+    if current_lines:
+        chapters.append((current_title, "\n".join(current_lines)))
+
+    return chapters if chapters else [("Volltext", raw_text)]
+
+
+def fallback_heading_split(raw_text: str) -> list[tuple[str, str]]:
+    """Fallback: split by lines that look like headings (ALL CAPS, numbered, etc.)."""
+    heading_pattern = re.compile(
+        r"^(?:"
+        r"(?:Kapitel|Chapter|Teil|Part|Abschnitt)\s+\d+"
+        r"|(?:\d+\.?\s+[A-ZÄÖÜ])"
+        r"|(?:[A-ZÄÖÜ][A-ZÄÖÜ\s]{5,}$)"
+        r")",
+        re.MULTILINE,
+    )
+    matches = list(heading_pattern.finditer(raw_text))
+    if len(matches) < 2:
+        return [("Volltext", raw_text)]
+
+    chapters = []
+    for i, m in enumerate(matches):
+        title = m.group().strip()[:80]
+        start = m.start()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(raw_text)
+        text = raw_text[start:end].strip()
+        if text:
+            chapters.append((title, text))
+    return chapters
+
+
+def process_book(source: Path, raw_text: str, prompt: str, web_context: str,
+                 max_time: int, dry_run: bool) -> int:
+    """Process a book: split into chapters, create per-chapter notes + overview."""
+    print(f"… Buch-Modus: Kapitel-Erkennung", file=sys.stderr)
+
+    bookmarks = []
+    if source.suffix.lower() == ".pdf":
+        bookmarks = extract_pdf_bookmarks(source)
+        if bookmarks:
+            print(f"  {len(bookmarks)} PDF-Bookmarks gefunden", file=sys.stderr)
+
+    if bookmarks:
+        chapters = split_text_by_bookmarks(raw_text, bookmarks)
+    else:
+        print("  Keine Bookmarks — Fallback auf Heading-Erkennung", file=sys.stderr)
+        chapters = fallback_heading_split(raw_text)
+
+    print(f"  {len(chapters)} Kapitel erkannt", file=sys.stderr)
+
+    book_title = source.stem.strip() or source.name
+    date_prefix = datetime.now().strftime("%Y-%m-%d")
+    book_slug = slugify(book_title)
+    book_dir = INBOX_DIR / f"{date_prefix}-{book_slug}"
+
+    if not dry_run:
+        book_dir.mkdir(parents=True, exist_ok=True)
+
+    chapter_notes = []
+    for idx, (ch_title, ch_text) in enumerate(chapters, start=1):
+        ch_slug = slugify(ch_title)
+        ch_filename = f"{idx:02d}-{ch_slug}.md"
+        print(f"  … Kapitel {idx}/{len(chapters)}: {ch_title[:50]}", file=sys.stderr)
+
+        truncated = ch_text[:MAX_SOURCE_CHARS_VALUE] if MAX_SOURCE_CHARS is not None else ch_text
+        try:
+            generated = call_model(source, truncated, prompt, "", max_time=max_time)
+        except Exception as exc:
+            print(f"  ✗ Kapitel {idx} fehlgeschlagen: {exc}", file=sys.stderr)
+            generated = f"_(KI-Verarbeitung fehlgeschlagen: {exc})_"
+
+        relative_source = display_source_path(source)
+        ch_note = "\n".join([
+            "---",
+            f'title: "{yaml_escape(ch_title)}"',
+            f"created: {date_prefix}",
+            "type: buch-kapitel",
+            f"tags: [raw, buch, kapitel]",
+            f'source_raw: "{yaml_escape(relative_source)}"',
+            f'source_file: "{yaml_escape(source.name)}"',
+            f'buch_titel: "{yaml_escape(book_title)}"',
+            f"kapitel_nr: {idx}",
+            f"kapitel_total: {len(chapters)}",
+            f'model: "{MODEL}"',
+            'injected_by: "tom-raw-inject --book"',
+            "---",
+            "",
+            f"# {ch_title}",
+            "",
+            f"_Kapitel {idx} von {len(chapters)} aus [[{date_prefix}-{book_slug}]]_",
+            "",
+            generated,
+            "",
+        ])
+
+        if dry_run:
+            print(f"\n=== {ch_filename} ===")
+            print(ch_note)
+        else:
+            ch_path = book_dir / ch_filename
+            ch_path.write_text(ch_note, encoding="utf-8")
+            print(f"  ✓ {ch_path.name}", file=sys.stderr)
+
+        chapter_notes.append((ch_title, ch_filename))
+
+    overview_lines = [
+        "---",
+        f'title: "{yaml_escape(book_title)}"',
+        f"created: {date_prefix}",
+        "type: buch-uebersicht",
+        f"tags: [raw, buch, uebersicht]",
+        f'source_raw: "{yaml_escape(display_source_path(source))}"',
+        f'source_file: "{yaml_escape(source.name)}"',
+        f"kapitel_anzahl: {len(chapters)}",
+        f'model: "{MODEL}"',
+        'injected_by: "tom-raw-inject --book"',
+        "---",
+        "",
+        f"# {book_title}",
+        "",
+        f"Quelle: `{display_source_path(source)}`",
+        f"Kapitel: {len(chapters)}",
+        "",
+        "## Inhaltsverzeichnis",
+        "",
+    ]
+    for ch_title, ch_filename in chapter_notes:
+        overview_lines.append(f"- [[{ch_filename.replace('.md', '')}|{ch_title}]]")
+
+    overview_text = "\n".join(overview_lines) + "\n"
+
+    if dry_run:
+        print(f"\n=== UEBERSICHT ===")
+        print(overview_text)
+    else:
+        overview_path = book_dir / f"{date_prefix}-{book_slug}.md"
+        overview_path.write_text(overview_text, encoding="utf-8")
+        print(f"✓ Buch-Uebersicht: {overview_path}", file=sys.stderr)
+        print(str(overview_path))
+
+    return 0
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(
+        description="Erzeugt aus einer read-only raw-Datei eine neue Obsidian-Note."
+    )
+    ap.add_argument("source", help="Pfad zur Quelldatei in raw/ oder anderswo")
+    ap.add_argument(
+        "--target",
+        help="Optionaler Zielpfad fuer die erzeugte Note. Default: 00_Inbox/<datum>-<slug>.md",
+    )
+    ap.add_argument(
+        "--prompt",
+        default=DEFAULT_PROMPT,
+        help="Aufgabe fuer das lokale Modell",
+    )
+    ap.add_argument(
+        "--web-query",
+        default="",
+        help="Optionale generische Webfrage fuer zusaetzlichen Kontext",
+    )
+    ap.add_argument(
+        "--full-source",
+        action="store_true",
+        help="Verarbeitet den Volltext in Chunks statt eines gekuerzten Auszugs",
+    )
+    ap.add_argument(
+        "--no-time-limit",
+        action="store_true",
+        help="Deaktiviert Modell- und Web-Time-Limits fuer lange Laeufe",
+    )
+    ap.add_argument(
+        "--book",
+        action="store_true",
+        help="Buch-Modus: Kapitel-Erkennung via PDF-Bookmarks/Heading-Heuristik, Pro-Kapitel-Notes",
+    )
+    ap.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Zeigt die generierte Note, schreibt aber nichts",
+    )
+    ap.add_argument(
+        "--force",
+        action="store_true",
+        help="Explizites Ziel ueberschreiben, falls die Datei schon existiert",
+    )
+    args = ap.parse_args()
+
+    source = Path(args.source).expanduser()
+    if not source.exists():
+        print(f"✗ Quelldatei nicht gefunden: {source}", file=sys.stderr)
+        return 1
+
+    try:
+        raw_text = extract_text(source)
+    except Exception as exc:
+        print(f"✗ Text-Extraktion fehlgeschlagen: {exc}", file=sys.stderr)
+        return 2
+
+    web_query = args.web_query.strip()
+    web_context = ""
+    model_timeout = 0 if args.no_time_limit else MODEL_TIMEOUT_SECONDS
+    web_timeout = 0 if args.no_time_limit else WEB_TIMEOUT_SECONDS
+
+    global MAX_SOURCE_CHARS
+    if args.full_source or args.book:
+        MAX_SOURCE_CHARS = None
+
+    if args.book:
+        return process_book(source, raw_text, args.prompt, "", model_timeout, args.dry_run)
+
+    if web_query:
+        print(f"… hole Web-Kontext: {web_query}", file=sys.stderr)
+        try:
+            results = search_web(web_query, max_time=web_timeout)
+        except Exception as exc:
+            print(f"✗ Web-Kontext fehlgeschlagen: {exc}", file=sys.stderr)
+            return 3
+        web_context = format_web_results(results)
+
+    print(f"… generiere Note mit {MODEL}", file=sys.stderr)
+    try:
+        generated = call_model(source, raw_text, args.prompt, web_context, max_time=model_timeout)
+    except Exception as exc:
+        print(f"✗ Modellaufruf fehlgeschlagen: {exc}", file=sys.stderr)
+        return 4
+
+    note_text = build_note_text(source, generated, web_query)
+    target = build_target_path(source, args.target)
+
+    if args.dry_run:
+        print(note_text)
+        return 0
+
+    if target.exists() and not args.force:
+        print(
+            f"✗ Zieldatei existiert bereits: {target} (nutze --force zum Ueberschreiben)",
+            file=sys.stderr,
+        )
+        return 5
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(note_text, encoding="utf-8")
+    print(f"✓ Note erzeugt: {target}", file=sys.stderr)
+    print(str(target))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

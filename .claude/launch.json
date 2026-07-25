@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "omniroute",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "OmniRoute", "run", "dev"],
+      "port": 20128
+    },
+    {
+      "name": "tesla-vin-decoder",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "tesla-tools/tesla-vin-decoder-app", "run", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "forge-ui",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["shortcuts-forge/ui/server.py", "--port", "7461"],
+      "port": 7461
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+# tom-clipper-status — Prüft den Status der Obsidian Web Clipper Browser-Extensions
+#
+# Zeigt an:
+# - ob die Legacy- und Qwen-Core-Templates als JSON-Quelle vorhanden sind
+# - ob Chrome die Templates/Vault-Settings bereits geladen hat
+# - ob Safari bereits einen initialisierten Settings-Store angelegt hat
+
+set -euo pipefail
+
+TOM_VAULT="${TOM_VAULT:-/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw}"
+JSON_DIR="$TOM_VAULT/99_Vorlagen/web-clipper/json"
+CHROME_SYNC_DIR="$HOME/Library/Application Support/Google/Chrome/Default/Sync Extension Settings/cnjifjpddelmedmihgijeibhnjfabmlf"
+SAFARI_CONTAINER="$HOME/Library/Containers/md.obsidian.Obsidian-Web-Clipper"
+
+LEGACY_TEMPLATES=(
+  "Tom-Artikel.json"
+  "Tom-Paper.json"
+  "Tom-Video.json"
+  "Tom-Dokument.json"
+  "Tom-Social-Post.json"
+  "Tom-Rezept.json"
+  "Tom-Werkzeug.json"
+)
+
+QWEN_CORE_TEMPLATES=(
+  "Tom-Qwen-Artikel.json"
+  "Tom-Qwen-YouTube.json"
+  "Tom-Qwen-Paper.json"
+  "Tom-Qwen-GitHub.json"
+  "Tom-Qwen-Social.json"
+)
+
+failures=0
+
+say() {
+  printf '%s\n' "$*"
+}
+
+check_json_sources() {
+  say "== JSON-Quellen =="
+  local missing=0
+  say "-- Legacy --"
+  for tpl in "${LEGACY_TEMPLATES[@]}"; do
+    if [[ -f "$JSON_DIR/$tpl" ]]; then
+      say "OK   $tpl"
+    else
+      say "MISS $tpl"
+      missing=1
+      failures=1
+    fi
+  done
+
+  say
+  say "-- Qwen Core --"
+  for tpl in "${QWEN_CORE_TEMPLATES[@]}"; do
+    if [[ -f "$JSON_DIR/$tpl" ]]; then
+      say "OK   $tpl"
+    else
+      say "MISS $tpl"
+      missing=1
+      failures=1
+    fi
+  done
+
+  if [[ $missing -eq 0 ]]; then
+    say
+    say "OK   12/12 importierbare Templates vorhanden"
+  fi
+  say
+}
+
+extract_chrome_value() {
+  local key="$1"
+  leveldbutil dump "$CHROME_SYNC_DIR"/* 2>/dev/null |
+    awk -v needle="'$key' @ " '
+      index($0, needle) { seen=1; print; exit }
+      END { if (!seen) exit 1 }
+    ' | sed -E "s/^'$key' @ [0-9]+ : val => '(.*)'$/\1/"
+}
+
+check_chrome() {
+  say "== Chrome =="
+  if [[ ! -d "$CHROME_SYNC_DIR" ]]; then
+    say "MISS Chrome Sync-Storage nicht gefunden: $CHROME_SYNC_DIR"
+    failures=1
+    say
+    return
+  fi
+
+  local template_list vaults interpreter_settings
+  template_list="$(extract_chrome_value "template_list" || true)"
+  vaults="$(extract_chrome_value "vaults" || true)"
+  interpreter_settings="$(extract_chrome_value "interpreter_settings" || true)"
+
+  if [[ -n "$template_list" ]]; then
+    local template_count
+    template_count="$(printf '%s' "$template_list" | grep -o '177[0-9a-z]*' | wc -l | tr -d ' ')"
+    say "OK   template_list gefunden ($template_count Einträge)"
+    if [[ "$template_count" -lt 12 ]]; then
+      say "WARN Erwartet sind jetzt 12 Templates nach Qwen-Import (7 Legacy + 5 Kernvorlagen)"
+      failures=1
+    fi
+  else
+    say "MISS template_list nicht gefunden"
+    failures=1
+  fi
+
+  if [[ "$vaults" == *"Obsidian_Zentralw"* ]]; then
+    say "OK   Vault Obsidian_Zentralw eingetragen"
+  else
+    say "MISS Vault Obsidian_Zentralw fehlt"
+    failures=1
+  fi
+
+  if [[ "$interpreter_settings" == *'"providerModelId":"qwen2.5:3b"'* ]] || [[ "$interpreter_settings" == *'"providerModelId":"tom-qwen25"'* ]]; then
+    say "OK   Interpreter-Model qwen2.5 konfiguriert"
+  elif [[ -n "$interpreter_settings" ]]; then
+    say "WARN Interpreter-Settings gefunden, aber qwen2.5 nicht eindeutig gesetzt"
+    say "INFO Browser-seitig einmal Template-/Interpreter-Import in den Extension-Settings pruefen"
+  else
+    say "MISS interpreter_settings nicht gefunden"
+    failures=1
+  fi
+
+  if [[ "$interpreter_settings" == *'"interpreterAutoRun":true'* ]]; then
+    say "INFO Interpreter Auto-Run ist aktuell AN"
+  elif [[ "$interpreter_settings" == *'"interpreterAutoRun":false'* ]]; then
+    say "INFO Interpreter Auto-Run ist aktuell AUS"
+  fi
+
+  say
+}
+
+check_safari() {
+  say "== Safari =="
+  if [[ ! -d "$SAFARI_CONTAINER" ]]; then
+    say "MISS Safari-Container nicht gefunden: $SAFARI_CONTAINER"
+    failures=1
+    say
+    return
+  fi
+
+  local hits
+  hits="$(
+    find "$SAFARI_CONTAINER" -type f -print0 2>/dev/null |
+      while IFS= read -r -d '' file; do
+        strings "$file" 2>/dev/null |
+          rg -q 'template_list|vaults|interpreter_settings|Obsidian_Zentralw|Tom-Artikel|qwen2.5|tom-qwen25' &&
+          printf '%s\n' "$file"
+      done
+  )" || true
+
+  if [[ -n "$hits" ]]; then
+    say "OK   Safari-Settings-Spuren gefunden:"
+    printf '%s\n' "$hits"
+  else
+    say "INFO Noch kein initialisierter Safari-Settings-Store gefunden"
+    say "INFO Safari muss die Extension-Settings mindestens einmal oeffnen/importieren"
+  fi
+
+  say
+}
+
+check_json_sources
+check_chrome
+check_safari
+
+if [[ $failures -eq 0 ]]; then
+  say "Status: OK"
+else
+  say "Status: WARN"
+fi

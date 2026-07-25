@@ -1,0 +1,1159 @@
+# Roadmap: Tom — Persönlicher Lebens-Assistent
+
+## Planned Candidate
+
+### Phase 45 — LinkedIn-Kontakte -> Obsidian
+
+**Goal:** Eine skalierbare LinkedIn->Obsidian-Pipeline fuer sehr grosse Kontaktmengen planen und danach in kontrollierten Stufen umsetzen, ohne Obsidian mit 200000 Einzelnoten zu ueberlasten.
+
+**Status:** Planned / research-backed
+
+**Requirements:** LIOBS-01..12
+
+**Depends on:** Phase 35 (Web-ClIipper-Templates), Phase 41b (KI-Intake + Triage), bestehende Dedupe-/Ingest-Muster
+
+**Success Direction:**
+
+1. LinkedIn-Export dient als offizielle Bulk-Quelle.
+2. Die Gesamtmenge bleibt zunaechst in einer Silver-Schicht (`csv`, `jsonl`, optional `sqlite`).
+3. Obsidian-Noten werden nur fuer Tier-A/Tier-B Kontakte materialisiert.
+4. Web Clipper wird nur fuer Einzelprofile und Nachanreicherung eingesetzt.
+5. Skalierung erfolgt gestuft: 100 -> 1000 -> 10000 -> Full.
+
+Siehe `.planning/phases/45-linkedin-kontakte-obsidian/45-01-PLAN.md`.
+
+## v1.0 Complete
+
+Phases 1–7 shipped in commit `525c073` (2026-04-10). See git history for v1.0 phase details.
+
+| Phase | Goal | Status |
+|-------|------|--------|
+| 1 — Identität Tom | Claude-Rolle auf Tom umstellen | ✓ Done |
+| 2 — Vault-Struktur | 00–99 Ordner, Migration, Symlink, mkdocs | ✓ Done |
+| 3 — Personen-Seiten | 6 Personen-Seiten anlegen + vernetzen | ✓ Done |
+| 4 — Dokumente-Mapping | 15 Kategorie-Metadaten-Seiten | ✓ Done |
+| 5 — Templates | 9 Vorlagen in 99_Vorlagen/ | ✓ Done |
+| 6 — Bootstrap | Gerüst-Seiten + Dashboard + Log | ✓ Done |
+| 7 — Workflows | WF-01..05 in Vault-CLAUDE.md | ✓ Done |
+
+---
+
+## v1.1 — Maximus_OS Integration + Ollama Gemma Revival (Complete)
+
+**Goal:** Vault-Single-Source (iCloud), Hybrid-Integration mit Maximus_OS/PaperclipAI, lokales Gemma-Model gegen neuen Vault mit RAG.
+
+### Phases
+
+- [x] **Phase 8: Vault-Cleanup** — iCloud als Single Source of Truth, lokales Duplikat entfernt
+- [x] **Phase 9: Maximus_OS Integration Tooling** — `tom-issue` Wrapper + Kommunikationsregeln
+- [x] **Phase 10: Ollama Installation** — Ollama unter `/Users/maxim/Ollama` mit `gemma4:e4b`
+- [x] **Phase 11: Gemma Custom Model + RAG Pipeline** — `gemme`-Model, ChromaDB, Eval
+- [x] **Phase 12: Tom ↔ Gemma Wiring** — `tom-ask` Wrapper live
+- [x] **Phase 13: Dokumentation + Abschluss** — v1.1 Milestone-Close
+
+Commit-Trail siehe `MILESTONES.md`.
+
+---
+
+## v1.2 — Karpathy Wiki + claude-memory-compiler
+
+**Goal:** Hybrid Wissens-System: Karpathy Index-first Retrieval für `90_Wiki/` (external), neues privates `95_Gehirn/` (internal) mit automatischem Capture aus Claude-Code-Konversationen via `claude-memory-compiler`, RAG bleibt als Fallback und wächst um dritte Collection.
+
+### Phases
+
+- [ ] **Phase 14: Tool-Install** — `claude-memory-compiler` geklont, gepatcht, Smoke-Test grün
+- [ ] **Phase 15: Brain-Struktur** — `$TOM_VAULT/95_Gehirn/` Ordner, Privacy-Regeln, MkDocs-Ausschluss
+- [ ] **Phase 16: Hook-Integration** — Projekt-lokale Claude-Code Hooks für Auto-Capture
+- [ ] **Phase 17: Karpathy-Index für 90_Wiki** — `90_Wiki/index.md` neu im Karpathy-Retrieval-Stil
+- [ ] **Phase 18: RAG-Erweiterung um gehirn-Collection** — Dritte ChromaDB-Collection additiv
+- [ ] **Phase 19: Neue Wrapper tom-wiki/tom-compile/tom-lint** — CLI-Tools + Wissens-Kaskade
+- [ ] **Phase 20: Multi-Projekt-Konvention** — `wiki_path`-Konvention über mehrere Projekte
+- [ ] **Phase 21: Abschluss-Doku + Milestone-Close** — v1.2 Doku, Artikel, Close-Issue
+
+### Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 14. Tool-Install | 0/? | Not started | — |
+| 15. Brain-Struktur | 0/? | Not started | — |
+| 16. Hook-Integration | 0/? | Not started | — |
+| 17. Karpathy-Index für 90_Wiki | 0/? | Not started | — |
+| 18. RAG-Erweiterung um gehirn-Collection | 0/? | Not started | — |
+| 19. Neue Wrapper tom-wiki/tom-compile/tom-lint | 0/? | Not started | — |
+| 20. Multi-Projekt-Konvention | 0/? | Not started | — |
+| 21. Abschluss-Doku + Milestone-Close | 0/? | Not started | — |
+
+---
+
+## Phase Details (v1.2)
+
+### Phase 14: Tool-Install
+
+**Goal**: `claude-memory-compiler` ist lokal installiert, gegen `$TOM_VAULT/95_Gehirn/` konfiguriert, und ein Struktur-Lint läuft grün.
+
+**Depends on**: Nothing (erste v1.2-Phase, parallel zu Phase 15 möglich)
+
+**Requirements**: TOOL-01, TOOL-02, TOOL-03, TOOL-04, TOOL-05
+
+**Success Criteria** (what must be TRUE):
+1. `/Users/maxim/Claude/claude-memory-compiler/` existiert als geklontes Git-Repo und ist im Parent-Repo getrackt
+2. `uv sync` im Tool-Repo läuft ohne Fehler durch, `uv run scripts/lint.py --structural-only` terminiert mit Exit-Code 0
+3. `scripts/config.py` referenziert `TOM_VAULT` per Env-Var und zeigt auf `$TOM_VAULT/95_Gehirn/`
+4. Ein Maximus_OS-Issue an CTO dokumentiert Tool-Install + Config-Patch mit Commit-Hash
+
+**Plans**: TBD
+
+---
+
+### Phase 15: Brain-Struktur
+
+**Goal**: Der neue private `95_Gehirn/`-Raum ist im Vault angelegt, dokumentiert Privacy-Regeln und ist verifiziert vom MkDocs-Publish-Scope ausgeschlossen.
+
+**Depends on**: Nothing (parallel zu Phase 14 möglich)
+
+**Requirements**: BRAIN-01, BRAIN-02, BRAIN-03, BRAIN-04, BRAIN-05, BRAIN-06
+
+**Success Criteria** (what must be TRUE):
+1. `$TOM_VAULT/95_Gehirn/` enthält Unterordner `daily/`, `knowledge/{concepts,connections,qa}/`, `reports/`
+2. `95_Gehirn/CLAUDE.md` dokumentiert was rein darf, was nicht, Compile-Trigger und Lint-Regeln
+3. `95_Gehirn/index.md` und `log.md` existieren mit Initial-Inhalt
+4. `mkdocs.yml` ist verifiziert — ein Build-Dry-Run enthält keine `95_Gehirn/`-Pfade
+5. Ein Maximus_OS-Issue an archivarius dokumentiert Struktur + Privacy-Regeln
+
+**Plans**: TBD
+
+---
+
+### Phase 16: Hook-Integration
+
+**Goal**: Projekt-lokale Claude-Code-Hooks schreiben bei SessionEnd automatisch Daily-Entries nach `95_Gehirn/daily/`, ohne bestehende globale GSD/RTK-Hooks zu brechen.
+
+**Depends on**: Phase 14 (Tool installiert), Phase 15 (Brain-Struktur existiert)
+
+**Requirements**: HOOK-01, HOOK-02, HOOK-03, HOOK-04, HOOK-05, HOOK-06
+
+**Success Criteria** (what must be TRUE):
+1. `/Users/maxim/Claude/.claude/settings.json` existiert und enthält `SessionStart`, `SessionEnd`, `PreCompact` Hooks via `uv run` auf `claude-memory-compiler/hooks/*.py`
+2. Nach einer Claude-Code-Session existiert ein Entry in `$TOM_VAULT/95_Gehirn/daily/YYYY-MM-DD.md`
+3. Globale GSD + RTK Hooks sind nach dem Merge noch funktional (Smoke-Test: `rtk --version`, GSD-Hook-Trigger)
+4. `/Users/maxim/Claude/CLAUDE.md` dokumentiert aktive Hooks + Auto-Capture-Verhalten
+5. Ein Maximus_OS-Issue an CTO dokumentiert Hook-Aktivierung
+
+**Plans**: TBD
+
+---
+
+### Phase 17: Karpathy-Index für 90_Wiki
+
+**Goal**: `90_Wiki/index.md` ist nach Karpathy-Retrieval-Methode neu geschrieben — Index-first, gruppiert, mit Nutzungshinweis — und beantwortet typische Fragen ohne RAG.
+
+**Depends on**: Nothing (unabhängig von Tool-Install)
+
+**Requirements**: KIDX-01, KIDX-02, KIDX-03, KIDX-04, KIDX-05
+
+**Success Criteria** (what must be TRUE):
+1. Alter `index.md` ist als `90_Wiki/history.md` erhalten (Changelog bewahrt)
+2. Neuer `90_Wiki/index.md` beginnt mit Nutzungshinweis "zuerst Index, dann 3–5 relevante Artikel lesen, dann synthetisieren"
+3. Alle bestehenden `90_Wiki/`-Artikel sind gelistet mit 1–2-Zeilen-Beschreibung, gruppiert nach Konzepte/Themen/Projekte/Personen/Quellen
+4. Smoke-Test: "Was ist Turboquant?" wird via Index → direkte Reads beantwortet, ohne RAG
+5. Ein Maximus_OS-Issue an wiki-kurator dokumentiert die Index-Umschreibung
+
+**Plans**: TBD
+
+---
+
+### Phase 18: RAG-Erweiterung um gehirn-Collection
+
+**Goal**: Die Gemma-RAG-Pipeline indiziert additiv eine dritte Collection `gehirn` aus `95_Gehirn/knowledge/` und durchsucht sie zusammen mit `wiki` und `clippings`.
+
+**Depends on**: Phase 15 (`95_Gehirn/knowledge/` muss existieren, ggf. leer)
+
+**Requirements**: RAG2-01, RAG2-02, RAG2-03, RAG2-04, RAG2-05
+
+**Success Criteria** (what must be TRUE):
+1. `Gemma/rag/config.py` definiert `GEHIRN_PATH = TOM_VAULT / "95_Gehirn" / "knowledge"`
+2. `index.py` indiziert die dritte Collection `gehirn` additiv in `index_all()`; gegen leeres Verzeichnis meldet es 0 Chunks fehlerfrei
+3. `query.py` durchsucht alle drei Collections (wiki, clippings, gehirn) in einem Call
+4. Ein Maximus_OS-Issue an CTO dokumentiert die RAG-Erweiterung
+
+**Plans**: TBD
+
+---
+
+### Phase 19: Neue Wrapper tom-wiki/tom-compile/tom-lint
+
+**Goal**: Drei neue CLI-Wrapper sind live: `tom-wiki` (Index-first Query), `tom-compile` (Memory-Compile), `tom-lint` (Brain-Struktur-Lint). Die Wissens-Kaskade Direct-Read → tom-wiki → tom-ask ist dokumentiert.
+
+**Depends on**: Phase 14 (compile/lint-Scripts vorhanden), Phase 17 (`90_Wiki/index.md` neu)
+
+**Requirements**: WRAP-01, WRAP-02, WRAP-03, WRAP-04, WRAP-05, WRAP-06, WRAP-07
+
+**Success Criteria** (what must be TRUE):
+1. `bin/tom-wiki`, `bin/tom-compile`, `bin/tom-lint` sind ausführbar und nach `~/bin/` symlinked
+2. `tom-wiki "Was ist Ollama?"` liefert eine Antwort via Index ohne RAG-Aufruf
+3. `tom-lint --structural-only` läuft fehlerfrei gegen den aktuellen `95_Gehirn/`-Stand
+4. `CLAUDE.md` + `AGENTS.md` dokumentieren die dreistufige Wissens-Kaskade (Direct-Read → tom-wiki → tom-ask)
+5. Ein Maximus_OS-Issue an CTO dokumentiert die neuen CLI-Tools
+
+**Plans**: TBD
+
+---
+
+### Phase 20: Multi-Projekt-Konvention
+
+**Goal**: Die `wiki_path`-Konvention erlaubt es fremden Projekten auf demselben Mac, dasselbe `95_Gehirn/` und `90_Wiki/` zu nutzen. Ein zweites Projekt verifiziert das End-to-End.
+
+**Depends on**: Phase 19 (Wrapper müssen existieren)
+
+**Requirements**: MULTI-01, MULTI-02, MULTI-03, MULTI-04, MULTI-05
+
+**Success Criteria** (what must be TRUE):
+1. Die `wiki_path`-Template-Konvention ist entweder in `claude-memory-compiler/docs/multi-project.md` oder als CLAUDE.md-Anhang dokumentiert
+2. Mindestens ein zweites Projekt auf dem Mac hat die `wiki_path`-Sektion eingebettet
+3. Smoke-Test: `tom-wiki "Frage"` aus dem zweiten Projekt-Verzeichnis liefert eine Antwort
+4. `95_Gehirn/CLAUDE.md` erwähnt dass Brain shared ist, pro Projekt eigene Daily-Logs möglich
+5. Ein Maximus_OS-Issue an wiki-kurator dokumentiert die Multi-Projekt-Konvention
+
+**Plans**: TBD
+
+---
+
+### Phase 21: Abschluss-Doku + Milestone-Close
+
+**Goal**: v1.2 ist in Vault, Wiki und Planning-Artefakten vollständig dokumentiert; ein Milestone-Close-Issue an CEO schließt v1.2 formal ab.
+
+**Depends on**: Phases 14–20 (alles live bevor dokumentiert)
+
+**Requirements**: DOC12-01, DOC12-02, DOC12-03, DOC12-04, DOC12-05, DOC12-06
+
+**Success Criteria** (what must be TRUE):
+1. `$TOM_VAULT/log.md` enthält einen datierten v1.2-Abschluss-Eintrag
+2. `90_Wiki/projekte/claude-memory-compiler.md` und `90_Wiki/konzepte/karpathy-wiki-methode.md` existieren als publizierbare Artikel
+3. `claude-memory-compiler/TOM-PATCHES.md` dokumentiert alle Config-Änderungen gegen Upstream
+4. `REQUIREMENTS.md`, `STATE.md`, `MILESTONES.md`, `PROJECT.md` sind auf v1.2 Close aktualisiert
+5. Ein finales Maximus_OS Milestone-Close-Issue an CEO (`priority=high`) referenziert alle Commit-Hashes und die Verification-Summary
+
+**Plans**: TBD
+
+---
+
+## Coverage: v1.2
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| TOOL-01 | 14 | Pending |
+| TOOL-02 | 14 | Pending |
+| TOOL-03 | 14 | Pending |
+| TOOL-04 | 14 | Pending |
+| TOOL-05 | 14 | Pending |
+| BRAIN-01 | 15 | Pending |
+| BRAIN-02 | 15 | Pending |
+| BRAIN-03 | 15 | Pending |
+| BRAIN-04 | 15 | Pending |
+| BRAIN-05 | 15 | Pending |
+| BRAIN-06 | 15 | Pending |
+| HOOK-01 | 16 | Pending |
+| HOOK-02 | 16 | Pending |
+| HOOK-03 | 16 | Pending |
+| HOOK-04 | 16 | Pending |
+| HOOK-05 | 16 | Pending |
+| HOOK-06 | 16 | Pending |
+| KIDX-01 | 17 | Pending |
+| KIDX-02 | 17 | Pending |
+| KIDX-03 | 17 | Pending |
+| KIDX-04 | 17 | Pending |
+| KIDX-05 | 17 | Pending |
+| RAG2-01 | 18 | Pending |
+| RAG2-02 | 18 | Pending |
+| RAG2-03 | 18 | Pending |
+| RAG2-04 | 18 | Pending |
+| RAG2-05 | 18 | Pending |
+| WRAP-01 | 19 | Pending |
+| WRAP-02 | 19 | Pending |
+| WRAP-03 | 19 | Pending |
+| WRAP-04 | 19 | Pending |
+| WRAP-05 | 19 | Pending |
+| WRAP-06 | 19 | Pending |
+| WRAP-07 | 19 | Pending |
+| MULTI-01 | 20 | Pending |
+| MULTI-02 | 20 | Pending |
+| MULTI-03 | 20 | Pending |
+| MULTI-04 | 20 | Pending |
+| MULTI-05 | 20 | Pending |
+| DOC12-01 | 21 | Pending |
+| DOC12-02 | 21 | Pending |
+| DOC12-03 | 21 | Pending |
+| DOC12-04 | 21 | Pending |
+| DOC12-05 | 21 | Pending |
+| DOC12-06 | 21 | Pending |
+
+**v1.2 total: 43 — Mapped: 43 — Unmapped: 0 ✓**
+
+---
+
+## v1.3 — Compile-Automation + Quality-Pass
+
+**Goal:** Den in v1.2 gebauten Brain- und Wiki-Flow in den Dauerbetrieb bringen — launchd-Automation für `tom-compile`, Quality-Pass für `tom-wiki`, erweitertes Eval-Framework, bestätigte Karpathy-Schwelle (500, v1.3-Entscheidung: keine Anhebung) inkl. Skalierungs-Stufen und Anthropic-SDK-Clarification. Keine Architektur-Änderungen.
+
+### Phases
+
+- [x] **Phase 22: Compile-Automation** — launchd Daily-Job + fehlertoleranter `tom-compile-safe` Wrapper (completed 2026-04-10)
+- [x] **Phase 23: tom-wiki Quality-Pass** — stärkerer Prompt, Context-Filter, Quellen-Zitation (completed 2026-04-10)
+- [x] **Phase 24: Eval-Framework-Erweiterung** — Brain-Corpus + Side-by-Side-Vergleich tom-wiki vs tom-ask (completed 2026-04-10)
+- [x] **Phase 25: Doku + Schwellen-Update** — Karpathy-Schwelle bleibt 500 + Skalierungs-Stufen in CLAUDE.md (completed 2026-04-10)
+- [ ] **Phase 26: SDK-Clarification + Milestone-Close** — Anthropic-SDK-Recherche + v1.3 formal abschließen
+
+### Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 22. Compile-Automation | 2/2 | Complete    | 2026-04-10 |
+| 23. tom-wiki Quality-Pass | 1/1 | Complete    | 2026-04-10 |
+| 24. Eval-Framework-Erweiterung | 1/1 | Complete    | 2026-04-10 |
+| 25. Doku + Schwellen-Update | 0/? | Complete    | 2026-04-10 |
+| 26. SDK-Clarification + Milestone-Close | 0/? | Not started | — |
+
+---
+
+## Phase Details (v1.3)
+
+### Phase 22: Compile-Automation
+
+**Goal**: `tom-compile` läuft täglich automatisch via launchd — ein fehlertoleranter Wrapper prüft Voraussetzungen, loggt jeden Lauf, und der Job ist per `launchctl` verifizierbar aktiv.
+
+**Depends on**: Phase 19 (`bin/tom-compile` muss existieren)
+
+**Requirements**: CRON-01, CRON-02, CRON-03, CRON-04, CRON-05, CRON-06
+
+**Success Criteria** (what must be TRUE):
+1. `launchctl list | grep tom-compile` zeigt den aktiven Job-Eintrag
+2. `~/Library/Logs/tom-compile.log` enthält nach einem Lauf Timestamp, Exit-Code und Duration
+3. `bin/tom-compile-safe` exitet mit Log-Eintrag sauber, wenn `ollama serve` nicht läuft oder `$TOM_VAULT` nicht erreichbar ist
+4. Manueller Trigger via `launchctl start com.maxim.tom-compile` läuft ohne Fehler durch
+5. Ein Maximus_OS-Issue an CTO dokumentiert launchd-Job, Plist-Pfad und Log-Location
+
+**Plans:** 2/2 plans complete
+- [ ] 22-01-PLAN.md — bin/tom-compile-safe Wrapper mit Preflight + Logging (CRON-02, CRON-03)
+- [ ] 22-02-PLAN.md — launchd-Plist, Registrierung, Smoke-Test, CLAUDE.md-Doku, Maximus_OS-Issue (CRON-01, CRON-04, CRON-05, CRON-06)
+
+---
+
+### Phase 23: tom-wiki Quality-Pass
+
+**Goal**: `tom-wiki`-Antworten sind präziser und nachvollziehbarer — stärkerer System-Prompt, schmalerer Kontext-Filter und explizite Quellen-Zitation sind implementiert und verifiziert.
+
+**Depends on**: Phase 19 (`wiki_query.py` in `claude-memory-compiler/tom_tools/` muss existieren)
+
+**Requirements**: QUAL-01, QUAL-02, QUAL-03, QUAL-04, QUAL-05, QUAL-06
+
+**Success Criteria** (what must be TRUE):
+1. `tom-wiki "Was ist TurboQuant?"` verweist in der Antwort explizit auf `turboquant.md` (oder äquivalenten Dateinamen)
+2. Antworten enthalten mindestens eine Quell-Zitation als Wiki-Link oder Dateiname (nicht generisch)
+3. Context-Filter übergibt `gemme` nur Index + per Keyword selektierte Artikel, nicht den gesamten Wiki-Inhalt
+4. `claude-memory-compiler/TOM-PATCHES.md` dokumentiert den neuen System-Prompt + Filter-Logik
+5. Ein Maximus_OS-Issue an CTO dokumentiert Quality-Pass mit Before/After-Beispiel
+
+**Plans:** 1/1 plans complete
+- [ ] 23-01-PLAN.md — wiki_query.py Quality-Pass: System-Prompt + Keyword-Filter + Top-K + TOM-PATCHES + Maximus_OS-Issue (QUAL-01..06)
+
+---
+
+### Phase 24: Eval-Framework-Erweiterung
+
+**Goal**: `Gemma/eval/` kann `tom-wiki` und `tom-ask` gegeneinander vergleichen — ein Baseline-Report mit mindestens 10 Queries über Wiki- und Brain-Themen liegt unter `Gemma/eval/results/v1.3-baseline.md`.
+
+**Depends on**: Phase 23 (tom-wiki Quality-Pass sollte vorher abgeschlossen sein für aussagekräftige Baseline)
+
+**Requirements**: EVAL-01, EVAL-02, EVAL-03, EVAL-04, EVAL-05
+
+**Success Criteria** (what must be TRUE):
+1. `Gemma/eval/` enthält Test-Corpus-Einträge mit Brain-Artikeln aus `95_Gehirn/knowledge/`
+2. `run_eval.py` führt Side-by-Side-Vergleich durch: gleiche Query, Antwort von `tom-wiki` und `tom-ask`, Score
+3. `Gemma/eval/results/v1.3-baseline.md` existiert mit Score-Vergleich über mindestens 10 Queries
+4. Mindestens 5 Queries decken Wiki-Themen ab, mindestens 5 Brain-Themen
+5. Ein Maximus_OS-Issue an CTO dokumentiert Eval-Ergebnisse und Interpretation
+
+**Plans:** 1/1 plans complete
+
+Plans:
+- [ ] 24-01-PLAN.md — questions.yaml erweitern + run_eval.py Side-by-Side-Comparator + Baseline-Report + CTO-Issue (EVAL-01..05)
+
+---
+
+### Phase 25: Doku + Schwellen-Update
+
+**Goal**: Die Karpathy-Schwelle bleibt bei **500** und der Umstiegspfad auf RAG-Primary ist in `CLAUDE.md` (Repo) und `$TOM_VAULT/CLAUDE.md` (Vault) klar dokumentiert. v1.3-Entscheidung: **keine Anhebung** — 500 bleibt verbindlich.
+
+**Depends on**: Nothing (reine Dokumentationsphase, unabhängig)
+
+**Requirements**: DOC13-01, DOC13-02, DOC13-03, DOC13-04
+
+**Success Criteria** (what must be TRUE):
+1. `/Users/maxim/Claude/CLAUDE.md` Wissens-Kaskade-Sektion bestätigt die Schwelle **500** (unverändert) und beschreibt den Umstiegspfad auf RAG-Primary
+2. Eine neue Sektion "Skalierungs-Stufen" beschreibt: <500 = Index-first, 500–2000 = Hybrid, >2000 = RAG-Primary
+3. `$TOM_VAULT/CLAUDE.md` ist konsistent auf 500 (falls dort die Schwelle erwähnt wird)
+4. Ein Maximus_OS-Issue an wiki-kurator dokumentiert das Doku-Update
+
+**Plans**: TBD
+
+---
+
+### Phase 26: SDK-Clarification + Milestone-Close
+
+**Goal**: Die Anthropic-SDK-Frage (Subscription-Quota für `tom-compile`) ist recherchiert und dokumentiert; v1.3 ist in allen Planning-Artefakten und Maximus_OS formal geschlossen.
+
+**Depends on**: Phases 22–25 (alles live bevor abgeschlossen)
+
+**Requirements**: CLOSE13-01, CLOSE13-02, CLOSE13-03, CLOSE13-04, CLOSE13-05
+
+**Success Criteria** (what must be TRUE):
+1. `claude-memory-compiler/TOM-PATCHES.md` enthält einen datierten Abschnitt zur Anthropic-SDK-Clarification (Subscription-Quota-Frage beantwortet oder mit Quelle verlinkt)
+2. `Obsidian/Projekte/Paperclip-v1.3-CEO-Briefing.md` existiert mit allen Phasen 22–26, Commits und Outcomes
+3. `.planning/MILESTONES.md` enthält den v1.3-Eintrag mit Start, Ende, Phasen, Status und Commits
+4. `.planning/PROJECT.md` Validated-Sektion listet v1.3-Deliverables
+5. Ein Maximus_OS-Issue an CEO (`priority=high`) schließt Milestone v1.3 offiziell ab
+
+**Plans**: TBD
+
+---
+
+## Coverage: v1.3
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| CRON-01 | 22 | Pending |
+| CRON-02 | 22 | Pending |
+| CRON-03 | 22 | Pending |
+| CRON-04 | 22 | Pending |
+| CRON-05 | 22 | Pending |
+| CRON-06 | 22 | Pending |
+| QUAL-01 | 23 | Pending |
+| QUAL-02 | 23 | Pending |
+| QUAL-03 | 23 | Pending |
+| QUAL-04 | 23 | Pending |
+| QUAL-05 | 23 | Pending |
+| QUAL-06 | 23 | Pending |
+| EVAL-01 | 24 | Pending |
+| EVAL-02 | 24 | Pending |
+| EVAL-03 | 24 | Pending |
+| EVAL-04 | 24 | Pending |
+| EVAL-05 | 24 | Pending |
+| DOC13-01 | 25 | Pending |
+| DOC13-02 | 25 | Pending |
+| DOC13-03 | 25 | Pending |
+| DOC13-04 | 25 | Pending |
+| CLOSE13-01 | 26 | Pending |
+| CLOSE13-02 | 26 | Pending |
+| CLOSE13-03 | 26 | Pending |
+| CLOSE13-04 | 26 | Pending |
+| CLOSE13-05 | 26 | Pending |
+
+**v1.3 total: 26 — Mapped: 26 — Unmapped: 0 ✓**
+
+---
+
+## v1.4 — Aktive KI + Dokumenten-Fundament
+
+**Goal:** Tom bekommt ein Volltext-Dokumenten-Fundament (OCR + FTS5), eine Obsidian-native aktive-KI-Integration via Community-Plugin, automatisches Clipper-Enrichment und einen dokumentierten Token-Spar-Pfad für compile/lint. Die Document-Lifecycle-State-Machine wird bewusst nach v1.5 deferred.
+
+### Phases
+
+- [ ] **Phase 27: OCR-Toolkette + Archiv-Fundament** — tesseract + ocrmypdf + deu, archivum/ Ordner, SQLite FTS5 Schema, erstes echtes PDF indiziert
+- [ ] **Phase 28: tom-doc CLI** — index/search/list/show Wrapper + CLAUDE.md-Integration
+- [ ] **Phase 29: Gemma-in-Obsidian via Smart Connections** — Plugin installiert, Ollama-Backend, Privacy-Exclude, Smoke-Test
+- [ ] **Phase 30: Clipper Auto-Enrichment** — tom-clip-enrich mit Summary/Tags/Konzepte/Wiki-Kategorie
+- [ ] **Phase 31: Token-Spar-Lokalisierung** — tom-compile --local + Eval; tom-lint --structural-only als Default
+- [ ] **Phase 32: Milestone-Close v1.4** — 6 Doku-Kanäle nach v1.3-Close-Checklist
+
+### Wave-Dependencies
+
+- **Phase 27 → Phase 28** (tom-doc braucht das SQLite-Schema)
+- **Phase 29 || Phase 30** parallelisierbar (Obsidian-Plugin unabhängig von tom-clip-enrich)
+- **Phase 31** unabhängig von 27–30
+- **Phase 32** zuletzt (Close braucht alle Phasen shipped)
+
+### Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 27. OCR-Toolkette + Archiv-Fundament | 0/? | Not started | — |
+| 28. tom-doc CLI | 0/? | Not started | — |
+| 29. Gemma-in-Obsidian via Smart Connections | 0/? | Not started | — |
+| 30. Clipper Auto-Enrichment | 0/? | Not started | — |
+| 31. Token-Spar-Lokalisierung | 0/? | Not started | — |
+| 32. Milestone-Close v1.4 | 0/? | Not started | — |
+
+---
+
+## Phase Details (v1.4)
+
+### Phase 27: OCR-Toolkette + Archiv-Fundament
+
+**Goal**: OCR-Stack ist installiert, `archivum/` existiert mit SQLite-FTS5-Schema, `$TOM_VAULT/Archiv/` Symlink ist angelegt, und mindestens ein echtes Maxim-PDF ist per Volltext abfragbar.
+
+**Depends on**: Nothing (erste v1.4-Phase)
+
+**Requirements**: DOC14-01, DOC14-02, DOC14-03, DOC14-04, DOC14-05, DOC14-06
+
+**Success Criteria**:
+1. `which tesseract ocrmypdf` liefert Pfade; `tesseract --list-langs` enthält `deu`
+2. `test -L "$TOM_VAULT/Archiv"` → Symlink auf `~/Downloads/Archiv/` existiert
+3. `/Users/maxim/Claude/archivum/{db,ocr-cache,logs,README.md}` angelegt
+4. `sqlite3 archivum/db/archivum.db ".schema documents_fts"` zeigt FTS5-Schema
+5. `archivum/ocr_pipeline.py` verarbeitet mindestens 1 echtes PDF idempotent; zweiter Lauf skippt bereits verarbeitete Files
+6. Volltext-Query gegen FTS5 liefert den Inhalt dieses PDFs zurück
+
+**Vorbedingung (Maxim)**: Mindestens **1 echtes PDF** in einer Kategorie unter `~/Downloads/Archiv/` hinterlegen, damit Smoke-Test laufen kann.
+
+**Plans**: TBD
+
+---
+
+### Phase 28: tom-doc CLI
+
+**Goal**: `bin/tom-doc` bietet einen vollständigen CLI-Wrapper (`index`, `search`, `list`, `show`) über den FTS5-Dokumenten-Index und ist in der CLAUDE.md-Wissens-Kaskade verankert.
+
+**Depends on**: Phase 27 (SQLite-Schema + OCR-Pipeline müssen existieren)
+
+**Requirements**: TDOC-01, TDOC-02, TDOC-03, TDOC-04, TDOC-05, TDOC-06, TDOC-07
+
+**Success Criteria**:
+1. `bin/tom-doc` ausführbar mit 4 Subcommands, Symlink in `~/bin/`
+2. `tom-doc index 06` scant Kategorie 06_Arzt, triggert OCR neuer PDFs, aktualisiert FTS5
+3. `tom-doc search "..."` liefert Trefferliste mit Snippet + Kategorie/Dateiname
+4. `tom-doc show <pfad>` zeigt Metadaten + OCR-Text-Auszug
+5. `tom-doc list 06` listet alle indizierten Dokumente der Kategorie
+6. `CLAUDE.md` Wissens-Kaskade enthält neuen Punkt "Dokumenten-Fragen → `tom-doc search`"
+
+**Plans**: TBD
+
+---
+
+### Phase 29: Gemma-in-Obsidian via Smart Connections
+
+**Goal**: Smart Connections Community-Plugin läuft mit Ollama-Backend (`nomic-embed-text` Embeddings + `gemme` Chat), indexiert NUR `90_Wiki/` + `95_Gehirn/knowledge/` (Privacy-Exclude für persönliche Ordner), Semantic-Search funktioniert im Editor.
+
+**Depends on**: Nothing (parallel zu Phase 30)
+
+**Requirements**: OBPL-01, OBPL-02, OBPL-03, OBPL-04, OBPL-05
+
+**Success Criteria**:
+1. `ls "$TOM_VAULT/.obsidian/plugins/smart-connections/"` → Plugin-Dateien vorhanden
+2. Plugin-Settings zeigen auf lokales Ollama, Embedding-Modell `nomic-embed-text`, Chat-Modell `gemme`
+3. Privacy-Exclude (`.scignore` oder Plugin-Setting) schließt `10_Personen`, `20_Dokumente`, `40_Aufgaben`, `50_Gesundheit`, `60_Finanzen` aus
+4. Smoke-Test: Semantic-Search nach "TurboQuant" liefert `90_Wiki/konzepte/turboquant.md` im Smart-Connections-Panel
+5. `.planning/obsidian-plugin-config/smart-connections.json` enthält Config-Backup
+6. `CLAUDE.md` Wissens-Kaskade (6) dokumentiert die Editor-native Option
+
+**Fallback**: Falls Smart Connections unbrauchbar ist → Obsidian Copilot als dokumentierte Alternative. Time-Box: max 2h Debugging bevor Switch.
+
+**Plans**: TBD
+
+---
+
+### Phase 30: Clipper Auto-Enrichment
+
+**Goal**: `bin/tom-clip-enrich` reichert Clipping-Dateien idempotent an — Summary, Auto-Tags, Konzept-Vorschläge (in separater Review-Datei, nicht direkt Stub-Pages), Wiki-Kategorie-Vorschlag via `gemme`.
+
+**Depends on**: Nothing (parallel zu Phase 29; nutzt existierendes `gemme` + `ollama` aus v1.1)
+
+**Requirements**: CLIP-01, CLIP-02, CLIP-03, CLIP-04, CLIP-05, CLIP-06, CLIP-07, CLIP-08
+
+**Success Criteria**:
+1. `tom-clip-enrich <file>` schreibt `summary`, `tags` (appended+dedupliziert), `suggested_wiki_category`, `enriched: true` ins Frontmatter
+2. Konzept-Vorschläge landen als Zeilen in `$TOM_VAULT/90_Wiki/konzepte-vorschlaege.md` — keine neuen Stub-Pages ohne Review
+3. Zweiter Lauf über dieselbe Datei ist Noop (idempotent via `enriched: true`)
+4. Smoke-Test mit `Mannheim – Wikipedia.md` — alle 4 Felder plausibel gefüllt, manuell verifiziert
+5. CLIP-08: Entscheidung dokumentiert (Hook in `tom-compile-safe` ODER separater launchd-Job)
+
+**Wiederverwendung**: `claude-memory-compiler/tom_tools/wiki_query.py` als Template (gleicher `ollama.chat`-Stil); `bin/tom-wiki` als Bash-Template.
+
+**Plans**: TBD
+
+---
+
+### Phase 31: Token-Spar-Lokalisierung
+
+**Goal**: `tom-compile --local` nutzt `gemme` statt `claude_agent_sdk` (opt-in), ein Eval-Vergleich entscheidet ob Default-Switch sinnvoll wäre, und `tom-lint --structural-only` ist als launchd-tauglicher Default dokumentiert.
+
+**Depends on**: Nothing (unabhängig von 27–30)
+
+**Requirements**: LOCAL-01, LOCAL-02, LOCAL-03, LOCAL-04
+
+**Success Criteria**:
+1. `tom-compile --local` läuft mindestens 1x erfolgreich über 3 daily-logs und schreibt Brain-Artikel
+2. `Gemma/eval/results/v1.4-compile-local-vs-claude.md` enthält Score-Vergleich der beiden Modi
+3. `claude_agent_sdk` bleibt Default in `bin/tom-compile`; `--local` ist opt-in
+4. `tom-lint --structural-only` ist in CLAUDE.md als launchd-Default dokumentiert (oder neues `--no-llm` Flag existiert und ist dokumentiert)
+5. Maximus_OS-Issue dokumentiert Entscheidungsstand (Token-Ersparnis-Kontext: ca. $0.04/Monat — primär prinzipiell)
+
+**Plans**: TBD
+
+---
+
+### Phase 32: Milestone-Close v1.4
+
+**Goal**: v1.4 ist in allen 6 Doku-Kanälen nach v1.3-Close-Checklist geschlossen: MILESTONES.md, PROJECT.md, CEO-Briefing, vault-log.md, Tom-Projektseite, Maximus_OS Close-Issue.
+
+**Depends on**: Phases 27–31 (alles live bevor geschlossen)
+
+**Requirements**: CLOSE14-01, CLOSE14-02, CLOSE14-03, CLOSE14-04, CLOSE14-05, CLOSE14-06, CLOSE14-07
+
+**Success Criteria**:
+1. `.planning/MILESTONES.md` enthält v1.4-Eintrag nach v1.1/v1.2/v1.3-Schema (Start/Ende/Phasen/Commits/Status/FAMs)
+2. `.planning/PROJECT.md` Validated-Sektion enthält v1.4-Deliverables, `Active:` auf v1.5 oder `—`
+3. `.planning/briefings/v1.4-CEO-Briefing.md` existiert mit ≥150 Zeilen nach v1.3-Template (6 Teile + Anhänge A/B/C)
+4. `$TOM_VAULT/log.md` enthält datierten v1.4-Abschluss-Eintrag nach v1.3-Schema
+5. `$TOM_VAULT/30_Projekte/Tom.md` ist aktualisiert (Current Milestone, Werkzeug-Liste inkl. `tom-doc`, `tom-clip-enrich`, Milestones-Kurz-Historie)
+6. Maximus_OS Close-Issue an CEO (`priority=high`) mit Link auf CEO-Briefing und Phasen-Commits
+7. Alle v1.4-Requirements in REQUIREMENTS.md als `[x]` markiert
+
+**Plans**: TBD
+
+---
+
+## Coverage: v1.4
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| DOC14-01..06 | 27 | Pending |
+| TDOC-01..07 | 28 | Pending |
+| OBPL-01..05 | 29 | Pending |
+| CLIP-01..08 | 30 | Pending |
+| LOCAL-01..04 | 31 | Pending |
+| CLOSE14-01..07 | 32 | Pending |
+
+**v1.4 total: 37 — Mapped: 37 — Unmapped: 0 ✓**
+
+Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
+
+---
+
+## v1.5 — Lifecycle + Integration
+
+**Goal:** Tom bekommt eine projekt-übergreifende **Lebens-State-Machine** für seine 6 Lebens-Bereiche (Dokumente, Aufgaben, Termine, Projekte, Finanzen, Social Media), eine Obsidian-native **MCP-Bridge** für die wichtigsten Tom-CLIs (`tom-doc`/`tom-wiki`/`tom-ask`/`tom-clip-enrich`) im Editor, einen **lokalen Claude-Code-Modus mit funktionierendem Tool-Use** (Phase 36 Chat-Only-Opener + Phase 38 Modell-Upgrade) und eine vorgeschaltete **Vault-Hygiene-Phase**, die alle prepared-pending Handoffs aus v1.4/v1.4.1 schließt.
+
+### Phases
+
+- [x] **Phase 36: Lokaler Ollama-Switch (out-of-band shipped 2026-04-11)** — `nutze-ollama` Shell-Funktionen + `tom-local` Wrapper + Claude Code Router dokumentiert
+- [x] **Phase 37: Vault-Hygiene & Cleanup** — shipped 2026-04-12 (6 HYG-Requirements bleiben Known Gaps / Maxim-Handoff)
+- [x] **Phase 38: Local Tool-Use Modell-Upgrade** — qwen3:8b native Tool-Use PASS, CCR-Config repariert, OpenClaw auf qwen3:8b, glm-4.7-flash entfernt
+- [x] **Phase 39: MCP-Bridge für Tom-CLIs** — FastMCP v3 Server mit 5 Read-only-Tools (tom-doc search/list/show, tom-wiki, tom-ask), Cursor als Primär-Client via .cursor/mcp.json, async subprocess mit Timeouts, ADR-006, tom-clip-enrich bewusst excluded (Privacy)
+- [x] **Phase 40: Lifecycle Foundation — Dokumente** — `state`-Frontmatter-Schema für 20_Dokumente, Meta Bind Buttons, Dataview-Dashboard, tom-state — shipped 2026-04-12
+- [x] **Phase 41: Lifecycle — Aufgaben & Termine** — Phase 41a Engine + 41b KI-Intake; shipped 2026-04-12
+- [x] **Phase 42: Lifecycle — Projekte / Finanzen / Social Media** — shipped 2026-04-12
+- [x] **Phase 43: Lifecycle Dashboards + Auto-Routing** — shipped 2026-04-12
+- [x] **Phase 44: Milestone-Close v1.5** — Doku-Kaskade, CEO-Briefing, REQUIREMENTS CLOSE15 — shipped 2026-04-12
+
+### Wave-Dependencies (v1.5)
+
+- **Phase 36 ✓** ist Pre-Roadmap-Opener und blockiert nichts
+- **Phase 37 (Cleanup)** sollte zuerst, weil es OmniRoute-/OpenClaw-Doku, Smart Connections und Plugin-Setup fuer nachfolgende Phasen sauber macht
+- **Phase 38 (Tool-Use-Upgrade)** braucht Phase 37 nur noch, falls wieder ein separater lokaler Modell-Stack erprobt werden soll
+- **Phase 39 ✓ (MCP-Bridge)** shipped 2026-04-12 — FastMCP v3 in Cursor, async subprocess, Read-only
+- **Phase 40 (Lifecycle Dokumente)** braucht Phase 37 (Templater-Setup aus v1.4.1 muss vollständig sein) — kann nach 37 parallel zu 38/39 starten
+- **Phase 41 (Aufgaben/Termine)** braucht Phase 40 (state-Schema-Konvention) und Phase 37 (apple-reminders-plugin)
+- **Phase 42 (Projekte/Finanzen/Social)** braucht Phase 40 (state-Schema-Konvention)
+- **Phase 43 (Dashboards + Auto-Routing)** braucht Phasen 40+41+42 alle shipped
+- **Phase 44 (Close)** zuletzt, braucht alle anderen shipped
+
+```text
+36 ✓
+   ↓
+  37  →  38  →  39
+   ↓             ↓
+  40  →  41  →  43  →  44
+   ↓     ↓      ↑
+  42 ────┴──────┘
+```
+
+### Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 36. Lokaler OmniRoute + Sonnet 4.5 Switch (out-of-band) | 1/1 | ✓ Done | 2026-04-11 |
+| 37. Vault-Hygiene & Cleanup | — | ✓ Done (6 HYG Known Gaps) | 2026-04-12 |
+| 38. Local Tool-Use Modell-Upgrade | 6/6 | ✓ Done | 2026-04-12 |
+| 39. MCP-Bridge für Tom-CLIs | — | ✓ Done | 2026-04-12 |
+| 40. Lifecycle Foundation — Dokumente | — | ✓ Done | 2026-04-12 |
+| 41. Lifecycle — Aufgaben & Termine | — | ✓ Done (41a+41b) | 2026-04-12 |
+| 42. Lifecycle — Projekte / Finanzen / Social | — | ✓ Done | 2026-04-12 |
+| 43. Lifecycle Dashboards + Auto-Routing | — | ✓ Done | 2026-04-12 |
+| 44. Milestone-Close v1.5 | — | ✓ Done | 2026-04-12 |
+
+---
+
+## Phase Details (v1.5)
+
+### Phase 36: Lokaler Ollama-Switch (out-of-band shipped)
+
+**Goal**: Maxim kann per Shell-Kommando (`nutze-ollama`) Claude Code auf einen lokalen Ollama/CCR-Pfad umleiten. Default bleibt Cloud, der Switch ist opt-in pro Shell.
+
+**Depends on**: Nothing (Pre-Roadmap-Opener am 2026-04-11)
+
+**Requirements**: LOCAL-05-01..07 (alle ✓ shipped)
+
+**Success Criteria**:
+
+1. `nutze-ollama` setzt den lokalen CCR/Ollama-Pfad mit Warning-Echo
+2. `nutze-claude` unsetet alle lokalen `ANTHROPIC_*`-Overrides
+3. `ollama-status` zeigt Modus + CCR/Ollama-Status + Aliasing
+4. `tom-local` spawnt Subshell mit env, `tom-local <cmd>` fuehrt Single-Command aus
+5. `tom-local` und der lokale Claude-Pfad bleiben dokumentiert und testbar
+6. Claude-Aliase bleiben ueber CCR konsistent auf die lokalen Modelle gemappt
+
+**Plans**: `36-01-PLAN.md` ✓ + `SUMMARY.md` ✓ + `VERIFICATION.md` ✓
+
+**Commits**: `0cda951`, `f842a63`, `67f4d80`, `11a6ffc`
+
+---
+
+### Phase 37: Vault-Hygiene & Cleanup
+
+**Goal**: Alle prepared-pending Handoffs aus v1.4/v1.4.1 sind geschlossen, Smart Connections funktioniert wieder, die 6 unused LLM-Plugins sind disabled, eml-reader und apple-reminders-plugin sind konfiguriert und smoke-tested, OLLAMA_ORIGINS ist persistent gesetzt.
+
+**Depends on**: Phase 36 (lokaler Claude-Pfad muss fuer Hygiene-Verifikation sauber dokumentiert und erreichbar sein)
+
+**Requirements**: HYG-01..09
+
+**Success Criteria**:
+
+1. `wc -c $TOM_VAULT/.obsidian/plugins/smart-connections/data.json` ist > 1 KB (war 62 B), Smart-Connections-Index regeneriert nach Phase-29-Playbook + UI-Excludes verifiziert
+2. `community-plugins.json` enthält 6 LLM-Plugins NICHT mehr (cao, tars, large-language-models, llm-summary, llm-test-gen, ai-latex-generator)
+3. `launchctl getenv OLLAMA_ORIGINS` liefert `chrome-extension://*,moz-extension://*,safari-web-extension://*` und überlebt Reboot
+4. `eml-reader` öffnet eine Test-`.eml`-Datei in Obsidian-Preview ohne Fehler
+5. `obsidian-apple-reminders-plugin` syncht ein Test-Reminder in beide Richtungen (Vault → Apple-Reminders → Vault)
+6. `plugin-audit-v1.4.1.md` ist auf Status "answered" (alle 5 Q1–Q5 beantwortet)
+7. CLIP141-04 + CLIP141-13c + OBPL-03 sind in REQUIREMENTS.md auf `[x]` markiert
+
+**Plans**: TBD
+
+---
+
+### Phase 38: Local Tool-Use Modell-Upgrade
+
+**Goal**: Der lokale Claude-Code-Pfad wird durch ein besseres lokales Modell und saubere CCR-Konfiguration aufgewertet, damit der Chat-Only-Opener aus Phase 36 perspektivisch agentischer nutzbar wird.
+
+**Depends on**: Phase 37 (Smart Connections + lokale Tooling-Pfade muessen sauber laufen)
+
+**Requirements**: LOCAL-06-01..06
+
+**Success Criteria**:
+
+1. Aktuelle Truth-Source-Dateien sprechen konsistent vom lokalen CCR/Ollama-Pfad
+2. `nutze-ollama` / `tom-local` funktionieren weiter
+3. Tool-Use-Modell-Tests liefern eine belastbare Go/No-Go-Entscheidung
+
+**Plans**: TBD
+
+---
+
+### Phase 39: MCP-Bridge für Tom-CLIs ✓
+
+**Goal**: Tom's Lese-Tools als MCP-Tools in Cursor verfügbar — FastMCP v3, async subprocess, Read-only.
+
+**Shipped**: 2026-04-12
+
+**Requirements**: MCP-01..09 (alle ✓, MCP-05 bewusst excluded, MCP-07/08 re-scoped auf Cursor)
+
+**Deliverables**:
+
+1. `mcp-server/tom_mcp.py` — FastMCP v3 Server mit 5 async Tools
+2. `.cursor/mcp.json` — Cursor MCP-Client-Config (uv run, stdio)
+3. ADR-006 in `.planning/obsidian-plugin-config/adr-006-mcp-architecture.md`
+4. Privacy-Boundary-Tabelle in ADR-006 (alle Read-only, kein Write über MCP)
+5. CLAUDE.md Sektion "MCP-Bridge für Tom-CLIs"
+6. `tom-clip-enrich` nicht exposed (Privacy-Entscheidung dokumentiert)
+
+**Key Decision**: Obsidian `mcp-tools` Plugin ist kein generischer MCP-Client — Cursor als Primär-Client gewählt (ADR-006)
+
+---
+
+### Phase 40: Lifecycle Foundation — Dokumente ✓ Done
+
+**Goal**: Das `state`-Frontmatter-Schema für 20_Dokumente ist definiert, dokumentiert und im ersten echten Beispiel (Eltern-Betreuung Waldemar/Nina) verwendet. Meta Bind Buttons für atomare State-Transitions, Dataview-Dashboard zeigt Dokumente nach State sortiert. Schema-Migration für existierende stateless Notes ist gelöst.
+
+**Depends on**: Phase 37 (Templater-Setup — de facto erfüllt, Templater konfiguriert)
+
+**Requirements**: LCY-01..06 (alle done)
+
+**Shipped** (2026-04-12):
+
+1. `99_Vorlagen/state-schema.md` — 5 States + Mermaid-Diagramm + Meta Bind Syntax-Referenz
+2. `99_Vorlagen/Dokument.md` — Template mit `state: Eingang` + `state_changed` + `due_date` + 4 Meta Bind Buttons
+3. Meta Bind Buttons statt Templater-Snippet — atomare `updateMetadata` actions setzen `state` + `state_changed` in einem Klick
+4. `20_Dokumente/Dashboard.md` — 5 Dataview-Sektionen (Offene, Eingang, In-Bearbeitung, Warte, Erledigt, Fällige Fristen)
+5. 3 Betreuungs-Dokumente in `20_Dokumente/13_Betreuung/` (Eingang/Warte/Erledigt)
+6. `bin/tom-state migrate-dokumente` — 15 Dateien migriert, idempotent, `--dry-run`, Symlink `~/bin/tom-state`
+
+**Key Decisions**:
+- Meta Bind Buttons statt inlineSelect (inlineSelect kann nur 1 Feld updaten, Buttons setzen state + state_changed atomar)
+- Meta Bind Plugin v1.4.6 manuell installiert (325k Downloads, 934 Stars)
+- Obsidian Bases geprüft und verworfen (nur Catalyst Early Access)
+- obsidian-note-status geprüft und verworfen (3k Downloads, starres Schema)
+
+---
+
+### Phase 41: Lifecycle — Aufgaben & Termine
+
+**Goal**: Aufgaben und Termine bekommen ihr eigenes State-Schema, wiederverwendbar mit der Phase-40-Konvention. Frist-Auto-Highlight ist als Universal-Snippet verfügbar. Heute-Views pro Bereich aggregieren die wichtigsten Items.
+
+**Depends on**: Phase 40 (state-Schema-Konvention) + Phase 37 (apple-reminders-plugin für spätere Sync-Vorbereitung)
+
+**Requirements**: LCY-07..12
+
+**Success Criteria**:
+
+1. `99_Vorlagen/Aufgabe.md` Template mit `state: Open` Default + 4 möglichen Werten (Open, Doing, Blocked, Done)
+2. `99_Vorlagen/Arzttermin.md` Template mit `state: Geplant` Default + 4 Werten (Geplant, Heute, Wahrgenommen, Verpasst)
+3. Universal-Frist-Snippet (Dataview-Inline-Code) wiederverwendbar via Templater-Insert in jeder beliebigen Note
+4. Templater-Transitions für Aufgaben + Termine funktionieren mit gleicher UX wie Phase 40
+5. `40_Aufgaben/Heute.md` zeigt alle Aufgaben mit `state == Doing` ODER `due_date <= today + 1d`
+6. `50_Gesundheit/Heute.md` zeigt alle Termine mit `date == today` ODER `state == Heute`
+
+**Plans**: TBD
+
+---
+
+### Phase 42: Lifecycle — Projekte / Finanzen / Social Media
+
+**Goal**: Die verbleibenden 3 Lebens-Bereiche bekommen ihr State-Schema. Verträge in 60_Finanzen sind Frist-driven. Cross-Area-Verlinkung wird mit einem echten Beispiel demonstriert (Vertrag verlinkt auf Frist-Termin).
+
+**Depends on**: Phase 40 (state-Schema-Konvention)
+
+**Requirements**: LCY-13..18
+
+**Success Criteria**:
+
+1. `30_Projekte/` state-Schema formalisiert (`aktiv`, `pausiert`, `abgeschlossen`), bestehende `PROJEKTE.md`-Struktur kompatibel
+2. `60_Finanzen/` state-Schema (`Vertrag-aktiv`, `Frist-naht`, `Verlängert`, `Gekündigt`, `Versäumt`) mit `kuendigungsfrist`-Field
+3. `80_Social_Media/` state-Schema (`Draft`, `Geplant`, `Live`, `Archiv`)
+4. 3 neue Templates in `99_Vorlagen/` (`Projekt.md`, `Vertrag.md`, `Social-Post.md`)
+5. 3 Dataview-Views (`30_Projekte/Aktive.md`, `60_Finanzen/Fristen.md`, `80_Social_Media/Pipeline.md`)
+6. 1 Cross-Area-Beispiel: ein Vertrag in 60_Finanzen verlinkt auf einen Frist-Termin in 50_Gesundheit oder 40_Aufgaben
+
+**Plans**: TBD
+
+---
+
+### Phase 43: Lifecycle Dashboards + Auto-Routing
+
+**Goal**: Vault-weites "Was-steht-an?"-Dashboard aggregiert across alle 6 Bereiche. launchd-Job führt tägliche state-Auto-Transitions aus (idempotent). Apple-Reminders-Sync sendet Doing/Heute-Items in macOS-Notification-Center. `bin/tom-status` zeigt das gleiche aus dem Terminal.
+
+**Depends on**: Phasen 40 + 41 + 42 (alle State-Schemas müssen existieren)
+
+**Requirements**: LCY-19..25
+
+**Success Criteria**:
+
+1. `$TOM_VAULT/index.md` Tom-Hub hat "Heute"-Sektion mit Dataview-Aggregation aus allen 6 Bereichen
+2. `$TOM_VAULT/Heute.md` Vault-Root-Dashboard sortiert nach Frist/Priorität, filterbar pro State
+3. `~/Library/LaunchAgents/com.maxim.tom-state-transitions.plist` registriert + täglich um eine konfigurierte Uhrzeit aktiv
+4. `bin/tom-state-safe` Wrapper mit Preflight + Logging analog `tom-compile-safe`
+5. Apple-Reminders-Plugin syncht `state == Doing` Aufgaben + `state == Heute` Termine bidirektional
+6. macOS-Notification-Center zeigt Reminder als Notification (smoke test)
+7. `bin/tom-status` aus Terminal zeigt heute-Aggregation, läuft auf Maxims gewohnter Shell-Idiom-Konvention
+8. Auto-Transition-Job ist idempotent: 3 aufeinanderfolgende Runs produzieren keine Doppel-Bumps oder Doppel-Reminders
+
+**Plans**: TBD
+
+---
+
+### Phase 44: Milestone-Close v1.5
+
+**Goal**: v1.5 ist nach v1.3-Schema komplett dokumentiert (6 Doku-Kanäle), CEO-Briefing geschrieben, Maximus_OS Close-Issue raus. Tom-Vault zeigt v1.5 als shipped, alle Requirements als `[x]` markiert.
+
+**Depends on**: Phasen 36–43 (alle shipped — auch das Real-Use-Smoke-Test für Phase 36 sollte hier abgehakt sein)
+
+**Requirements**: CLOSE15-01..07
+
+**Success Criteria**:
+
+1. `.planning/MILESTONES.md` enthält v1.5-Eintrag nach v1.4-Schema (Start/Ende/Phasen 36–44/Commits/Status/FAMs)
+2. `.planning/PROJECT.md` Validated-Sektion enthält v1.5-Deliverables, `Active:` auf v1.6 oder `—`
+3. `.planning/briefings/v1.5-CEO-Briefing.md` existiert mit ≥150 Zeilen nach v1.3-Template (6 Teile + Anhänge A/B/C)
+4. `$TOM_VAULT/log.md` enthält datierten v1.5-Abschluss-Eintrag
+5. `$TOM_VAULT/30_Projekte/Tom.md` aktualisiert (Current Milestone, Werkzeug-Liste mit `nutze-ollama`/`tom-local`/MCP-Server/`tom-state`/`tom-status`, Milestones-Kurz-Historie)
+6. Maximus_OS Close-Issue an CEO (`priority=high`) mit Link auf v1.5-CEO-Briefing und Phasen-Commits
+7. Alle 56 neuen v1.5-Requirements (HYG, LOCAL-06, MCP, LCY, CLOSE15) als `[x]` markiert + LOCAL-05 (7 retroaktive Phase-36) bereits `[x]`
+
+**Plans**: TBD
+
+---
+
+## Coverage: v1.5
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| LOCAL-05-01..07 | 36 | ✓ Done |
+| HYG-01..09 | 37 | Pending |
+| LOCAL-06-01..06 | 38 | ✓ Done |
+| MCP-01..09 | 39 | ✓ Done |
+| LCY-01..06 | 40 | ✓ Done |
+| LCY-07..12 | 41 | Pending |
+| LCY-13..18 | 42 | Pending |
+| LCY-19..25 | 43 | Pending |
+| CLOSE15-01..07 | 44 | Pending |
+
+**v1.5 total: 63 — Mapped: 63 — Unmapped: 0 ✓**
+
+Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
+
+---
+
+## v1.6 — Expansion
+
+**Goal:** Tom's Werkzeug-Stack um externe Open-Source-Tools erweitern: multimodaler RAG (RAG-Anything), Token-Optimierung (Codex-Plugin), Eval-Verbesserung (Autoresearch), Skill-Engine (OpenSpace), lokaler Menu-Bar-Assistant (Clicky), Transkription (audiobridge). Alles lokal-first, Privacy-konform.
+
+### Phases
+
+- [x] **Phase 47: Plugins + Raw/Vault-Cleanup** — Security Guidance installiert, claude-mem übersprungen (redundant), 122 leere Raw-Ordner bereinigt, Raw-Inventar dokumentiert — shipped 2026-04-14
+- [x] **Phase 48: RAG-Anything Multimodal** — venv+LightRAG+Ollama, `tom-doc multi-search`, MCP `tom_doc_multi_search`, Eval-Spez — shipped 2026-04-15
+- [ ] **Phase 49: Codex-Plugin Token-Opt** — Repo: Plan + Limits + Privacy + CLAUDE; **offen:** Claude-Code-Install + `/codex:review`-Smoke
+- [x] **Phase 50: Autoresearch Eval-Pipeline** — `run_eval.py` + Fragengenerierung + Metriken (shipped)
+- [ ] **Phase 51: OpenSpace Skill-Engine** — HKUDS/OpenSpace, 3 Tom-Workflow-Skills, Token-Messung
+- [ ] **Phase 52: Clicky Lokal-Build** — farzaa/clicky Fork, Screenshot+Ollama MVP, macOS Menu-Bar
+- [ ] **Phase 53: audiobridge Transkription** — audiobridge-ai/browser-extension, Plaud-Koexistenz
+- [x] **Phase 54: OpenClaw Workspace-Bridge** — Repo+Stream-Deck shipped; Live-Symlinks: Nutzer führt `repair-openclaw-bridge` aus
+- [ ] **Phase 61: Shortcuts-Forge** — AI→Apple-Shortcuts-Pipeline: Ablage `~/Documents/Tom-Shortcuts/`, `bin/tom-shortcut`, Helper-Bibliothek (Python/AppleScript/Swift), Stream Deck
+
+### Wave-Dependencies (v1.6)
+
+- **Phase 47 ✓** ist Opener, blockiert nichts
+- **Phase 48 (RAG-Anything)** kann sofort starten — unabhängig
+- **Phase 49 (Codex)** braucht OpenAI-Account-Status — unabhängig von 48
+- **Phase 50 (Autoresearch)** profitiert von Phase 48 (RAG-Eval-Daten), kann aber parallel starten
+- **Phase 51 (OpenSpace)** braucht Privacy-Check first — unabhängig
+- **Phase 52 (Clicky)** braucht Xcode — unabhängig
+- **Phase 53 (audiobridge)** braucht Extension-Install — unabhängig
+- **Phase 61 (Shortcuts-Forge)** braucht nichts — unabhängig, parallel-fähig (Plugin + Cherri + `shortcuts` CLI bereits installiert)
+
+```text
+47 ✓
+   ↓
+  48 ──── 49 ──── 50
+                    ↓
+  51 ──── 52 ──── 53
+```
+
+### Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 47. Plugins + Raw/Vault-Cleanup | — | ✓ Done | 2026-04-14 |
+| 48. RAG-Anything Multimodal | — | ✓ Done | 2026-04-15 |
+| 49. Codex-Plugin Token-Opt | 49-01-PLAN.md | In progress | 2026-04-14 |
+| 50. Autoresearch Eval-Pipeline | — | ✓ Done | 2026-04-14 |
+| 51. OpenSpace Skill-Engine | — | Planned | — |
+| 52. Clicky Lokal-Build | — | Planned | — |
+| 53. audiobridge Transkription | — | Planned | — |
+| 54. OpenClaw Workspace-Bridge | 54-01-PLAN.md | Repo shipped | 2026-04-14 |
+
+---
+
+## Phase Details (v1.6)
+
+### Phase 47: Plugins + Raw/Vault-Cleanup (Done)
+
+**Goal**: Security Guidance + claude-mem evaluieren, Raw-Ordner bereinigen, Raw-Inventar erstellen.
+
+**Requirements**: PLUG16-01..05 (alle ✓ shipped)
+
+**Ergebnisse:**
+1. Security Guidance installiert (9 Pattern-Checks als PreToolUse-Hook)
+2. claude-mem übersprungen (funktional redundant mit claude-memory-compiler + 95_Gehirn)
+3. 122 leere Raw-Ordner gelöscht (160→38), `bin/tom-raw-cleanup` erstellt
+4. Inventar + Triage in `.planning/phases/47-plugins-raw-cleanup/raw-inventar.md`
+5. 00_Inbox-Herkunft: 207 Notes von Apple Intelligence Raw Watcher + tom-raw-inject
+
+---
+
+### Phase 48: RAG-Anything — Multimodaler Dokumenten-RAG
+
+**Goal**: `tom-doc` um multimodale RAG-Fähigkeiten erweitern — PDFs mit Tabellen, Bildern, Formeln korrekt abfragen. Komplett lokal.
+
+**Depends on**: Nothing (kann sofort starten)
+
+**Requirements**: RAG16-01..06
+
+**Success Criteria**:
+
+1. RAG-Anything lokal installiert und lauffähig
+2. 10 repräsentative Dokumente aus Archiv getestet
+3. `tom-doc multi-search "query"` liefert Ergebnisse aus multimodalen PDFs
+4. `tom_doc_multi_search` MCP-Tool in Cursor grün
+5. `tom-doc search` (FTS5) weiterhin funktional (non-destructive)
+6. Kein Cloud-Abfluss — komplett lokal verifiziert
+
+**Plans**: `.planning/phases/48-rag-anything-multimodal/48-01-PLAN.md`, `SUMMARY.md`, `VERIFICATION.md`
+
+---
+
+### Phase 49: Codex-Plugin — Token-Optimierung
+
+**Goal**: Codex-Plugin installieren für Token-optimierte Code-Reviews, mit klaren Privacy-Grenzen.
+
+**Depends on**: Nothing
+
+**Requirements**: CDX16-01..05
+
+**Success Criteria**:
+
+1. OpenAI Free-Tier-Limits dokumentiert
+2. `/codex:review` funktioniert gegen generische Skripte
+3. Privacy-Regel: NICHT für Vault-Pfade oder persönliche Daten
+4. Token-Einsparung optional via `rtk gain` vor/nach Review-Session dokumentieren (wenn RTK installiert)
+
+**Plans**: `.planning/phases/49-codex-plugin-token-opt/49-01-PLAN.md`, `SUMMARY.md`, `VERIFICATION.md`
+
+**Status**: ✓ Done (2026-04-16) — Install + `/codex:review`-Smoke (Maxim); optional `rtk gain`.
+
+---
+
+### Phase 50: Autoresearch — Tom-Eval-Pipeline verbessern
+
+**Goal**: Eval-Pipeline um automatische Fragengenerierung erweitern, Compile-Qualität systematisch messen.
+
+**Depends on**: Nothing (profitiert von Phase 48)
+
+**Requirements**: ARES16-01..05
+
+**Success Criteria**:
+
+1. Übertragbare Konzepte aus karpathy/autoresearch identifiziert (`50-RESEARCH.md`)
+2. `run_eval.py` generiert Testfragen aus Wiki-Index (`generate-questions`, `--seed`, `questiongen.py`)
+3. Pro Eval-Tool-Call: Wall-Zeit + stdout-Länge in `eval_run_metrics.jsonl` (Token später / `collector.py` separat)
+4. Reports mit Baseline-Vergleich zu `v1.3-baseline.md` (Avg/Wins); keine Score-Garantie ohne neuen Lauf
+
+**Plans**: `.planning/phases/50-autoresearch-eval/50-01-PLAN.md`, `50-RESEARCH.md`, `SUMMARY.md`, `VERIFICATION.md`
+
+---
+
+### Phase 51: OpenSpace — Skill-Optimierung + Token-Reduktion
+
+**Goal**: Bestehende Skills bewerten, 3 neue Tom-Workflow-Skills entwickeln, Token-Einsparung messen.
+
+**Depends on**: Nothing
+
+**Requirements**: OSP16-01..05
+
+**Success Criteria**:
+
+1. Privacy-Check Cloud-Skill-Sharing abgeschlossen
+2. 3 Tom-Workflow-Skills (Dokument-Intake, Wiki-Query, Status-Check) funktional
+3. Token-Einsparung via `rtk gain` dokumentiert
+4. Abbruch-Bedingung: Cloud-Sharing → Phase auf Analyse reduziert
+
+**Plans**: `.planning/phases/51-openspace-skill-engine/51-01-PLAN.md`, `51-PRIVACY.md`, `51-RESEARCH.md`, `51-SKILLS-AUDIT.md`, `51-RTK-NOTES.md`, `SUMMARY.md`, `VERIFICATION.md`
+
+**Status**: ✓ Done (2026-04-15) — Projekt-Skills `.cursor/skills/tom-*`; siehe Phase-`SUMMARY.md`.
+
+---
+
+### Phase 52: Clicky — macOS Menu-Bar Assistant (Lokal-Build)
+
+**Goal**: Clicky als lokale macOS Menu-Bar-App mit Screenshot→Ollama-Query (MVP ohne Voice).
+
+**Depends on**: Nothing (braucht Xcode)
+
+**Requirements**: CLK16-01..05
+
+**Success Criteria**:
+
+1. Fork baut in Xcode (macOS 14.2+)
+2. Menu-Bar-App startet
+3. Screenshot-Analyse über Ollama/qwen3:8b funktioniert
+4. AssemblyAI→Whisper.cpp, Claude API→Ollama substituiert
+
+**Plans**: `.planning/phases/52-clicky-local/52-01-PLAN.md`, `52-RESEARCH.md`, `SUMMARY.md`, `VERIFICATION.md`
+
+**Status**: In progress (Wave 0 — Plan+Research im Tom-Repo; Fork/Build auf dem Mac)
+
+---
+
+### Phase 53: audiobridge — Transkriptions-Extension
+
+**Goal**: Browser-Extension für lokale Audio-Transkription, Plaud-Note-Pro-Koexistenz prüfen.
+
+**Depends on**: Nothing
+
+**Requirements**: AUD16-01..04
+
+**Success Criteria**:
+
+1. Extension transkribiert Audio-Aufnahme
+2. API-Backend (Ollama-Whisper oder OpenAI-kompatibel) konfiguriert
+3. Plaud-Note-Pro-Koexistenz geprüft (Export-Format, Transkript-Verbesserung)
+4. Transkripte als Markdown-Notes in `$TOM_VAULT/raw/transkripte/` nutzbar
+
+**Plans**: `.planning/phases/53-audiobridge-transcription/53-01-PLAN.md`, `53-RESEARCH.md`, `SUMMARY.md`, `VERIFICATION.md`
+
+**Status**: In progress (Wave 0 — Plan+Research im Tom-Repo; Install aus GitHub Releases)
+
+---
+
+### Phase 54: OpenClaw — Workspace-Bridge + Runtime-Normalisierung (Maintenance)
+
+**Goal**: OpenClaw bleibt auf `~/.openclaw/workspace`, bekommt aber kuratierte Symlinks zu `/Users/maxim/Claude` und zu Tom-Kernordnern im Vault; keine Exposition von `raw/`, `Clippings/`, `Archiv/`. Runtime-Health über harte Probes (`curl` Ollama/CCR, `openclaw gateway probe`), nicht allein Text-Status.
+
+**Depends on**: Nothing (Ops; parallel zu v1.6 Phasen 49–53)
+
+**Requirements**: (keine neuen REQ-IDs — Maintenance-Track)
+
+**Success Criteria**:
+
+1. `scripts/repair_openclaw_workspace_bridge.py` legt Bridges + `TOM_MAP.md` idempotent an.
+2. `USER.md` / `AGENTS.md` im Workspace verweisen auf `TOM_MAP.md` und Repo-Regeln.
+3. Harte Health-Signale dokumentiert und im Skript ausgewertet.
+4. Phasen 49–53 werden **nicht** renummeriert.
+
+**Plans**: `.planning/phases/54-openclaw-workspace-bridge/54-01-PLAN.md`
+
+---
+
+### Phase 61: Shortcuts-Forge — AI→Apple-Shortcuts-Pipeline
+
+**Goal**: Maxim gibt eine natürlichsprachige Beschreibung → signierter `.shortcut` in fester Ablage `~/Documents/Tom-Shortcuts/`. Drei Bedienwege (Claude-Session via `/shortcuts-playground:build`, `bin/tom-shortcut` headless, Stream Deck) + Helper-Bibliothek (Python/AppleScript/Swift) mit dokumentiertem Aufruf-Vertrag.
+
+**Depends on**: Nothing (Plugin shortcuts-playground v1.0.1, Cherri CLI, `shortcuts sign` bereits installiert)
+
+**Requirements**: SCF16-01..06
+
+**Success Criteria**:
+
+1. `tom-shortcut setup` idempotent; Ablage-Struktur + Helpers-Symlink + Env-Var-Persistenz stehen.
+2. `tom-shortcut build "Beschreibung"` liefert headless einen signierten `.shortcut` in `signed/` (mit Fallback-Prompt-Kette).
+3. Helper-Vertrag dokumentiert; je 1 Python/AppleScript/Swift-Helper baubar + per Shortcut aufrufbar.
+4. Stream-Deck-Button mit Eingabe-Dialog funktioniert.
+5. Cherri als Alternativ-Engine dokumentiert (documented-only, kein `--engine`-Flag).
+
+**Plans**: `.planning/phases/61-shortcuts-forge/61-01-PLAN.md`
+
+---
+
+## Coverage: v1.6
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| PLUG16-01..05 | 47 | Complete |
+| RAG16-01..06 | 48 | Complete |
+| CDX16-01..05 | 49 | Partial (3/5 Complete) |
+| ARES16-01..05 | 50 | Complete |
+| OSP16-01..05 | 51 | Pending |
+| CLK16-01..05 | 52 | Pending |
+| AUD16-01..04 | 53 | Pending |
+| SCF16-01..06 | 61 | Pending |
+
+**v1.6 total: 41 — Mapped: 41 — Unmapped: 0 ✓**
+
+Details in `.planning/REQUIREMENTS.md` Traceability-Tabelle.
+
+---
+
+*Roadmap v1.1 created: 2026-04-10*
+*Roadmap v1.2 appended: 2026-04-10*
+*Roadmap v1.3 appended: 2026-04-10*
+*Roadmap v1.4 appended: 2026-04-10*
+*Roadmap v1.5 appended: 2026-04-11 (Sonnet roadmapper-subagent blockiert durch Limit, Roadmap manuell von Opus geschrieben)*
+*Roadmap v1.6 appended: 2026-04-14*
+*Current milestone: v1.6 — Expansion*

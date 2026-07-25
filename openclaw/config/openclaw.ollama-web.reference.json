@@ -1,0 +1,59 @@
+{
+  "_note": "Sanitized reference config for Ollama-only models plus Ollama web search. Keep existing gateway/channel secrets from the live file.",
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "ollama/qwen2.5:3b"
+      },
+      "workspace": "/Users/maxim/.openclaw/workspace"
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "bind": "loopback",
+    "port": 18789
+  },
+  "models": {
+    "providers": {
+      "ollama": {
+        "api": "ollama",
+        "apiKey": "ollama-local",
+        "baseUrl": "http://127.0.0.1:11434",
+        "models": [
+          {
+            "id": "qwen2.5:3b",
+            "name": "qwen2.5:3b",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 131072,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  },
+  "tools": {
+    "alsoAllow": [
+      "ollama_web_search",
+      "ollama_web_fetch"
+    ],
+    "profile": "messaging",
+    "web": {
+      "fetch": {
+        "enabled": true
+      },
+      "search": {
+        "enabled": true,
+        "provider": "ollama"
+      }
+    }
+  }
+}

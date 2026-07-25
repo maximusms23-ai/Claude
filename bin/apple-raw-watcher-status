@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+STATE="$HOME/Library/Application Support/TomAppleRawWatcher/state.json"
+LOGFILE="$HOME/Library/Logs/TomAppleRawWatcher.log"
+LAUNCHD="$HOME/Library/LaunchAgents/ai.tom.apple-rawwatcher.plist"
+
+printf '== Apple Raw Watcher ==\n\n'
+
+if [[ -f "$LAUNCHD" ]]; then
+  echo "LaunchAgent: $LAUNCHD"
+else
+  echo "LaunchAgent: nicht installiert"
+fi
+
+printf '\n-- launchctl --\n'
+launchctl print "gui/$UID/ai.tom.apple-rawwatcher" 2>/dev/null | sed -n '1,40p' || echo "Nicht geladen"
+
+printf '\n-- state --\n'
+if [[ -f "$STATE" ]]; then
+  python3 - <<PY
+import json, pathlib
+p = pathlib.Path("$STATE")
+d = json.loads(p.read_text())
+print("Dateien:", len(d.get("files", {})))
+for key, value in list(sorted(d.get("files", {}).items()))[:10]:
+    print("-", key, "->", value.get("notePath"))
+PY
+else
+  echo "Noch kein State vorhanden"
+fi
+
+printf '\n-- log tail --\n'
+if [[ -f "$LOGFILE" ]]; then
+  tail -n 30 "$LOGFILE"
+else
+  echo "Noch kein Log vorhanden"
+fi

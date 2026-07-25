@@ -14,6 +14,8 @@ aliases:
 
 # Gemma 4
 
+> **Tom-Stack (Phase 38+):** Lokale Integrationen (**OpenClaw**, CCR/`nutze-ollama`) nutzen **`qwen2.5:3b`**, nicht zwingend `gemma4`. Unten: **Gemma 4** und offizielle Ollama-Beispiele; für Toms Standard siehe Projekt-`CLAUDE.md` und `openclaw/README.md` im Git-Repo **Claude**.
+
 Gemma 4 ist Googles neueste Generation offener Sprachmodelle (2026), entwickelt fuer Frontier-Level-Performance in verschiedenen Groessen.
 
 ## Faehigkeiten
@@ -81,7 +83,7 @@ Gemma 4 laesst sich ueber [[Ollama]] in verschiedene Coding-Assistenten einbinde
 - **Claude Code**: `ollama launch claude --model gemma4`
 - **Codex**: `ollama launch codex --model gemma4`
 - **OpenCode**: `ollama launch opencode --model gemma4`
-- **OpenClaw**: `ollama launch openclaw --model gemma4`
+- **OpenClaw (offiziell, Gemma)**: `ollama launch openclaw --model gemma4` — **Tom:** Live oft `qwen2.5:3b` in `~/.openclaw/openclaw.json` (Repo-Referenz `openclaw/openclaw.json.reference`)
 
 ## Quellen
 

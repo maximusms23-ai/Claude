@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# tom-brain-lint — Multi-Backend Brain Lint fuer $TOM_VAULT/95_Gehirn/
+#
+# Usage:
+#   tom-brain-lint --backend claude
+#   tom-brain-lint --backend codex
+#   tom-brain-lint --backend ollama
+#   tom-brain-lint --backend apple
+#   tom-brain-lint --structural-only
+
+set -euo pipefail
+
+TOOL_DIR="/Users/maxim/Claude/claude-memory-compiler"
+export TOM_VAULT="${TOM_VAULT:-/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw}"
+export UV_CACHE_DIR="${UV_CACHE_DIR:-/tmp/uv-cache-maxim}"
+
+cd "$TOOL_DIR"
+exec uv run python scripts/brain_lint.py "$@"

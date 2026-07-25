@@ -3,3 +3,77 @@ Gemma/rag/chroma_db/
 Gemma/rag/.venv/
 Obsidian/TODOS.md
 Obsidian/PROJEKTE.md
+
+# Tom-Vault lebt in iCloud als Single Source of Truth:
+# /Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw/
+# Lokaler Pfad darf nicht mehr mitkommen (v1.1 Phase 8).
+Obsidian_Zentralw/
+
+# claude-memory-compiler venv (regenerated via uv sync)
+claude-memory-compiler/.venv/
+claude-memory-compiler/scripts/state.json
+claude-memory-compiler/scripts/last-flush.json
+claude-memory-compiler/scripts/*.log
+claude-memory-compiler/scripts/session-flush-*
+claude-memory-compiler/scripts/flush-context-*
+
+# Temp / Cache / IDE
+.tmp*/
+.tmp-*/
+.cache/
+.local/
+.cursor/
+__pycache__/
+*.pyc
+
+# Quarantaene-Archiv (Phase 55 Cleanup) — Repo-lokales Backup vor Loeschen
+.archive/
+
+# External projects (not Tom)
+OmniRoute/
+Obsidian-backup/
+
+# Clicky upstream checkout (Phase 52; optional lokal — nicht ins Repo committen)
+third_party/clicky/
+
+# autoresearch-mlx (Apple Silicon / MLX Fork von karpathy/autoresearch — optional lokal)
+third_party/autoresearch-mlx/
+
+# Open WebUI / OpenClaw: vollständige Upstream-Installs liegen außerhalb des Repos.
+# Versioniert sind nur die Referenz-Ordner im Repo-Root: openclaw/, openwebui/
+
+# Apple Intelligence (separate build artifacts)
+apple-intelligence/
+
+# Stream Deck: viele .command-Skripte; nur README versioniert (Rest lokal nutzbar)
+bin/streamdeck/*
+!bin/streamdeck/README.md
+
+# Swift temp files
+.tmp-swift-*
+
+# RAG-Anything (Phase 48): venv + Working-Dir
+rag-anything-env/
+archivum/rag-anything/
+
+# Vault corpus / LoRA prep (local, can be large)
+Gemma/training/vault_corpus_policy.yaml
+Gemma/training/data/vault_chunks.jsonl
+Gemma/training/data/qa_pairs_vault.jsonl
+Gemma/training/data/corpus_qa_done.txt
+Gemma/training/data/corpus_qa_done.txt.bak.*
+
+# MLX LoRA training (local)
+Gemma/training/.venv-train/
+Gemma/training/lora_data/
+Gemma/training/adapters_out/
+
+# Nightly autoresearch eval artifacts
+Gemma/eval/generated/
+
+# Lokale Ollama API-Keys (falls jemals im Repo-Root abgelegt — nicht committen)
+tom-ollama.env
+**/tom-ollama.env
+
+# shortcuts-forge: Swift-Build-Output (Phase 61)
+shortcuts-forge/helpers/swift/build/

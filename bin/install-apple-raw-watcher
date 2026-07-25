@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+APP_PATH="$(/Users/maxim/Claude/bin/build-apple-raw-watcher)"
+PLIST_SRC="/Users/maxim/Claude/apple-intelligence/ai.tom.apple-rawwatcher.plist"
+PLIST_DST="$HOME/Library/LaunchAgents/ai.tom.apple-rawwatcher.plist"
+
+mkdir -p "$HOME/Library/LaunchAgents"
+cp "$PLIST_SRC" "$PLIST_DST"
+
+launchctl bootout "gui/$UID/ai.tom.apple-rawwatcher" >/dev/null 2>&1 || true
+launchctl bootstrap "gui/$UID" "$PLIST_DST"
+launchctl kickstart -k "gui/$UID/ai.tom.apple-rawwatcher" >/dev/null 2>&1 || true
+
+echo "Installed: $APP_PATH"
+echo "LaunchAgent: $PLIST_DST"

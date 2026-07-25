@@ -1,0 +1,51 @@
+{
+  "_meta": {
+    "description": "Apple Reminders Plugin Config-Backup (Tom v1.4.1 Phase 34)",
+    "plugin_version": "2.0.0",
+    "vault_path": "$TOM_VAULT",
+    "backup_created": "2026-04-10",
+    "status": "prepared-pending-maxim-activation-and-usage-decision",
+    "rationale": "Sync zwischen Apple Reminders (macOS/iOS) und Vault. Potentielle Brücke zwischen OS-Reminders und 40_Aufgaben/TODOS.md. Setup nur wenn Maxim Apple Reminders aktiv nutzt."
+  },
+
+  "plugin_id": "obsidian-apple-reminders-plugin",
+  "author": "urishiraval",
+  "enabled_in_community_plugins_json": false,
+
+  "privacy_assessment": {
+    "reads_files": true,
+    "read_scope": "Apple Reminders Database (EventKit API), Vault-Files wenn Sync bidirektional",
+    "writes_files": "Vault-Files mit Reminder-Daten (Standort per Plugin-Setting)",
+    "network_access": "keine (lokale EventKit-API)",
+    "external_service": "keiner (alles über macOS-API)",
+    "privacy_rating": "medium-risk (persönliche Reminder-Inhalte gehen in Vault)"
+  },
+
+  "recommended_settings": {
+    "sync_direction": "apple-to-vault-only",
+    "sync_target_folder": "40_Aufgaben/apple-reminders/",
+    "sync_target_note": "40_Aufgaben/apple-reminders/inbox.md",
+    "include_completed": false,
+    "sync_interval_minutes": 15,
+    "rationale_for_one_way": "Bidirektionaler Sync ist fehleranfällig (Konflikt-Handling). v1.4.1 startet read-only: Apple Reminders → Vault. Wenn Maxim in Obsidian Reminders editieren will, kommt das in v1.5 mit Konflikt-Strategie."
+  },
+
+  "activation_steps": [
+    "1. VORAUSSETZUNG: Maxim nutzt Apple Reminders aktiv. Wenn nein → Skip.",
+    "2. Obsidian → Settings → Community Plugins → 'Apple Reminders' → Toggle ON",
+    "3. macOS: beim ersten Plugin-Run fragt EventKit nach Berechtigung → 'Allow'",
+    "4. Plugin-Settings öffnen: Sync Target = '40_Aufgaben/apple-reminders/inbox.md'",
+    "5. Sync-Direction: 'Reminders → Obsidian' (nicht bidirektional in v1.4.1)",
+    "6. Ordner 40_Aufgaben/apple-reminders/ im Vault anlegen",
+    "7. Smoke-Test: 1 Test-Reminder in Apple Reminders anlegen ('Tom Test Reminder'), warten 15 min oder Sync manuell triggern → sollte in inbox.md erscheinen",
+    "8. Test-Reminder löschen, prüfen dass Sync die Entfernung widerspiegelt"
+  ],
+
+  "tom_integration": {
+    "workflow": "Apple Reminders landen in 40_Aufgaben/apple-reminders/inbox.md. Tom kann diese Datei lesen bei 'was steht an?'-Fragen (erweitert die bestehende Answering-User-Questions-Regel). 40_Aufgaben/TODOS.md bleibt die kuratierte Haupt-Liste.",
+    "conflicts": "Mögliche Überlappung mit obsidian-tasks-plugin (beide schreiben Tasks in Vault). Entscheidung welches Plugin Primary wird kommt in v1.5.",
+    "coexistence": "apple-reminders als Inbox-Quelle, tasks-plugin als Query-Engine (später in v1.5)"
+  },
+
+  "next_review": "Nach 1 Woche aktiver Nutzung: prüfen ob Sync stabil läuft und ob Maxim die inbox.md tatsächlich kuratiert oder ob sie ignoriert wird."
+}

@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# tom-wiki — Karpathy Index-first Query gegen Tom's Wissensbasis
+#
+# Zweck: Tom/Maxim können Fragen stellen, die NICHT via Cosine-Similarity (RAG)
+# sondern via LLM-Reasoning über den Karpathy-Retrieval-Index beantwortet werden.
+# Für bekannte Themen im 90_Wiki/ ist Index-first präziser als RAG (solange
+# das Wiki < 500 Artikel hat).
+#
+# Usage:
+#   tom-wiki "Frage"                   # gegen $TOM_VAULT/90_Wiki
+#   tom-wiki --brain "Frage"           # gegen $TOM_VAULT/95_Gehirn (private)
+#   tom-wiki --root /pfad/zu/wiki "F"  # expliziter Wiki-Root
+#
+# Unterschied zu tom-ask:
+#   tom-ask  = Qwen RAG (Cosine-Similarity, 3 Collections)    — Fuzzy-Queries
+#   tom-wiki = Index-first Reasoning über qwen2.5:3b          — bekannte Themen
+
+set -euo pipefail
+
+TOOL_DIR="/Users/maxim/Claude/claude-memory-compiler"
+
+if [[ $# -eq 0 ]]; then
+  cat <<EOF
+tom-wiki — Karpathy Index-first Query
+
+Usage:
+  tom-wiki "Deine Frage"
+  tom-wiki --brain "Frage zum privaten Brain"
+  tom-wiki --root /path/to/wiki "Frage"
+
+Beispiele:
+  tom-wiki "Was ist TurboQuant?"
+  tom-wiki --brain "Welches Pattern haben wir fuer Hooks?"
+
+Fuer fuzzy Queries -> tom-ask (RAG Fallback).
+EOF
+  exit 1
+fi
+
+export TOM_VAULT="${TOM_VAULT:-/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw}"
+export OLLAMA_MODELS="${OLLAMA_MODELS:-/Users/maxim/Ollama}"
+
+cd "$TOOL_DIR"
+exec uv run python -m tom_tools.wiki_query "$@"

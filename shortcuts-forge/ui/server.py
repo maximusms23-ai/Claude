@@ -189,13 +189,23 @@ def list_dir(sub: str, suffix: str):
     return items
 
 
-def installed_shortcuts():
+_installed_cache = {"t": 0.0, "v": set()}
+
+
+def installed_shortcuts(force=False):
+    """`shortcuts list` mit 15s-Cache — der Poll fragt alle 2s, ein Subprozess
+    pro Poll waere Verschwendung. force=True fuer Validierungen vor Job-Start."""
+    now = time.time()
+    if not force and now - _installed_cache["t"] < 15 and _installed_cache["v"]:
+        return _installed_cache["v"]
     try:
         out = subprocess.run(["/usr/bin/shortcuts", "list"], capture_output=True,
                              text=True, timeout=15).stdout
-        return set(l.strip() for l in out.splitlines() if l.strip())
+        _installed_cache["v"] = set(l.strip() for l in out.splitlines() if l.strip())
+        _installed_cache["t"] = now
     except Exception:
-        return set()
+        pass
+    return _installed_cache["v"]
 
 
 def state_payload():
@@ -370,7 +380,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(409, {"error": "Kein fortsetzbarer Draft vorhanden"})
             if not (OUT / "drafts" / draft).is_file():
                 return self._send(409, {"error": "Draft nicht mehr da: " + draft})
-            args = [str(OUT / "drafts" / draft)] + (model_args if model else [])
+            args = [str(OUT / "drafts" / draft)] + model_args
             ok = start_job("resume", args, "Fortsetzen: " + draft)
             return self._send(200 if ok else 409,
                               {"ok": ok} if ok else {"error": "Es laeuft bereits ein Job"})

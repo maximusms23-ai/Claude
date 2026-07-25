@@ -349,12 +349,13 @@ run_claude_build() {
       ;;
     codex)
       command -v codex >/dev/null 2>&1 || { err "codex CLI fehlt (npm i -g @openai/codex; dann: codex login)"; return 1; }
-      cmd=(codex exec --full-auto --skip-git-repo-check -)
+      # codex exec 0.144.x: Prompt via stdin (kein '-'-Arg), Sandbox workspace-write fuer Draft+Sign
+      cmd=(codex exec -s workspace-write --skip-git-repo-check)
       ;;
     codex-oss)
       command -v codex  >/dev/null 2>&1 || { err "codex CLI fehlt (npm i -g @openai/codex)"; return 1; }
       command -v ollama >/dev/null 2>&1 || { err "ollama fehlt (Stufe 2, Opt-in: brew install ollama; ollama pull gpt-oss:20b — 16-GB-RAM-Warnung beachten)"; return 1; }
-      cmd=(codex exec --oss --full-auto --skip-git-repo-check -)
+      cmd=(codex exec --oss --local-provider ollama -s workspace-write --skip-git-repo-check)
       ;;
     *) err "Unbekannte Engine: $ENGINE (claude|codex|codex-oss)"; return 2 ;;
   esac
@@ -659,7 +660,7 @@ PYEOF
   [[ -n "$MODEL" ]] && model_args=(--model "$MODEL")
   local rc=0
   ( cd "$OUT" && printf '%s' "$prompt" | claude --print \
-      "${model_args[@]}" \
+      ${model_args[@]+"${model_args[@]}"} \
       --allowedTools "WebSearch,WebFetch,Read" \
     ) >"$outfile" 2>"$OUT/.last-advise-err.log" || rc=$?
 
@@ -723,7 +724,7 @@ cmd_fix() {
   info "== Korrektur: '$name' nach Vorgabe =="
   local xml
   xml=$(cmd_export "$name" | tail -1) || return 1
-  cmd_remix "$xml" "$change" "${passthru[@]}"
+  cmd_remix "$xml" "$change" ${passthru[@]+"${passthru[@]}"}
 }
 
 # ---------------------------------------------------------------- optimize / extend
@@ -741,7 +742,7 @@ cmd_optimize() {
   [[ -z "$name" ]] && { err "Usage: tom-shortcut optimize \"<Installierter Name>\" [\"Hinweis\"] [--name Neu]"; return 2; }
   local change="Optimiere diesen Kurzbefehl OHNE Funktionsaenderung: entferne ueberfluessige oder doppelte Actions, vereinfache die Logik, verbessere Robustheit und Benennungen. Funktionsumfang und Ergebnis muessen identisch bleiben."
   [[ -n "$hint" ]] && change+=" Zusatzhinweis von Maxim: ${hint}."
-  cmd_fix "$name" "$change" "${passthru[@]}"
+  cmd_fix "$name" "$change" ${passthru[@]+"${passthru[@]}"}
 }
 
 cmd_extend() {
@@ -756,7 +757,7 @@ cmd_extend() {
   done
   [[ -z "$name" || -z "$wish" ]] && { err "Usage: tom-shortcut extend \"<Installierter Name>\" \"Erweiterung\" [--name Neu]"; return 2; }
   local change="Erweitere diesen Kurzbefehl um: ${wish}. Die bestehende Funktionalitaet bleibt vollstaendig und unveraendert erhalten; die Erweiterung fuegt sich sauber in den Ablauf ein."
-  cmd_fix "$name" "$change" "${passthru[@]}"
+  cmd_fix "$name" "$change" ${passthru[@]+"${passthru[@]}"}
 }
 
 # ---------------------------------------------------------------- quick

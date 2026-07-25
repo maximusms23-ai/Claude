@@ -40,6 +40,18 @@
 - **Regressionstest mit 1.2.1:** „Batterie-Status" (Run Shell Script → Swift-Helper `battery_info`) headless first-pass gebaut + signiert ✓.
 - **„Uhrzeit-Test"** von Maxim importiert + `shortcuts run` ✓ (Fallback-Artefakt läuft E2E).
 
+## Experten-Validierung (2026-07-25, voller Review-Durchgang)
+
+**3 echte Fehler gefunden + behoben (alle in nie getesteten Pfaden):**
+
+1. **bash-3.2-Crash:** `fix`/`optimize`/`extend` OHNE Flags → „unbound variable" (leere Array-Expansion unter `set -u`; macOS-Default-bash 3.2). Alle E2E-Tests hatten zufällig `--name` mitgegeben. Fix: `${arr[@]+"${arr[@]}"}`-Muster (4 Stellen); Repro + Regressionstest grün.
+2. **codex-Engine-Aufruf wäre gescheitert:** `codex exec` 0.144.6 kennt kein `--full-auto`; `-`-Arg wäre wörtlicher Prompt; `--oss ollama` hätte „ollama" als Prompt gefressen. Fix nach `--help`-Verifikation: `-s workspace-write --skip-git-repo-check`, `--oss --local-provider ollama`, Prompt rein via stdin.
+3. **resume verlor Engine-Flag** bei CLI-Default-Modell (`model_args if model`-Bedingung). Fix: unconditional.
+
+**1 Optimierung:** `installed_shortcuts()` lief als Subprozess bei jedem 2s-Poll → 15s-TTL-Cache (33 ms → 1 ms pro Poll); Job-Validierungen nutzen weiterhin frische Abfrage über denselben Cache-Fill.
+
+**Bestanden ohne Befund:** Server-Endpoint-Guards (Traversal in /api/import, Name-Validierung run/fix/advise), Job-Locking/Persistenz, UI-Quote-Escaping bei Shortcut-Namen mit Apostrophen, salvage-Dateinamen mit Leerzeichen, Limit-Erkennung.
+
 ## Drift
 
 - Keiner gegen den Plan; alle drei Incidents innerhalb der geplanten Risiko-Matrix (Fallback-Kette, Referenz-Strategie) gelöst.

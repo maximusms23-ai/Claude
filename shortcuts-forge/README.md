@@ -58,12 +58,13 @@ Headless-Builds laufen standardmäßig mit **Sonnet 5** (`claude-sonnet-5`) stat
 
 ```bash
 tom-shortcut build "…"                          # Sonnet 5 (Default)
-tom-shortcut build "…" --model claude-haiku-4-5-20251001   # noch sparsamer
-tom-shortcut build "…" --model ""               # CLI-Default (bestes Modell)
+tom-shortcut build "…" --model claude-opus-4-8  # komplexe Aufgaben: stark, weniger Fehlversuche
+tom-shortcut build "…" --model claude-haiku-4-5-20251001   # noch sparsamer (simple Briefs)
+tom-shortcut build "…" --model ""               # CLI-Default (teuerste Option)
 TOM_SHORTCUT_MODEL="" tom-shortcut build "…"    # dito per Env (persistent setzbar)
 ```
 
-Bei komplexen Kurzbefehlen, die mit Sonnet scheitern (Log prüfen): einmalig mit `--model ""` wiederholen. Session-Weg `/shortcuts-playground:build` nutzt immer das Modell der laufenden Session.
+**Modell-Heuristik:** Sonnet 5 für alles Normale. **Opus 4.8** wählen bei komplexen Ketten (Video→Build, große Menü-Shortcuts, viele Bedingungen) — pro Token teurer, aber durch weniger Craig-Loop-Iterationen und Fehlversuche oft *insgesamt* günstiger und schneller. Haiku nur für Trivialfälle. Session-Weg `/shortcuts-playground:build` nutzt immer das Modell der laufenden Session.
 
 CLI-Pendant für Änderungen: `tom-shortcut remix <name|drafts-xml> "Änderungswunsch" [--name N]` (nutzt `/shortcuts-playground:remix`; Quelle muss unsignierte XML aus `drafts/` sein — signierte `.shortcut` sind verschlüsselt).
 

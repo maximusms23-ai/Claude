@@ -368,21 +368,45 @@ run_claude_build() {
 }
 
 cmd_build() {
-  local brief="" name="" do_open=0 use_fallback=0
+  local brief="" name="" youtube="" do_open=0 use_fallback=0
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --name)            name="${2:?--name braucht einen Wert}"; shift 2 ;;
       --model)           MODEL="${2?--model braucht einen Wert (leer = CLI-Default)}"; shift 2 ;;
       --engine)          ENGINE="${2:?--engine braucht claude|codex|codex-oss}"; shift 2 ;;
+      --youtube)         youtube="${2:?--youtube braucht eine URL}"; shift 2 ;;
       --open)            do_open=1; shift ;;
       --fallback-prompt) use_fallback=1; shift ;;
       -*)                err "Unbekanntes Flag: $1"; return 2 ;;
       *)                 brief="$1"; shift ;;
     esac
   done
-  [[ -z "$brief" ]] && { err "Beschreibung fehlt: tom-shortcut build \"...\""; return 2; }
+  [[ -z "$brief" && -z "$youtube" ]] && { err "Beschreibung fehlt: tom-shortcut build \"...\" [--youtube URL]"; return 2; }
   # Slash-Commands sind Claude-Code-Syntax — andere Engines fahren immer den Plain-Prompt
   [[ "$ENGINE" != "claude" ]] && use_fallback=1
+
+  # YouTube-Kette: erst Analyse (hat WebSearch), dann automatisch aus Sektion 4 bauen.
+  # Anlass 2026-07-25: Maxim gab ein Video ein und erwartete direkt einen Kurzbefehl.
+  if [[ -n "$youtube" ]]; then
+    info "== Stufe 1/2: Video-Analyse (Web-Suche) =="
+    local before_advice advice_file
+    before_advice=$(ls -t "$OUT/advice"/*.md 2>/dev/null | head -1)
+    cmd_advise "$brief" --youtube "$youtube" || return 1
+    advice_file=$(ls -t "$OUT/advice"/*.md 2>/dev/null | head -1)
+    if [[ -z "$advice_file" || "$advice_file" == "${before_advice:-}" ]]; then
+      err "Video-Analyse lieferte kein Ergebnis"; return 1
+    fi
+    brief=$(/usr/bin/python3 - "$advice_file" <<'PYEOF'
+import re, sys
+t = open(sys.argv[1], encoding="utf-8").read()
+m = re.search(r"## 4\.[^\n]*\n(.*?)(\n## 5\.|\Z)", t, re.S)
+print(m.group(1).strip()[:4000] if m else "")
+PYEOF
+)
+    [[ -z "$brief" ]] && { err "Kein Bau-Brief (Sektion 4) in der Analyse: $advice_file"; return 1; }
+    info ""
+    info "== Stufe 2/2: Baue aus dem extrahierten Bau-Brief =="
+  fi
 
   # Rekursions-Guard: nicht aus laufender Claude-Session
   if [[ -n "${CLAUDECODE:-}" && -z "${TOM_SHORTCUT_FORCE:-}" ]]; then

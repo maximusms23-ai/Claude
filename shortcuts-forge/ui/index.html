@@ -80,7 +80,8 @@
       <div class="hint" style="margin-top:6px">Die Analyse sucht Web/GitHub/RoutineHub nach ähnlichen Projekten, empfiehlt das beste Werkzeug (Kurzbefehl · Python · AppleScript · Pages · Numbers), liefert einen optimierten Bau-Brief <b>und schlägt konkrete APIs &amp; Programme vor</b> (Endpunkt, Auth, Kosten · Apps mit Kurzbefehl-Actions).</div>
     </div>
   </div>
-  <button id="btnAdvise" onclick="advise()">🎓 Analysieren (~1–2 Min)</button>
+  <button id="btnAdvise" onclick="advise()">🎓 Nur analysieren (~1–2 Min)</button>
+  <button id="btnAdviseBuild" style="margin-left:8px" onclick="adviseAndBuild()" title="Ein Klick: Analyse (mit Web/Video-Auswertung) und danach automatisch den Kurzbefehl aus dem Bau-Brief bauen">🚀 Analysieren &amp; direkt bauen (~5–10 Min)</button>
   <div id="adviceBox" style="display:none;margin-top:14px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
       <b>Ergebnis</b> <span id="adviceFile" class="muted"></span>
@@ -217,6 +218,12 @@ async function advise() {
   window.__adviceTarget = "build";
   if (await post("/api/advise", {brief, youtube, model: $("model").value})) { toast("Analyse gestartet — Ergebnis erscheint hier"); window.__awaitAdvice = true; }
 }
+async function adviseAndBuild() {
+  const brief = $("aBrief").value.trim(), youtube = $("aYoutube").value.trim();
+  if (!brief && !youtube) return toast("Anforderung oder YouTube-Link eingeben");
+  if (await post("/api/build", {brief, youtube, model: $("model").value, engine: $("engine").value}))
+    { toast("🚀 Kette gestartet: Analyse → Build — Log unten"); }
+}
 async function adviseCtx(target) {
   const payload = {model: $("model").value};
   if (target === "fix") {
@@ -309,7 +316,7 @@ async function poll() {
     if (job.log) { const l = $("log"); const stick = l.scrollTop + l.clientHeight >= l.scrollHeight - 8;
       l.textContent = job.log; if (stick) l.scrollTop = l.scrollHeight; }
     $("btnBuild").disabled = busy; $("btnRemix").disabled = busy; $("btnAdvise").disabled = busy;
-    $("btnFixAdvise").disabled = busy; $("btnRemixAdvise").disabled = busy;
+    $("btnFixAdvise").disabled = busy; $("btnRemixAdvise").disabled = busy; $("btnAdviseBuild").disabled = busy;
     if (window.__awaitAdvice && job.kind === "advise" && job.status === "success") {
       window.__awaitAdvice = false; loadAdvice();
     }

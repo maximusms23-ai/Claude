@@ -37,8 +37,9 @@ TOM_SHORTCUT = Path("/Users/maxim/Claude/bin/tom-shortcut")
 # Modell-Allowlist fuer die UI. "" = CLI-Default (grosses Modell des Logins).
 MODELS = {
     "claude-sonnet-5": "Sonnet 5 — Token-sparend (Standard)",
+    "claude-opus-4-8": "Opus 4.8 — stark fuer komplexe Aufgaben (weniger Fehlversuche, pro Token teurer)",
     "claude-haiku-4-5-20251001": "Haiku 4.5 — maximal sparsam (einfache Kurzbefehle)",
-    "": "CLI-Default — bestes Modell (teuer)",
+    "": "CLI-Default — bestes Modell (teuerste Option)",
 }
 
 
@@ -269,13 +270,19 @@ class Handler(BaseHTTPRequestHandler):
             model_args = ["--engine", engine]  # Modellwahl gilt nur fuer Claude-Engine
         if self.path == "/api/build":
             brief = (p.get("brief") or "").strip()
-            if not brief:
-                return self._send(400, {"error": "Beschreibung fehlt"})
+            youtube = (p.get("youtube") or "").strip()
+            if youtube and not youtube.startswith(("https://www.youtube.com/", "https://youtu.be/", "https://youtube.com/")):
+                return self._send(400, {"error": "Nur YouTube-URLs erlaubt"})
+            if not brief and not youtube:
+                return self._send(400, {"error": "Beschreibung oder YouTube-Link fehlt"})
             args = [brief] + model_args
+            if youtube:
+                args += ["--youtube", youtube]
             name = (p.get("name") or "").strip()
             if name:
                 args += ["--name", name]
-            ok = start_job("build", args, name or brief[:60])
+            label = name or brief[:60] or ("Video-Build: " + youtube[-20:])
+            ok = start_job("build", args, label)
             return self._send(200 if ok else 409,
                               {"ok": ok} if ok else {"error": "Es laeuft bereits ein Job"})
         if self.path == "/api/remix":

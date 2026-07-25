@@ -397,10 +397,20 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=7461)
+    ap.add_argument("--host", default="127.0.0.1",
+                    help="0.0.0.0 = LAN-Modus fuer iPhone/iPad (nur im vertrauten Heimnetz! Keine Auth.)")
     args = ap.parse_args()
     _load_persisted_job()
-    srv = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    srv = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"Forge-UI: http://127.0.0.1:{args.port}  (Ablage: {OUT})")
+    if args.host != "127.0.0.1":
+        try:
+            host = subprocess.run(["scutil", "--get", "LocalHostName"], capture_output=True,
+                                  text=True, timeout=5).stdout.strip()
+            print(f"LAN-Modus AKTIV: http://{host}.local:{args.port}  (iPhone/iPad im selben WLAN)")
+            print("ACHTUNG: keine Authentifizierung — nur im vertrauten Heimnetz nutzen.")
+        except Exception:
+            pass
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

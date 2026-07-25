@@ -1,0 +1,31 @@
+#!/bin/zsh
+# forge_starter — Starter fuer die Forge-UI (shortcuts-forge Helper)
+#
+# Zweck:
+#     Ein Aufruf: startet den Forge-UI-Server falls er nicht laeuft (LAN-Modus,
+#     damit iPhone/iPad im selben WLAN zugreifen koennen) und oeffnet die Seite.
+#     Gedacht fuer den Mac-Kurzbefehl "Forge starten" (Run Shell Script) und Dock.
+#
+# Usage:
+#     forge_starter            # LAN-Modus (iPhone/iPad-faehig)
+#     forge_starter --local    # nur 127.0.0.1
+#
+# Output: die geoeffnete URL auf stdout. Vertrag: keine interaktiven Prompts.
+
+set -eu
+PORT=7461
+MODE="--lan"
+[[ "${1:-}" == "--local" ]] && MODE=""
+
+if ! lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+  TOM_UI_NO_OPEN=1 nohup /Users/maxim/Claude/bin/tom-shortcut ui $MODE >/tmp/forge-ui.log 2>&1 &
+  # kurz warten bis der Server lauscht (max 5 s)
+  for _ in {1..10}; do
+    lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1 && break
+    sleep 0.5
+  done
+fi
+
+URL="http://127.0.0.1:${PORT}"
+open "$URL"
+print "$URL"

@@ -69,6 +69,19 @@ CLI-Pendant für Änderungen: `tom-shortcut remix <name|drafts-xml> "Änderungsw
 
 **Wichtig:** `tom-shortcut build` startet einen eigenen `claude`-Prozess — **nie aus einer laufenden Claude-Session aufrufen** (Rekursion). In Sessions immer `/shortcuts-playground:build` nutzen.
 
+### Starter-App: Mac, iPad, iPhone (seit 2026-07-25)
+
+Zwei per Pipeline gebaute Kurzbefehle (iCloud synct sie automatisch auf alle Geräte):
+
+| Kurzbefehl | Gerät | Macht |
+|---|---|---|
+| **„Forge starten"** | Mac (auch Dock: Rechtsklick in Kurzbefehle-App → „Zum Dock hinzufügen") | Startet den Server falls nötig (**LAN-Modus**) und öffnet die Seite — via Helper `helpers/zsh/forge_starter` |
+| **„Forge öffnen"** | iPhone/iPad/Mac | Öffnet `http://Mac-mini-von-Maxim.local:7461` (Bonjour-Name, stabil trotz IP-Wechsel) |
+
+**Ablauf mobil:** Auf dem Mac einmal „Forge starten" (oder Server läuft eh) → auf iPhone/iPad „Forge öffnen" → volle Forge-UI im Safari (Builds laufen weiterhin auf dem Mac).
+
+⚠️ **LAN-Modus-Sicherheit:** `tom-shortcut ui --lan` bindet an alle Interfaces **ohne Authentifizierung** — nur im vertrauten Heimnetz nutzen, nie in fremden WLANs. Ohne `--lan` bleibt alles wie bisher auf 127.0.0.1.
+
 ### Erstes Setup
 
 ```bash

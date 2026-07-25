@@ -897,12 +897,20 @@ cmd_resume() {
 
 # ---------------------------------------------------------------- ui
 cmd_ui() {
-  local port="${1:-7461}"
+  local port="7461" host="127.0.0.1"
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --lan) host="0.0.0.0"; shift ;;
+      -*)    err "Unbekanntes Flag: $1 (nur --lan)"; return 2 ;;
+      *)     port="$1"; shift ;;
+    esac
+  done
   local py
   py=$(find_playground_python || command -v python3)
   info "Forge-UI startet auf http://127.0.0.1:${port} (Beenden: Ctrl+C)"
-  ( sleep 1 && open "http://127.0.0.1:${port}" ) &
-  exec "$py" "$FORGE_ROOT/ui/server.py" --port "$port"
+  [[ "$host" == "0.0.0.0" ]] && info "LAN-Modus: http://$(scutil --get LocalHostName 2>/dev/null).local:${port} — nur im vertrauten Heimnetz (keine Auth)!"
+  [[ -z "${TOM_UI_NO_OPEN:-}" ]] && ( sleep 1 && open "http://127.0.0.1:${port}" ) &
+  exec "$py" "$FORGE_ROOT/ui/server.py" --port "$port" --host "$host"
 }
 
 # ---------------------------------------------------------------- dispatch

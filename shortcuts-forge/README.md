@@ -147,7 +147,11 @@ Die Experten-Analyse (Sonnet 5 + WebSearch, ~1–2 Min, Plan: [`61-03-ADVISE-REU
 3. **Lokale Wiederverwendung** — welcher deiner installierten Kurzbefehle/Drafts als Basis taugt (→ `fix`)
 4. **Optimierter Bau-/Änderungs-Brief** — fertig für `build`/`fix`/`remix` (UI-Button „→ Übernehmen" routet in die richtige Karte)
 5. **Einschätzung** — Erfolgswahrscheinlichkeit, Aufwand, Risiken
-6. **APIs & Programme** — konkrete externe APIs (Zweck, Doku-Link, Auth, Kosten) und Apps mit Kurzbefehl-Actions/App Intents, die die Umsetzung ermöglichen — nur web-verifizierte Vorschläge
+6. **APIs & Programme** — konkrete externe APIs (Zweck, Doku-Link, Auth, Kosten) und Apps mit Kurzbefehl-Actions/App Intents — **bevorzugt aus Maxims installierten Apps** (Baukasten-Katalog, s. u.); Neu-Installationen nur wenn nötig und als solche gekennzeichnet
+
+### App-Baukasten-Katalog
+
+`tom-shortcut apps [--refresh]` scannt `/Applications` + `/System/Applications` nach Apps mit Kurzbefehl-Actions (Erkennung: `Metadata.appintents` = moderne App Intents, `PlugIns/*.appex` = Legacy) → `~/Documents/Tom-Shortcuts/reference/apps-baukasten.md` (aktuell 49 Apps, u. a. Hazel, Goodnotes, Telegram, WhatsApp, Keynote/Numbers/Pages). Die Analyse hält den Katalog automatisch aktuell (7-Tage-Cache) und liest ihn bei jeder Beratung ein — Vorschläge bauen auf dem, was wirklich da ist.
 
 **Kontext-Analyse** (seit 2026-07-20): `advise --shortcut "<Name>"` bzw. `--draft x.xml` analysiert einen **bestehenden** Kurzbefehl (echte Action-Struktur fließt ins Prompt) — in der UI als „🎓 Erst analysieren" in den Karten „Bestehende bearbeiten" und „Draft ändern", plus **„🎓 Optimierungsvorschläge zum Ergebnis"** nach jedem erfolgreichen Build (dein Testfall-Feedback-Loop).
 

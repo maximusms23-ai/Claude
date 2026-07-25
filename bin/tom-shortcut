@@ -580,6 +580,49 @@ cmd_remix() {
   return 1
 }
 
+# ---------------------------------------------------------------- apps
+# Baukasten-Katalog: installierte Apps mit Kurzbefehl-Actions/App Intents.
+# Scan-Basis: Metadata.appintents (moderne Actions) bzw. PlugIns/*.appex (Legacy).
+# Ergebnis liegt in der Ablage -> advise/build duerfen es per Read nutzen.
+APPS_CATALOG_REL="reference/apps-baukasten.md"
+
+cmd_apps() {
+  local force=0
+  [[ "${1:-}" == "--refresh" ]] && force=1
+  ensure_dirs
+  mkdir -p "$OUT/reference"
+  local cat_file="$OUT/$APPS_CATALOG_REL"
+  if [[ "$force" -eq 0 && -f "$cat_file" && -n "$(find "$cat_file" -mtime -7 2>/dev/null)" ]]; then
+    info "Baukasten-Katalog aktuell (<7 Tage): $cat_file ($(grep -c '^| ' "$cat_file" 2>/dev/null || echo '?') Zeilen)"
+    return 0
+  fi
+
+  info "Scanne /Applications + /System/Applications nach Kurzbefehl-faehigen Apps..."
+  {
+    printf '# Baukasten-Katalog: Installierte Apps mit Kurzbefehl-Actions\n\n'
+    printf 'Automatisch erzeugt von `tom-shortcut apps` am %s. Refresh: `tom-shortcut apps --refresh`.\n\n' "$(date +%Y-%m-%d)"
+    printf 'Diese Apps von Maxim bringen eigene Kurzbefehl-Actions mit (App Intents bzw. Legacy-Intents)\nund sind bevorzugte Baukasten-Module — statt Apps vorzuschlagen, die erst installiert werden muessten.\n\n'
+    printf '| App | Bundle-ID | Action-Typ |\n|---|---|---|\n'
+    local dir app name typ bid
+    for dir in /Applications /System/Applications /System/Applications/Utilities; do
+      for app in "$dir"/*.app; do
+        [[ -d "$app" ]] || continue
+        name=$(basename "$app" .app)
+        typ=""
+        [[ -d "$app/Contents/Resources/Metadata.appintents" ]] && typ="App Intents (modern)"
+        if [[ -z "$typ" ]] && ls "$app/Contents/PlugIns/"*.appex >/dev/null 2>&1; then
+          typ="Extension/Legacy-Intents"
+        fi
+        [[ -z "$typ" ]] && continue
+        bid=$(defaults read "$app/Contents/Info" CFBundleIdentifier 2>/dev/null || echo "?")
+        printf '| %s | %s | %s |\n' "$name" "$bid" "$typ"
+      done
+    done
+    printf '\nHinweis: Der Katalog zeigt Wahrscheinlichkeit, nicht Garantie — die konkreten Action-Namen\nstehen in der Kurzbefehle-App (Aktion suchen nach App-Name) bzw. in der Plugin-KB (APPINTENTS.md).\n'
+  } > "$cat_file"
+  info "✓ Katalog: $cat_file ($(grep -c '^| ' "$cat_file") Apps)"
+}
+
 # ---------------------------------------------------------------- advise
 # Experten-Analyse VOR dem Bauen: Web/GitHub-Suche nach aehnlichen Projekten,
 # Werkzeug-Empfehlung (Kurzbefehl/Python/AppleScript/Pages/Numbers), lokale
@@ -649,6 +692,9 @@ PYEOF
   fi
   [[ -n "$youtube" ]] && prompt+=" Zusaetzliche Anforderungsquelle ist dieses YouTube-Video: ${youtube} — hole per WebFetch/WebSearch Titel, Beschreibung und (falls auffindbar) Transkript-Inhalte und extrahiere daraus die konkrete Anforderung."
   prompt+=" Nutze WebSearch, um AEHNLICHE EXISTIERENDE Projekte zu finden (RoutineHub, GitHub, r/shortcuts, MacStories, ShareShortcuts) — Ziel: anpassen statt neu entwickeln. Bereits installierte Kurzbefehle von Maxim (Reuse-Kandidaten fuer 'tom-shortcut fix'): ${installed}. Vorhandene Drafts in der Ablage: ${drafts}. Lokale Helper-Bibliothek: text_tools.py (Python, Text-Transformationen), safari_current_page (AppleScript), battery_info (Swift). Antworte auf Deutsch als Markdown mit GENAU diesen Sektionen: ## 1. Empfohlenes Werkzeug (Kurzbefehl / Python-Helper / AppleScript / Pages / Numbers / Kombination — mit Begruendung), ## 2. Aehnliche existierende Projekte (mit Links, je 1 Satz was uebernehmbar ist), ## 3. Lokale Wiederverwendung (welcher installierte Kurzbefehl/Draft als Basis taugt, oder 'keiner'), ## 4. Optimierter Bau-Brief (fertig formulierter Text fuer tom-shortcut build bzw. fix — konkret, mit Action-Hinweisen), ## 5. Einschaetzung (Erfolgswahrscheinlichkeit als Kurzbefehl in %, Aufwand, Risiken), ## 6. APIs & Programme (konkrete externe APIs, die die Umsetzung ermoeglichen — je: Zweck, Endpunkt/Doku-Link, Auth-Art, kostenlos oder Preis — UND Apps/Programme mit Kurzbefehl-Actions oder App Intents, die helfen wuerden — je: Name, was sie beitragen, Link; nur per WebSearch verifizierte Vorschlaege, keine erfundenen; wenn keine noetig sind: 'native Actions reichen'). Arbeite autonom, keine Rueckfragen."
+
+  cmd_apps >/dev/null 2>&1 || true   # Baukasten-Katalog sicherstellen (cached)
+  prompt+=" Ein Katalog von Maxims INSTALLIERTEN Apps mit Kurzbefehl-Actions liegt unter ${OUT}/${APPS_CATALOG_REL} — lies ihn per Read und bevorzuge in Sektion 6 genau diese Apps als Baukasten-Module (nur wenn eine noetige Faehigkeit fehlt, schlage eine Neu-Installation vor und kennzeichne sie als solche)."
 
   info "== Analyse startet (Web-Suche, ~1-2 Min) =="
   [[ -n "$brief"   ]] && info "Angabe:  $brief"
@@ -876,6 +922,7 @@ main() {
     fix)     cmd_fix "$@" ;;
     optimize) cmd_optimize "$@" ;;
     extend)   cmd_extend "$@" ;;
+    apps)    cmd_apps "$@" ;;
     quick)   cmd_quick "$@" ;;
     salvage) cmd_salvage "$@" ;;
     resume)  cmd_resume "$@" ;;

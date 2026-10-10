@@ -54,6 +54,15 @@ Claude/
 └── .obsidian/         # Obsidian app config
 ```
 
+## Agentic OS (Agenten-Ebene)
+
+- Subagenten: `.claude/agents/` — `wiki-ingest`, `wiki-health`, `wiki-index`, `output-builder`, `memory-keeper`
+- Projektgedaechtnis: `Obsidian/Agentic OS/MEMORY.md`, Regelwerk in `Obsidian/Agentic OS/AI Memory Protocol.md`
+- **Zu Session-Beginn das Gedaechtnis lesen** (der SessionStart-Hook `.claude/hooks/session-start-memory.sh` laedt es automatisch; scheitert er, manuell lesen)
+- Bei Widerspruch zwischen Gedaechtnis und Dateibestand gilt der Dateibestand
+- Lokaler Arbeitsplatz: `scripts/agentic-os-bootstrap.sh`
+- Uebersicht: `Obsidian/wiki/projekte/agentic-os.md`
+
 ## Mandatory After Every Content Change
 
 1. Update relevant index files (`Themen-Index.md`, `Konzepte-Index.md`, `Personen-Index.md`, `Projekte-Index.md`, `Quellen-Index.md`)

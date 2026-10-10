@@ -59,6 +59,13 @@ Arbeitsanweisungen fuer Codex in diesem Workspace.
 - Schwach vernetzte Seiten mit sinnvollen Links anreichern
 - Bei Bedarf neue, hilfreiche Themenvorschlaege machen
 
+## Agentic OS
+
+- Spezialisierte Subagenten liegen in `.claude/agents/`: `wiki-ingest`, `wiki-health`, `wiki-index`, `output-builder`, `memory-keeper`
+- Das Projektgedaechtnis liegt in `Obsidian/Agentic OS/MEMORY.md`, die Regeln dazu in `Obsidian/Agentic OS/AI Memory Protocol.md`
+- Zu Session-Beginn das Gedaechtnis lesen, am Ende Erkenntnisse zurueckschreiben
+- Widerspricht das Gedaechtnis dem Dateibestand, gilt der Dateibestand
+
 ## Zusammenarbeit
 
 - Bei Unklarheit zuerst sinnvolle Annahmen treffen und transparent nennen

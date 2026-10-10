@@ -12,6 +12,7 @@ tags:
 
 Projekte, Repositories und technische Vorhaben.
 
+- [[Agentic OS]] — Agenten-Ebene des Repos: Subagenten fuer die Wiki-Pflege plus versioniertes Projektgedaechtnis
 - [[Gemme Training|Gemme Training]] — Fine-Tuning eines lokalen LLM auf Wiki-Inhalte
 - [[Ollama Projekt|Ollama]] — Lokale LLM-Laufzeitumgebung
 - [[PaperclipAI]] — Orchestrierungsplattform für autonome KI-Agenten

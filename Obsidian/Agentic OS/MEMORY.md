@@ -55,6 +55,7 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
   - **Haeufigste Fehlerquelle:** ein exportiertes `ANTHROPIC_API_KEY` ueberschreibt jedes OAuth-Profil stillschweigend. Auch ein leeres `ANTHROPIC_API_KEY=""` gewinnt noch. Muss echt `unset` sein. `ant auth status` zeigt, welche Quelle gewonnen hat.
   - Ein Login-Token ist an **ein** Org+Workspace gebunden. Ressourcen aus einem anderen Workspace sind dann unsichtbar — bei „verschwundenen" Objekten zuerst `ant auth status` pruefen.
   - Quelle: der mitgelieferte `claude-api`-Skill, Datei `shared/anthropic-cli.md`. Nicht aus dem Gedaechtnis beantworten, der Skill ist maßgeblich.
+  - **Befund vom 2026-10-10 (`ant auth status` des Users):** Login erfolgreich — Profil `default`, Org „Maxim", Workspace „Claude Code" (`wrkspc_01WPXdDDeZADRH6NKroLNQTG`), Scopes `user:developer user:inference user:profile`. Trotzdem keine Verbindung, aus zwei Gruenden: (1) `ANTHROPIC_BASE_URL=http://127.0.0.1:1234` — gesetzt als Umgebungsvariable UND im Profil (`configs/default.json`). Port 1234 ist LM Studio; alle Anfragen gehen an den lokalen Server statt an die API. (2) `ANTHROPIC_AUTH_TOKEN` mit 8 Zeichen gesetzt — ein Platzhalter, der in der Rangfolge ueber dem OAuth-Profil steht. Beides stammt vermutlich aus einem Local-LLM-Setup (Agent OS `install/5-FREE-CLAUDE-CODE.md` o. ae.); vor dem Entfernen klaeren, ob das Setup gebraucht wird — dann getrennte Profile statt globale Variablen.
 
 - Lokales Bootstrap auf dem Mac des Users ist offen. Aus einer Cloud-Session nicht machbar: keine Computer-Use-/Remote-Device-Tools vorhanden, keine Remote-Control-Verbindung, keine Peer-Session auf seiner Maschine. Erfordert eine Session, die auf seinem Rechner laeuft (Claude Desktop oder `claude remote-control`).
 - `Obsidian/raw/` existiert laut Dokumentation, ist im Repo aber nicht vorhanden — nur `Clippings/`, `Ideen/`, `Projekte/`. Ob `raw/` lokal existiert und nur nicht committet ist, ist ungeklaert.
@@ -75,6 +76,7 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 
 - 2026-10-10 — Geprueft, ob Agent OS integriert war: war es nicht (leerer Branch, keine Agenten, kein Protokoll). Anschliessend die repo-seitige Integration gebaut und committet.
 - 2026-10-10 — Integration im Cloud-Resume verifiziert: Hook feuert, Agenten laden. Zugriff auf den Mac geprueft und ausgeschlossen (siehe "Offene Punkte").
+- 2026-10-10 — `ant auth status` des Users ausgewertet: Login ok, aber Endpunkt auf `127.0.0.1:1234` umgebogen und Platzhalter-`ANTHROPIC_AUTH_TOKEN`. `scripts/connect-ant.sh` erkennt und umgeht jetzt beides.
 - 2026-10-10 — Agent OS verlangt fuer Claude die `ant`-CLI (Claude Platform CLI). Installations- und Auth-Details aus dem `claude-api`-Skill geholt, nicht geraten.
 - 2026-10-10 — User will Claude zuerst unter „Agenten" in Agent OS konfiguriert sehen, Obsidian danach. Aufgabenkarte entsprechend umgestellt.
 - 2026-10-10 — Vault-ID `53213b4610731fc1` vom User erhalten; die Frage "welcher Vault" ist damit beantwortet.

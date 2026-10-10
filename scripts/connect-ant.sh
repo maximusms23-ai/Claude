@@ -49,8 +49,13 @@ ask() {
   case "$answer" in j|J|y|Y|ja|Ja|yes) return 0 ;; *) return 1 ;; esac
 }
 
-# `ant` immer ohne stoerenden API-Key aufrufen (siehe Schritt 1).
-ant_run() { env -u ANTHROPIC_API_KEY ant "$@"; }
+# `ant` ohne die Variablen aufrufen, die Profil bzw. Endpunkt ueberschreiben.
+# ANTHROPIC_BASE_URL ist der gefaehrlichste: zeigt er auf einen lokalen Server
+# (z. B. LM Studio auf Port 1234), gehen ALLE Anfragen dorthin statt an die API —
+# bei perfekt gueltigem OAuth-Token.
+ant_run() {
+  env -u ANTHROPIC_API_KEY -u ANTHROPIC_AUTH_TOKEN -u ANTHROPIC_BASE_URL ant "$@"
+}
 
 say "Claude Platform CLI (ant) <-> Agent OS"
 say "Dashboard: http://localhost:3737"
@@ -74,8 +79,58 @@ else
   ok 'kein ANTHROPIC_API_KEY gesetzt'
 fi
 
+# ANTHROPIC_AUTH_TOKEN steht in der Rangfolge UEBER dem OAuth-Profil.
+# Ein kurzer Platzhalterwert wird dann anstelle des gueltigen Tokens gesendet.
 if [ -n "${ANTHROPIC_AUTH_TOKEN+x}" ]; then
-  warn 'ANTHROPIC_AUTH_TOKEN ist gesetzt. Zusammen mit einem API-Key lehnt die API Anfragen ab.'
+  n=${#ANTHROPIC_AUTH_TOKEN}
+  warn "ANTHROPIC_AUTH_TOKEN ist gesetzt ($n Zeichen) — steht in der Rangfolge UEBER dem Profil."
+  [ "$n" -lt 40 ] && warn 'So kurz ist das kein echtes Token, sondern ein Platzhalter. Entfernen.'
+  warn 'Dauerhaft loesen: Zeile aus der Shell-Konfiguration entfernen, dann `unset ANTHROPIC_AUTH_TOKEN`.'
+  key_problem=1
+fi
+
+# Der haeufigste stille Totalausfall: ein umgebogener Endpunkt.
+if [ -n "${ANTHROPIC_BASE_URL:-}" ]; then
+  warn "ANTHROPIC_BASE_URL zeigt auf: $ANTHROPIC_BASE_URL"
+  case "$ANTHROPIC_BASE_URL" in
+    *127.0.0.1*|*localhost*)
+      warn 'Das ist ein LOKALER Server, nicht die Claude API. Jede Anfrage geht dorthin —'
+      warn 'auch mit gueltigem OAuth-Token. Typisch fuer LM Studio (Port 1234) oder einen Proxy.'
+      warn 'Gehoert das zu einem Local-LLM-Setup, lass es dort und nutze fuer die Platform'
+      warn 'ein eigenes Profil: ant auth login --profile platform'
+      ;;
+  esac
+  warn 'Dieses Skript umgeht die Variable; dauerhaft: aus der Shell-Konfiguration entfernen.'
+  key_problem=1
+fi
+
+# Auch das Profil selbst kann einen base_url festhalten — Variable allein zu
+# entfernen reicht dann nicht.
+cfg="${ANTHROPIC_CONFIG_DIR:-$HOME/.config/anthropic}/configs/default.json"
+if [ -f "$cfg" ] && grep -q '"base_url"' "$cfg" 2>/dev/null; then
+  pburl="$(sed -n 's/.*"base_url"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$cfg" | head -1)"
+  if [ -n "$pburl" ]; then
+    warn "Das Profil 'default' speichert base_url: $pburl"
+    case "$pburl" in
+      *anthropic.com*) : ;;
+      *)
+        warn 'Auch ohne Umgebungsvariable gehen Anfragen dorthin.'
+        if [ "$CHECK_ONLY" -eq 0 ] && ask 'base_url im Profil auf https://api.anthropic.com zuruecksetzen?'; then
+          if ant profile set base_url https://api.anthropic.com --profile default 2>/dev/null; then
+            ok 'Profil-base_url zurueckgesetzt'
+          else
+            warn "Automatisch fehlgeschlagen. Von Hand: $cfg bearbeiten und die base_url-Zeile entfernen."
+          fi
+        fi
+        ;;
+    esac
+  fi
+fi
+
+if [ "$key_problem" -eq 1 ]; then
+  say ''
+  say '   Woher die Variablen kommen, findest du so:'
+  say '     grep -rn ANTHROPIC_ ~/.zshrc ~/.zprofile ~/.bashrc ~/.bash_profile ~/.profile 2>/dev/null'
 fi
 
 os="$(uname -s)"
@@ -164,7 +219,8 @@ if model="$(ant_run models list --max-items 1 --transform id -r 2>/dev/null)" &&
   connected=1
 else
   warn 'Die API antwortet nicht. Haeufigste Ursachen:'
-  warn '  - ANTHROPIC_API_KEY ueberschreibt das Profil (siehe Schritt 1)'
+  warn '  - ANTHROPIC_BASE_URL oder ein Profil-base_url zeigt auf einen lokalen Server'
+  warn '  - ANTHROPIC_API_KEY oder ANTHROPIC_AUTH_TOKEN ueberschreibt das Profil (Schritt 1)'
   warn '  - Refresh-Token abgelaufen -> ant auth login erneut'
   warn '  - Token auf einen anderen Workspace gebunden -> ant auth status'
   warn 'Diagnose: ant auth status  und  ant --debug models list'

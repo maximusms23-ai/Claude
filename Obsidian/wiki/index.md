@@ -13,6 +13,8 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-10 | [[Infrastruktur]] | Neu erstellt (Cloud-Sandbox, 4080-Rechner, Remote Control) |
+| 2026-10-10 | [[Themen-Index]] | Sektion Technik mit [[Infrastruktur]] ergaenzt |
 | 2026-04-09 | [[gemma4|Gemma 4]] | Alias `Gemma 4-Modelle` + Speichertabelle (BF16/8bit/4bit) ergaenzt |
 | 2026-04-09 | [[index|Wiki-Index]] | Backslash-Fehler in Tabellenzeile behoben |
 | 2026-04-09 | [[Gemma-4-Modelle]] | Auf [[gemma4|Gemma 4]] weitergeleitet (Duplikat bereinigt) |
@@ -40,7 +42,7 @@ tags:
 
 ## Statistiken
 
-- Themen: 3
+- Themen: 4
 - Konzepte: 3
 - Personen: 0
 - Projekte: 3

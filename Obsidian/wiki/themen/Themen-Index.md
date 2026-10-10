@@ -22,3 +22,7 @@ Uebersicht aller thematischen Artikel in der Wissensbasis.
 
 - [[Gemma-4-Modelle]] — Offene multimodale Modellfamilie mit Varianten fuer Edge und Server
 - [[Gemma 4]] — Nutzung, Ollama-Varianten, TurboQuant-Integration und Dev-Tool-Einbindung
+
+## Technik
+
+- [[Infrastruktur]] — Cloud-Sandbox vs. lokaler 4080-Rechner, Zugriffswege und Arbeitsteilung

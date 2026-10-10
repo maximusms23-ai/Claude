@@ -48,6 +48,9 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 
 ## Offene Punkte
 
+- **Reihenfolge vom User vorgegeben: zuerst Claude in Agent OS unter „Agenten" konfigurieren, erst danach den Obsidian-Vault anschliessen.** Nicht umdrehen.
+- Claude ist in Agent OS nicht als Agent konfiguriert — deshalb ist im Leitstand nichts zu sehen. Zustaendig sind dort `Check My Setup.command`, `SETUP-GUIDE.md`, `config.example.json` und die passende Datei in `install/`. Rein lokale Konfiguration; im Vault-Repo gibt es dafuer nichts zu bauen.
+
 - Lokales Bootstrap auf dem Mac des Users ist offen. Aus einer Cloud-Session nicht machbar: keine Computer-Use-/Remote-Device-Tools vorhanden, keine Remote-Control-Verbindung, keine Peer-Session auf seiner Maschine. Erfordert eine Session, die auf seinem Rechner laeuft (Claude Desktop oder `claude remote-control`).
 - `Obsidian/raw/` existiert laut Dokumentation, ist im Repo aber nicht vorhanden — nur `Clippings/`, `Ideen/`, `Projekte/`. Ob `raw/` lokal existiert und nur nicht committet ist, ist ungeklaert.
 - Ungeklaert, welche Teile der hier gebauten Ebene nach dem Anschluss ueberfluessig werden: Agent OS fuehrt mit `project-memory/` und der „Memory Galaxy" ein eigenes Gedaechtnis. Doppelte Quellen der Wahrheit sind zu vermeiden.
@@ -67,6 +70,7 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 
 - 2026-10-10 — Geprueft, ob Agent OS integriert war: war es nicht (leerer Branch, keine Agenten, kein Protokoll). Anschliessend die repo-seitige Integration gebaut und committet.
 - 2026-10-10 — Integration im Cloud-Resume verifiziert: Hook feuert, Agenten laden. Zugriff auf den Mac geprueft und ausgeschlossen (siehe "Offene Punkte").
+- 2026-10-10 — User will Claude zuerst unter „Agenten" in Agent OS konfiguriert sehen, Obsidian danach. Aufgabenkarte entsprechend umgestellt.
 - 2026-10-10 — Vault-ID `53213b4610731fc1` vom User erhalten; die Frage "welcher Vault" ist damit beantwortet.
 - 2026-10-10 — Agent OS erstmals eingesehen (Verzeichnislisting und README vom User eingefuegt). Befund: eigenes Produkt mit eigenem Obsidian-Connector; die hier gebaute Ebene ist nicht der gesuchte Anschluss. Bootstrap daraufhin hinter `--confirm` gelegt.
 - 2026-10-10 — Ebene voll ausgebaut: Commands, Guard-Hook, Stop-Gate, Pruefskript, Hook-Tests, CI. Drei eigene Entwurfsfehler dabei gefunden und behoben — zwei davon, weil die Hooks diese Session selbst blockiert haben (siehe "Entscheidungen").

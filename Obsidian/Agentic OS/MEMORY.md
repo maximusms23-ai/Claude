@@ -49,7 +49,12 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 ## Offene Punkte
 
 - **Reihenfolge vom User vorgegeben: zuerst Claude in Agent OS unter „Agenten" konfigurieren, erst danach den Obsidian-Vault anschliessen.** Nicht umdrehen.
-- Claude ist in Agent OS nicht als Agent konfiguriert — deshalb ist im Leitstand nichts zu sehen. Zustaendig sind dort `Check My Setup.command`, `SETUP-GUIDE.md`, `config.example.json` und die passende Datei in `install/`. Rein lokale Konfiguration; im Vault-Repo gibt es dafuer nichts zu bauen.
+- Claude ist in Agent OS nicht als Agent konfiguriert — deshalb ist im Leitstand nichts zu sehen. **Agent OS erwartet dort die Claude Platform CLI (`ant`)**: installieren, `ant auth login`, Dashboard neu starten. Rein lokale Konfiguration; im Vault-Repo gibt es dafuer nichts zu bauen.
+  - macOS-Installation braucht ZWEI Schritte, der zweite fehlt im Dashboard-Hinweis: `brew install anthropics/tap/ant`, dann `xattr -d com.apple.quarantine "$(brew --prefix)/bin/ant"` (Gatekeeper blockt sonst).
+  - **Konflikt mit Claude Code:** Nach `ant auth login` kann Claude Code einen Auth-Konflikt zwischen dem `ant`-Profil und seinem eigenen `/login` melden. Es darf nur eines gelten — entweder das Profil nutzen und in Claude Code `/logout`, oder `ant auth logout` und Claude Codes eigenen Login behalten.
+  - **Haeufigste Fehlerquelle:** ein exportiertes `ANTHROPIC_API_KEY` ueberschreibt jedes OAuth-Profil stillschweigend. Auch ein leeres `ANTHROPIC_API_KEY=""` gewinnt noch. Muss echt `unset` sein. `ant auth status` zeigt, welche Quelle gewonnen hat.
+  - Ein Login-Token ist an **ein** Org+Workspace gebunden. Ressourcen aus einem anderen Workspace sind dann unsichtbar — bei „verschwundenen" Objekten zuerst `ant auth status` pruefen.
+  - Quelle: der mitgelieferte `claude-api`-Skill, Datei `shared/anthropic-cli.md`. Nicht aus dem Gedaechtnis beantworten, der Skill ist maßgeblich.
 
 - Lokales Bootstrap auf dem Mac des Users ist offen. Aus einer Cloud-Session nicht machbar: keine Computer-Use-/Remote-Device-Tools vorhanden, keine Remote-Control-Verbindung, keine Peer-Session auf seiner Maschine. Erfordert eine Session, die auf seinem Rechner laeuft (Claude Desktop oder `claude remote-control`).
 - `Obsidian/raw/` existiert laut Dokumentation, ist im Repo aber nicht vorhanden — nur `Clippings/`, `Ideen/`, `Projekte/`. Ob `raw/` lokal existiert und nur nicht committet ist, ist ungeklaert.
@@ -70,6 +75,7 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 
 - 2026-10-10 — Geprueft, ob Agent OS integriert war: war es nicht (leerer Branch, keine Agenten, kein Protokoll). Anschliessend die repo-seitige Integration gebaut und committet.
 - 2026-10-10 — Integration im Cloud-Resume verifiziert: Hook feuert, Agenten laden. Zugriff auf den Mac geprueft und ausgeschlossen (siehe "Offene Punkte").
+- 2026-10-10 — Agent OS verlangt fuer Claude die `ant`-CLI (Claude Platform CLI). Installations- und Auth-Details aus dem `claude-api`-Skill geholt, nicht geraten.
 - 2026-10-10 — User will Claude zuerst unter „Agenten" in Agent OS konfiguriert sehen, Obsidian danach. Aufgabenkarte entsprechend umgestellt.
 - 2026-10-10 — Vault-ID `53213b4610731fc1` vom User erhalten; die Frage "welcher Vault" ist damit beantwortet.
 - 2026-10-10 — Agent OS erstmals eingesehen (Verzeichnislisting und README vom User eingefuegt). Befund: eigenes Produkt mit eigenem Obsidian-Connector; die hier gebaute Ebene ist nicht der gesuchte Anschluss. Bootstrap daraufhin hinter `--confirm` gelegt.

@@ -13,6 +13,8 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-10 | [[MAXIMUS T2 Installer]] | Fassung 4.1: funf gemeldete, zwei eigene und 17 Review-Fehler behoben |
+| 2026-10-10 | [[T2Linux]] | Vier mittelbare Fehlerberichte ergaenzt (gmux, s2idle, LTS-Bestaetigung) |
 | 2026-10-10 | [[MAXIMUS T2 Installer]] | Neu erstellt (Installationspaket V4, PACKAGE_READY) |
 | 2026-10-10 | [[T2Linux]] | Neu erstellt (Hardwarezustand, Kernelreihen, bekannte Fehler) |
 | 2026-10-10 | [[t2bce]] | Neu erstellt (Treiberstapel, Module, Ruhezustand) |

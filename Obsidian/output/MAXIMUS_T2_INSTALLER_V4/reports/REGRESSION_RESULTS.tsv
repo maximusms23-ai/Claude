@@ -1,0 +1,130 @@
+# MAXIMUS_T2_INSTALLER V4.1.0 - Rohdaten der Regressionstests
+# zeitpunkt=2026-10-10T12:19:18Z
+# rechner_kernel=6.18.44-fc-v114
+# betriebssystem=24.04 noble
+# rootrechte=ja
+# grub_script_check=/tmp/claude-0/-home-user-Claude/e832b6b7-4ec8-519f-acfe-32a4145b84c0/scratchpad/build/tools/grub/usr/bin/grub-script-check
+# shellcheck=/tmp/claude-0/-home-user-Claude/e832b6b7-4ec8-519f-acfe-32a4145b84c0/scratchpad/build/tools/sc/usr/bin/shellcheck
+# paketquelle=/tmp/claude-0/-home-user-Claude/e832b6b7-4ec8-519f-acfe-32a4145b84c0/scratchpad/stage/packages
+# paketdateien=485
+# paketindex=vorhanden
+#
+# Hinweis: Ohne grub-script-check werden R1.1 bis R1.4 uebersprungen.
+# Ohne Paketindex werden R2.* und R3.4 bis R3.5 uebersprungen.
+# Ohne Rootrechte werden R2.*, R3.4, R6.*, R7.*, R9.1, R9.2 und R10.1 uebersprungen.
+#
+gruppe	test	erwartet	gemessen	ergebnis
+R1 - GRUB-Syntaxpruefung (Fehler 1)	R1.1 gueltige grub.cfg wird akzeptiert	0	0	PASS
+R1 - GRUB-Syntaxpruefung (Fehler 1)	R1.2 nicht geschlossener menuentry wird erkannt	1	1	PASS
+R1 - GRUB-Syntaxpruefung (Fehler 1)	R1.3 fehlerhaftes if wird erkannt	1	1	PASS
+R1 - GRUB-Syntaxpruefung (Fehler 1)	R1.4 fehlende Datei wird gemeldet	1	1	PASS
+R1 - GRUB-Syntaxpruefung (Fehler 1)	R1.5 Gegenprobe: 'bash -n' meldet Fehlalarm	2	2	PASS
+R1 - GRUB-Syntaxpruefung (Fehler 1)	R1.6 Gegenprobe: 'bash -n' uebersieht den Fehler	0	0	PASS
+R1 - GRUB-Syntaxpruefung (Fehler 1)	R1.7 kein Skript prueft grub.cfg mit 'bash -n'	ja	ja	PASS
+R1 - GRUB-Syntaxpruefung (Fehler 1)	R1.8 install, preflight und rollback nutzen grub-script-check	ja	ja	PASS
+R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.1 gepinnte Konfiguration wird angelegt	0	0	PASS
+R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.2 Quellenliste nennt nur file://	ja	ja	PASS
+R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.3 Konfiguration schaltet sourceparts ab	ja	ja	PASS
+R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.4 Konfiguration nutzt eigene Listen	ja	ja	PASS
+R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.5 Index wird gelesen	0	0	PASS
+R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.6 nur die lokale Quelle ist sichtbar	0	0	PASS
+R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.7 Gegenprobe: Netzquelle wird erkannt	1	1	PASS
+R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.8 Aufloesung gelingt ohne Netzzugang	ja	ja	PASS
+R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.9 Simulation nennt keine Netzadresse	ja	ja	PASS
+R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.10 Simulation entfernt kein Paket	ja	ja	PASS
+R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.11 Systemlisten bleiben unberuehrt	ja	ja	PASS
+R3 - Pfade mit Sonderzeichen (Fehler 2b)	R3.1 Leerzeichen wird kodiert	/media/a/My%20T7	/media/a/My%20T7	PASS
+R3 - Pfade mit Sonderzeichen (Fehler 2b)	R3.2 Prozentzeichen wird kodiert	/media/a/100%25	/media/a/100%25	PASS
+R3 - Pfade mit Sonderzeichen (Fehler 2b)	R3.3 Pfad ohne Sonderzeichen bleibt gleich	/media/a/T7	/media/a/T7	PASS
+R3 - Pfade mit Sonderzeichen (Fehler 2b)	R3.4 Quelle mit Leerzeichen im Pfad wird gelesen	0	0	PASS
+R3 - Pfade mit Sonderzeichen (Fehler 2b)	R3.5 Gegenprobe: ohne Kodierung scheitert die Quelle	nein	nein	PASS
+R3 - Pfade mit Sonderzeichen (Fehler 2b)	R3.6 keine Kommandosubstitution in einem case-Muster	ja	ja	PASS
+R3 - Pfade mit Sonderzeichen (Fehler 2b)	R3.7 Gegenprobe: die alte Form trifft jeden Pfad	ja	ja	PASS
+R3 - Pfade mit Sonderzeichen (Fehler 2b)	R3.8 die ANSI-C-Form trifft nur echte Umbrueche	nein	nein	PASS
+R3 - Pfade mit Sonderzeichen (Fehler 2b)	R3.9 die ANSI-C-Form erkennt einen echten Umbruch	ja	ja	PASS
+R4 - Pruefsummenverwaltung (Fehler 4)	R4.1 fetch-packages kennt die Freigabeoption	ja	ja	PASS
+R4 - Pruefsummenverwaltung (Fehler 4)	R4.2 Abweichung fuehrt zum Abbruch	ja	ja	PASS
+R4 - Pruefsummenverwaltung (Fehler 4)	R4.3 kein unbedingtes Ueberschreiben der Liste	ja	ja	PASS
+R4 - Pruefsummenverwaltung (Fehler 4)	R4.3b Uebernahme wird mit Herkunftsvermerk belegt	ja	ja	PASS
+R4 - Pruefsummenverwaltung (Fehler 4)	R4.4 unverfaelschter Bestand wird bestaetigt	0	0	PASS
+R4 - Pruefsummenverwaltung (Fehler 4)	R4.5 beschaedigte Paketdatei wird erkannt	1	1	PASS
+R4 - Pruefsummenverwaltung (Fehler 4)	R4.6 fehlende Paketdatei wird erkannt	1	1	PASS
+R4 - Pruefsummenverwaltung (Fehler 4)	R4.7 fehlende Pruefsummenliste wird erkannt	1	1	PASS
+R5 - Sicherung und Rueckfall (Fehler 3)	R5.1 rollback nutzt kein apt-get autoremove	ja	ja	PASS
+R5 - Sicherung und Rueckfall (Fehler 3)	R5.2 rollback nutzt kein Paketnamensmuster	ja	ja	PASS
+R5 - Sicherung und Rueckfall (Fehler 3)	R5.3 rollback prueft die Sicherung	ja	ja	PASS
+R5 - Sicherung und Rueckfall (Fehler 3)	R5.4 jede Dateiaenderung wird aufgezeichnet	ja	ja	PASS
+R5 - Sicherung und Rueckfall (Fehler 3)	R5.5 jede Paketaenderung wird aufgezeichnet	ja	ja	PASS
+R5 - Sicherung und Rueckfall (Fehler 3)	R5.6 Sicherung wird versiegelt	0	0	PASS
+R5 - Sicherung und Rueckfall (Fehler 3)	R5.7 unveraenderte Sicherung wird bestaetigt	0	0	PASS
+R5 - Sicherung und Rueckfall (Fehler 3)	R5.8 veraenderte Sicherung wird erkannt	1	1	PASS
+R5 - Sicherung und Rueckfall (Fehler 3)	R5.9 Sicherung ohne Siegel wird erkannt	2	2	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.1 Simulation mit gueltiger Sicherung	0	0	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.2 Simulation aendert nichts	ja	ja	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.3 Sicherung wird als unverfaelscht gemeldet	ja	ja	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.4 veraenderte Sicherung bricht ab	13	13	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.5 veraenderte Sicherung nur mit Freigabe nutzbar	0	0	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.6 vorher vorhandenes Paket wird geschont	ja	ja	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.7 Ubuntu-Kernel in der Aufzeichnung bricht ab	17	17	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.8 ohne Aufzeichnung wird kein Paket entfernt	ja	ja	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.9 fehlende Sicherung bricht ab	17	17	PASS
+R7 - Unterbrochene Installation	R7.1 install.sh haelt den Fortschritt fest	ja	ja	PASS
+R7 - Unterbrochene Installation	R7.2 mindestens acht Phasen sind erfasst	ja	ja	PASS
+R7 - Unterbrochene Installation	R7.3 Unterbrechung wird erkannt und benannt	ja	ja	PASS
+R7 - Unterbrochene Installation	R7.4 Rueckfall nach Unterbrechung laeuft	0	0	PASS
+R8 - Dateisystem ohne Unix-Rechte (Fehler 5)	R8.1 exfat speichert keine Rechte	1	1	PASS
+R8 - Dateisystem ohne Unix-Rechte (Fehler 5)	R8.2 vfat speichert keine Rechte	1	1	PASS
+R8 - Dateisystem ohne Unix-Rechte (Fehler 5)	R8.3 ntfs speichert keine Rechte	1	1	PASS
+R8 - Dateisystem ohne Unix-Rechte (Fehler 5)	R8.4 ext4 speichert Rechte	0	0	PASS
+R8 - Dateisystem ohne Unix-Rechte (Fehler 5)	R8.5 btrfs speichert Rechte	0	0	PASS
+R8 - Dateisystem ohne Unix-Rechte (Fehler 5)	R8.6 Dateisystem der Paketwurzel ist bestimmbar	ja	ja	PASS
+R8 - Dateisystem ohne Unix-Rechte (Fehler 5)	R8.7 deploy-to-t7 prueft die Rechtefrage	ja	ja	PASS
+R8 - Dateisystem ohne Unix-Rechte (Fehler 5)	R8.8 deploy-to-t7 prueft symbolische Verknuepfungen	ja	ja	PASS
+R8 - Dateisystem ohne Unix-Rechte (Fehler 5)	R8.9 Paket enthaelt keine symbolische Verknuepfung	0	0	PASS
+R8 - Dateisystem ohne Unix-Rechte (Fehler 5)	R8.10 jedes Skript ist ueber bash startbar	ja	ja	PASS
+R8 - Dateisystem ohne Unix-Rechte (Fehler 5)	R8.11 Anleitungen nennen den Aufruf ueber bash	ja	ja	PASS
+R9 - Samsung T7 fehlt	R9.1 fehlende Samsung T7 bricht ab	4	4	PASS
+R9 - Samsung T7 fehlt	R9.2 Auflistung allein schreibt nichts	0	0	PASS
+R9 - Samsung T7 fehlt	R9.3 deploy-to-t7 formatiert nicht	ja	ja	PASS
+R9 - Samsung T7 fehlt	R9.4 deploy-to-t7 nutzt kein rsync --delete	ja	ja	PASS
+R10 - Sperren des Installationsskripts	R10.1 falsches Modell bricht ab	10	10	PASS
+R10 - Sperren des Installationsskripts	R10.1b Modellsperre greift auch mit Vorpruefung	10	10	PASS
+R10 - Sperren des Installationsskripts	R10.2 unbekannte Option bricht ab	2	2	PASS
+R10 - Sperren des Installationsskripts	R10.3 Konfliktpaket in der Liste wird erkannt	ja	ja	PASS
+R10 - Sperren des Installationsskripts	R10.4 install.sh fordert grub-script-check	ja	ja	PASS
+R10 - Sperren des Installationsskripts	R10.5 install.sh schreibt nicht nach /etc/apt/sources.list.d	ja	ja	PASS
+R11 - Fehlerklassen aus dem Code-Review	R11.1 kein 'case $?' direkt nach einem Funktionsaufruf	0	0	PASS
+R11 - Fehlerklassen aus dem Code-Review	R11.2 Gegenprobe: 'set -e' bricht vor dem case ab			PASS
+R11 - Fehlerklassen aus dem Code-Review	R11.3 die aufgefangene Form erreicht den Zweig	erreicht	erreicht	PASS
+R11 - Fehlerklassen aus dem Code-Review	R11.4 Zaehlfunktion liefert 0 bei fehlendem Verzeichnis	0	0	PASS
+R11 - Fehlerklassen aus dem Code-Review	R11.5 Zaehlfunktion zaehlt vorhandene Dateien	2	2	PASS
+R11 - Fehlerklassen aus dem Code-Review	R11.6 Sandkastenbetrieb wird bestimmt	ja	ja	PASS
+R11 - Fehlerklassen aus dem Code-Review	R11.7 Pin-Pruefung liest auch die Quellenliste	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.1 einfache Anfuehrungszeichen werden entfernt	quiet splash	quiet splash	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.2 doppelte Anfuehrungszeichen werden entfernt	quiet splash	quiet splash	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.3 kaufmaennisches Und wird maskiert	a\&b	a\&b	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.4 Wert mit Und landet unveraendert in der Datei	GRUB_TEST=a&b	GRUB_TEST=a&b	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.5 Wert mit Trennzeichen landet unveraendert in der Datei	GRUB_TEST=x|y	GRUB_TEST=x|y	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.6 Kodieren und Dekodieren ist umkehrbar	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.7 Dekodierung kennt mehr als nur das Leerzeichen	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.8 Dateipruefung nutzt die Dekodierung	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.9 rollback --backup ohne Wert meldet Code 2	2	2	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.10 die Meldung nennt die Option	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.11 deploy --target ohne Wert meldet Code 2	2	2	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.12 fetch --out ohne Wert meldet Code 2	2	2	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.13 verify --out ohne Wert meldet Code 2	2	2	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.14 Kernelschutz liegt nach der Freigabe	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.15 install.sh faengt einen zweiten Lauf ab	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.16 install.sh setzt den Vorgabeeintrag	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.17 rollback.sh setzt den Vorgabeeintrag	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.18 rollback.sh hebt einen offenen Teststart auf	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.19 verify.sh schreibt nicht auf die Vorlage	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.20 verify.sh prueft das Modell vor der Kopie	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.21 Tabellenzellen werden maskiert	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.22 Maskierung ersetzt das Trennzeichen	a\|b	a\|b	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.23 ACPI-BIOS-Meldungen sind ausgenommen	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.24 Gegenprobe: ACPI-Meldung zaehlt nicht	0	0	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.25 Gegenprobe: echter Fehler zaehlt	1	1	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.26 selftest ruft grub-entry.sh ueber bash auf	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.27 fetch-packages kodiert den Baupfad	ja	ja	PASS
+R12 - Befunde des unabhaengigen Code-Reviews	R12.28 preflight nennt seine Schreibziele im Kopf	ja	ja	PASS

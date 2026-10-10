@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
-# MAXIMUS_T2_INSTALLER_V4 - Schritt 1: System und Hardware pruefen
+# MAXIMUS_T2_INSTALLER V4.1 - Schritt 1: System und Hardware pruefen
 #
 # Ergebnis: Das Skript meldet, ob das Zielgeraet die Installation zulaesst.
-# Es aendert nichts. Es schreibt nur in ein temporaeres Verzeichnis.
 #
-# Aufruf:  ./preflight.sh [--quick] [--no-color]
+# Es aendert KEINE Systemdatei und KEINE Systemeinstellung.
+# Es legt mit Rootrechten zwei eigene Arbeitsbereiche an:
+#   /var/lib/maximus-t2/apt   gepinnte Paketquelle fuer die Offline-Pruefung
+#   ein temporaeres Verzeichnis, das danach geloescht wird
+# Ohne Rootrechte entfaellt die Offline-Pruefung.
+#
+# Aufruf:  sudo bash preflight.sh [--quick] [--no-color]
+#
+# Rufe das Skript mit 'bash' auf. Auf exFAT fehlt das Ausfuehrungsbit.
 #   --quick     Ueberspringt die Pruefsummenpruefung aller Paketdateien.
 #   --no-color  Gibt keine Farbcodes aus.
 
@@ -39,7 +46,7 @@ TMPDIR_MT2="$(mktemp -d -t maximus-t2-preflight-XXXXXX)"
 cleanup() { rm -rf "$TMPDIR_MT2"; }
 trap cleanup EXIT
 
-log "MAXIMUS_T2_INSTALLER_V4 - Vorpruefung"
+log "MAXIMUS_T2_INSTALLER V$MT2_VERSION - Vorpruefung"
 log "Paketwurzel: $ROOT"
 log "Zeitpunkt:   $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
@@ -116,13 +123,24 @@ GRUB_CFG=''
 for c in /boot/grub/grub.cfg /boot/grub2/grub.cfg; do
 	[ -f "$c" ] && GRUB_CFG="$c" && break
 done
+# V4.1: Die Pruefung laeuft mit grub-script-check.
+# 'bash -n' ist fuer grub.cfg falsch. Gemessen: Fehlalarm bei gueltiger Datei,
+# kein Alarm bei nicht geschlossener menuentry-Klammer.
+if GRUB_TOOL="$(mt2_grub_check_tool)"; then
+	check_pass "GRUB-Pruefprogramm vorhanden: $GRUB_TOOL"
+else
+	check_fail "Das Programm 'grub-script-check' fehlt. Installiere es mit: sudo apt install grub-common"
+fi
+
 if [ -n "$GRUB_CFG" ]; then
 	check_pass "GRUB-Konfiguration gefunden: $GRUB_CFG"
-	if command -v bash >/dev/null 2>&1 && bash -n "$GRUB_CFG" 2>/dev/null; then
-		check_pass "Die GRUB-Konfiguration hat keine erkennbaren Syntaxfehler."
-	else
-		check_warn "Die Syntaxpruefung der GRUB-Konfiguration war nicht aussagekraeftig. Pruefe sie vor dem Neustart manuell."
-	fi
+	GRUB_RC=0
+	mt2_grub_check_cfg "$GRUB_CFG" || GRUB_RC=$?
+	case "$GRUB_RC" in
+		0) check_pass "grub-script-check bestaetigt die GRUB-Konfiguration." ;;
+		6) check_fail "Die GRUB-Konfiguration ist nicht pruefbar. Das Programm grub-script-check fehlt." ;;
+		*) check_fail "grub-script-check meldet einen Fehler in $GRUB_CFG. Behebe ihn vor der Installation." ;;
+	esac
 	MENU_ENTRIES="$(grep -c '^\s*menuentry' "$GRUB_CFG" 2>/dev/null || true)"
 	log_info "Menueeintraege: ${MENU_ENTRIES:-0}"
 else
@@ -150,6 +168,44 @@ if [ "${BOOT_FREE:-0}" -ge 512 ]; then
 	check_pass "Auf /boot sind ${BOOT_FREE} MiB frei."
 else
 	check_fail "Auf /boot sind nur ${BOOT_FREE:-0} MiB frei. Mindestens 512 MiB sind erforderlich."
+fi
+
+# ---------------------------------------------------------------------------
+log_step "Paketpfad und Dateisystem pruefen"
+# ---------------------------------------------------------------------------
+# V4.1: Der Paketpfad wandert in eine apt-Quelle.
+# Gemessen: Ein Leerzeichen im Pfad zerlegt die file://-Quelle.
+PKG_DIR="$ROOT/packages"
+PKG_DIR_ENC="$(mt2_url_encode_path "$PKG_DIR")"
+if [ "$PKG_DIR_ENC" = "$PKG_DIR" ]; then
+	check_pass "Der Paketpfad enthaelt keine Sonderzeichen."
+else
+	check_pass "Der Paketpfad enthaelt Sonderzeichen. Fuer apt wird er kodiert: $PKG_DIR_ENC"
+fi
+case "$PKG_DIR" in
+	*$'\n'*|*$'\t'*)
+		check_fail "Der Paketpfad enthaelt einen Zeilen- oder Tabulatorumbruch. Haenge die Samsung T7 unter einem einfachen Pfad ein." ;;
+esac
+
+read -r FS_TYPE FS_EXEC <<EOF
+$(mt2_fs_info "$ROOT")
+EOF
+log_info "Dateisystem der Paketwurzel: $FS_TYPE   Einhaengung: $FS_EXEC"
+if mt2_fs_keeps_modes "$FS_TYPE"; then
+	check_pass "Das Dateisystem '$FS_TYPE' speichert Unix-Rechte."
+else
+	check_warn "Das Dateisystem '$FS_TYPE' speichert keine Unix-Rechte. Rufe jedes Skript mit 'bash' auf."
+fi
+if [ "$FS_EXEC" = "noexec" ]; then
+	check_warn "Die Einhaengung traegt 'noexec'. Ein direkter Aufruf scheitert. Der Aufruf ueber 'bash' funktioniert."
+else
+	check_pass "Die Einhaengung erlaubt die Ausfuehrung."
+fi
+# Gegenprobe: Laesst sich ein Skript ueber bash starten?
+if bash -c ". \"$SELF_DIR/lib/common.sh\"; exit 0" 2>/dev/null; then
+	check_pass "Die Skripte sind ueber 'bash' aufrufbar."
+else
+	check_fail "Die Skripte sind nicht ueber 'bash' aufrufbar. Pruefe die Leserechte auf $SELF_DIR."
 fi
 
 # ---------------------------------------------------------------------------
@@ -195,36 +251,13 @@ fi
 # ---------------------------------------------------------------------------
 log_step "Offline-Aufloesbarkeit pruefen"
 # ---------------------------------------------------------------------------
-if [ ! -f "$ROOT/packages/Packages" ]; then
+# V4.1: Die Pruefung nutzt genau die Technik, die install.sh benutzt.
+# Eine eigene, abweichende Technik koennte ein falsches Ergebnis liefern.
+if [ ! -f "$PKG_DIR/Packages" ]; then
 	check_fail "packages/Packages fehlt. Die lokale Paketquelle ist unvollstaendig."
 elif ! command -v apt-get >/dev/null 2>&1; then
 	check_fail "apt-get fehlt auf dem Zielgeraet."
 else
-	AR="$TMPDIR_MT2/aptroot"
-	mkdir -p "$AR"/{etc/apt/apt.conf.d,etc/apt/preferences.d,etc/apt/sources.list.d,var/lib/apt/lists/partial,var/lib/dpkg,var/cache/apt/archives/partial,var/log/apt}
-	cp /var/lib/dpkg/status "$AR/var/lib/dpkg/status" 2>/dev/null || : > "$AR/var/lib/dpkg/status"
-	printf 'amd64\n' > "$AR/var/lib/dpkg/arch"
-	printf 'deb [arch=amd64 trusted=yes] file://%s ./\n' "$ROOT/packages" > "$AR/etc/apt/sources.list"
-	cat > "$TMPDIR_MT2/apt.conf" <<EOF
-Dir "$AR";
-Dir::State "$AR/var/lib/apt";
-Dir::State::status "$AR/var/lib/dpkg/status";
-Dir::Cache "$AR/var/cache/apt";
-Dir::Etc "$AR/etc/apt";
-Dir::Etc::sourcelist "$AR/etc/apt/sources.list";
-Dir::Etc::sourceparts "$AR/etc/apt/sources.list.d";
-Dir::Log "$AR/var/log/apt";
-APT::Architecture "amd64";
-APT::Architectures "amd64";
-Acquire::Languages "none";
-APT::Install-Recommends "false";
-APT::Install-Suggests "false";
-EOF
-	if APT_CONFIG="$TMPDIR_MT2/apt.conf" apt-get update -qq >/dev/null 2>&1; then
-		check_pass "Die lokale Paketquelle wurde gelesen."
-	else
-		check_fail "Die lokale Paketquelle liess sich nicht lesen."
-	fi
 	declare -a PKGLIST=()
 	if [ -f "$ROOT/config/install-packages.list" ]; then
 		mapfile -t PKGLIST < <(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' -e 's/[[:space:]]//g' \
@@ -232,17 +265,91 @@ EOF
 	fi
 	if [ "${#PKGLIST[@]}" -eq 0 ]; then
 		check_fail "config/install-packages.list fehlt oder ist leer."
+	elif [ "$(id -u)" -ne 0 ]; then
+		check_warn "Ohne Rootrechte ist die Offline-Pruefung nicht moeglich. Starte: sudo bash $0"
 	else
+		if mt2_apt_pin_create "$PKG_DIR"; then
+			check_pass "Die gepinnte Paketverwaltung ist angelegt (Sandkasten: $MT2_APT_SANDBOX)."
+		else
+			check_fail "Die gepinnte Paketverwaltung liess sich nicht anlegen."
+		fi
+		if mt2_apt update -qq >/dev/null 2>&1; then
+			check_pass "Die lokale Paketquelle wurde gelesen."
+		else
+			check_fail "Die lokale Paketquelle liess sich nicht lesen."
+		fi
+		if mt2_apt_pin_verify; then
+			check_pass "Es ist ausschliesslich die lokale Quelle sichtbar."
+		else
+			check_fail "Die gepinnte Paketverwaltung sieht eine Netzquelle. Ein unbeabsichtigter Download waere moeglich."
+		fi
 		SIMOUT="$TMPDIR_MT2/sim.txt"
-		if APT_CONFIG="$TMPDIR_MT2/apt.conf" apt-get install -s -y --no-install-recommends \
-			"${PKGLIST[@]}" > "$SIMOUT" 2>&1; then
+		if mt2_apt install -s -y --no-install-recommends "${PKGLIST[@]}" > "$SIMOUT" 2>&1; then
 			NEWC="$(awk '/newly installed/{for(i=1;i<=NF;i++) if($i=="newly") {print $(i-1); exit}}' "$SIMOUT" 2>/dev/null)"
-			check_pass "Alle angeforderten Pakete sind offline aufloesbar (${NEWC:-?} neue Pakete)."
+			check_pass "Alle angeforderten Pakete sind offline aufloesbar (${NEWC:-0} neue Pakete)."
+			if grep -qE '^Remv ' "$SIMOUT"; then
+				check_fail "Die Installation wuerde Pakete entfernen:"
+				grep -E '^Remv ' "$SIMOUT" | head -5 | sed 's/^/         /'
+			else
+				check_pass "Es wuerde kein Paket entfernt."
+			fi
+			if grep -qE 'https?://' "$SIMOUT"; then
+				check_fail "Die Simulation nennt eine Netzadresse. Die Offline-Installation ist nicht gesichert."
+			else
+				check_pass "Die Simulation nennt keine Netzadresse."
+			fi
+			# Liegt jede benoetigte Paketdatei wirklich lokal?
+			MISS_F=0
+			NET_F=0
+			while IFS= read -r deb; do
+				[ -n "$deb" ] || continue
+				case "$deb" in NETZ:*) NET_F=$((NET_F + 1)); continue ;; esac
+				[ -f "$deb" ] || MISS_F=$((MISS_F + 1))
+			done < <(mt2_apt_wanted_files "${PKGLIST[@]}")
+			if [ "$NET_F" -gt 0 ]; then
+				check_fail "$NET_F Pakete sollen aus dem Netz kommen. Die Offline-Installation ist nicht gesichert."
+			else
+				check_pass "Kein Paket soll aus dem Netz kommen."
+			fi
+			if [ "$MISS_F" -eq 0 ]; then
+				check_pass "Jede benoetigte Paketdatei liegt lokal vor."
+			else
+				check_fail "$MISS_F benoetigte Paketdateien fehlen im lokalen Bestand."
+			fi
 		else
 			check_fail "Die Offline-Aufloesung schlug fehl. Details stehen in der Ausgabe unten."
 			sed -n '1,25p' "$SIMOUT" | sed 's/^/         /'
 		fi
 	fi
+fi
+
+# ---------------------------------------------------------------------------
+log_step "Paketbestand des Zielsystems auswerten"
+# ---------------------------------------------------------------------------
+# V4.1: Die tatsaechlichen Abhaengigkeiten des Zielsystems werden ausgewertet.
+if command -v dpkg-query >/dev/null 2>&1 && [ -f "$ROOT/config/install-packages.list" ]; then
+	mt2_pkg_snapshot "$TMPDIR_MT2/pkg-now.txt"
+	log_info "Installierte Pakete auf dem Zielgeraet: $(wc -l < "$TMPDIR_MT2/pkg-now.txt")"
+	A=0; M=0
+	declare -a WANTED=()
+	mapfile -t WANTED < <(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' -e 's/[[:space:]]//g' \
+		"$ROOT/config/install-packages.list")
+	for w in "${WANTED[@]}"; do
+		if cut -f1 "$TMPDIR_MT2/pkg-now.txt" | grep -qx "$w"; then A=$((A + 1)); else M=$((M + 1)); fi
+	done
+	check_pass "Aus der Installationsliste bereits vorhanden: $A, fehlend: $M"
+	# Konfliktpakete duerfen nicht installiert sein.
+	CONFL=''
+	for bad in apple-bce apple-touchbar applesmc-t2 bcm5974-t2 broadcom-wl bcmwl-kernel-source; do
+		cut -f1 "$TMPDIR_MT2/pkg-now.txt" | grep -qx "$bad" && CONFL="$CONFL $bad"
+	done
+	if [ -z "$CONFL" ]; then
+		check_pass "Es ist kein konfliktbehaftetes Treiberpaket installiert."
+	else
+		check_fail "Diese Pakete sind installiert und erzeugen Konflikte mit dem T2-Kernel:$CONFL. Entferne sie vorher."
+	fi
+else
+	check_warn "Der Paketbestand des Zielsystems war nicht auswertbar."
 fi
 
 # ---------------------------------------------------------------------------
@@ -314,5 +421,5 @@ fi
 
 log ""
 log_ok "INSTALLATION_READY (Vorpruefung bestanden)"
-log "Naechster Schritt: sudo ./scripts/install.sh --dry-run"
+log "Naechster Schritt: sudo bash scripts/install.sh --dry-run"
 exit "$RC_OK"

@@ -7,6 +7,11 @@ tags: [maximus, t2linux, paketprüfung, integrität]
 
 # Paketprüfung
 
+> **Stand Fassung 4.1.** Dieser Bericht beschreibt den Bau der Fassung 4.0.
+> Die Fassung 4.1 behebt fünf gemeldete und vier selbst gefundene Fehler.
+> Die geänderten Zahlen und die neuen Testergebnisse stehen in
+> `RELEASE_V4_1.md`. Die Rohdaten stehen in `REGRESSION_RESULTS.tsv`.
+
 ## 1. Ergebnis zuerst
 
 | Prüffeld | Ergebnis |

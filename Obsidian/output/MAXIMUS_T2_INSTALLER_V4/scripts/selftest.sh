@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# MAXIMUS_T2_INSTALLER_V4 - Eigenpruefung des Installationspakets
+# MAXIMUS_T2_INSTALLER V4.1 - Eigenpruefung des Installationspakets
 #
 # Ergebnis: Das Skript prueft Struktur, Skripte, Listen und Pruefsummen.
 # Es benoetigt keine Rootrechte. Es benoetigt keine T2-Hardware.
 # Es aendert nichts.
 #
-# Aufruf:  ./selftest.sh [--no-color] [--skip-debs]
+# Aufruf:  bash selftest.sh [--no-color] [--skip-debs]
 
 set -uo pipefail
 
@@ -31,7 +31,7 @@ t_pass() { T_OK=$((T_OK + 1));   log_ok   "$1"; }
 t_fail() { T_FAIL=$((T_FAIL + 1)); log_err "$1"; }
 t_skip() { T_SKIP=$((T_SKIP + 1)); log_info "uebersprungen: $1"; }
 
-log "MAXIMUS_T2_INSTALLER_V4 - Eigenpruefung"
+log "MAXIMUS_T2_INSTALLER V$MT2_VERSION - Eigenpruefung"
 log "Paketwurzel: $ROOT"
 
 # ---------------------------------------------------------------------------
@@ -75,6 +75,8 @@ scripts/rollback.sh
 scripts/fetch-packages.sh
 scripts/deploy-to-t7.sh
 scripts/selftest.sh
+scripts/regression.sh
+reports/RELEASE_V4_1.md
 "
 for f in $REQUIRED_FILES; do
 	if [ -f "$ROOT/$f" ]; then t_pass "vorhanden: $f"; else t_fail "fehlt: $f"; fi
@@ -112,7 +114,7 @@ fi
 # ---------------------------------------------------------------------------
 log_step "Test 4: Ausfuehrungsrechte"
 # ---------------------------------------------------------------------------
-for s in preflight.sh install.sh verify.sh rollback.sh fetch-packages.sh deploy-to-t7.sh selftest.sh; do
+for s in preflight.sh install.sh verify.sh rollback.sh fetch-packages.sh deploy-to-t7.sh selftest.sh regression.sh; do
 	if [ -x "$ROOT/scripts/$s" ]; then
 		t_pass "ausfuehrbar: scripts/$s"
 	else
@@ -185,19 +187,20 @@ FIX="$SELF_DIR/tests/grub.cfg.fixture"
 if [ ! -f "$FIX" ]; then
 	t_fail "Die Testvorlage scripts/tests/grub.cfg.fixture fehlt."
 else
-	GOT="$("$SELF_DIR/lib/grub-entry.sh" 6.18.54-1-t2-noble "$FIX" 2>/dev/null || true)"
+	# V4.1: Aufruf ueber bash. Auf exFAT fehlt das Ausfuehrungsbit.
+	GOT="$(bash "$SELF_DIR/lib/grub-entry.sh" 6.18.54-1-t2-noble "$FIX" 2>/dev/null || true)"
 	WANT='gnulinux-advanced-TESTUUID>gnulinux-6.18.54-1-t2-noble-advanced-TESTUUID'
 	if [ "$GOT" = "$WANT" ]; then
 		t_pass "Die Menueerkennung liefert die erwartete Kennung."
 	else
 		t_fail "Die Menueerkennung liefert '$GOT' statt '$WANT'."
 	fi
-	if "$SELF_DIR/lib/grub-entry.sh" 6.18.54-1-t2-noble "$FIX" 2>/dev/null | grep -q 'recovery'; then
+	if bash "$SELF_DIR/lib/grub-entry.sh" 6.18.54-1-t2-noble "$FIX" 2>/dev/null | grep -q 'recovery'; then
 		t_fail "Die Menueerkennung waehlt faelschlich den Wiederherstellungsmodus."
 	else
 		t_pass "Der Wiederherstellungsmodus wird uebersprungen."
 	fi
-	if "$SELF_DIR/lib/grub-entry.sh" 9.9.9-nicht-vorhanden "$FIX" >/dev/null 2>&1; then
+	if bash "$SELF_DIR/lib/grub-entry.sh" 9.9.9-nicht-vorhanden "$FIX" >/dev/null 2>&1; then
 		t_fail "Die Menueerkennung meldet keinen Fehler bei fehlendem Kernel."
 	else
 		t_pass "Bei fehlendem Kernel wird ein Fehler gemeldet."
@@ -228,11 +231,11 @@ done < <(grep -oE '(write_file[^#]*|install -m [0-7]+ [^ ]+ |> ?)/(etc|boot|var|
 declare -a SCAN=()
 while IFS= read -r s; do
 	case "$(basename "$s")" in
-		selftest.sh) continue ;;
+		selftest.sh|regression.sh) continue ;;
 	esac
 	SCAN+=("$s")
 done < <(find "$ROOT/scripts" -name '*.sh' -type f | sort)
-log_info "Geprueft werden ${#SCAN[@]} Skripte. Ausgenommen ist selftest.sh selbst."
+log_info "Geprueft werden ${#SCAN[@]} Skripte. Ausgenommen sind selftest.sh und regression.sh: Beide tragen die Muster als Suchtext."
 
 readonly PAT_DESTRUCTIVE='rm -rf /($|[^a-zA-Z])|mkfs|dd if=|sgdisk|parted|wipefs|fdisk|efibootmgr|nvram'
 readonly PAT_PIPE_SHELL='(curl|wget)[^|]*\|[[:space:]]*(ba)?sh'
@@ -409,6 +412,61 @@ if command -v python3 >/dev/null 2>&1; then
 	fi
 else
 	t_skip "python3 fehlt. manifest.json wurde nicht geprueft."
+fi
+
+# ---------------------------------------------------------------------------
+log_step "Test 12b: V4.1-Korrekturen vorhanden"
+# ---------------------------------------------------------------------------
+# Diese Pruefungen verhindern einen Rueckfall in die Fehler der Fassung V4.0.
+if grep -rn 'bash -n' "$ROOT/scripts" --include='*.sh' 2>/dev/null \
+	| grep -v -e '/regression\.sh:' -e '/selftest\.sh:' \
+	| grep -vE ':[[:space:]]*#' | grep -q 'grub\.cfg'; then
+	t_fail "Ein Skript prueft grub.cfg mit 'bash -n'. Das ist falsch."
+else
+	t_pass "Kein Skript prueft grub.cfg mit 'bash -n'."
+fi
+for s in install.sh preflight.sh rollback.sh; do
+	if grep -q 'mt2_grub_check_cfg' "$ROOT/scripts/$s"; then
+		t_pass "$s nutzt grub-script-check."
+	else
+		t_fail "$s nutzt grub-script-check nicht."
+	fi
+done
+if grep -q 'mt2_apt install' "$ROOT/scripts/install.sh" && ! grep -qE '^\s*apt-get install' "$ROOT/scripts/install.sh"; then
+	t_pass "install.sh nutzt ausschliesslich die gepinnte Paketquelle."
+else
+	t_fail "install.sh ruft apt-get ohne die gepinnte Konfiguration auf."
+fi
+if grep -qE '^[[:space:]]*(act[[:space:]]+|run[[:space:]]+)?apt-get[[:space:]]+autoremove' "$ROOT/scripts/rollback.sh"; then
+	t_fail "rollback.sh nutzt 'apt-get autoremove'. Das ist nicht zulaessig."
+else
+	t_pass "rollback.sh nutzt kein 'apt-get autoremove'."
+fi
+if grep -q 'mt2_backup_verify' "$ROOT/scripts/rollback.sh"; then
+	t_pass "rollback.sh prueft die Sicherung vor dem Zurueckschreiben."
+else
+	t_fail "rollback.sh prueft die Sicherung nicht."
+fi
+if grep -q 'accept-new-checksums' "$ROOT/scripts/fetch-packages.sh"; then
+	t_pass "fetch-packages.sh ueberschreibt Pruefsummen nur nach Freigabe."
+else
+	t_fail "fetch-packages.sh ueberschreibt Pruefsummen ohne Freigabe."
+fi
+if grep -q 'mt2_fs_keeps_modes' "$ROOT/scripts/deploy-to-t7.sh"; then
+	t_pass "deploy-to-t7.sh bewertet das Dateisystem der Samsung T7."
+else
+	t_fail "deploy-to-t7.sh bewertet das Dateisystem nicht."
+fi
+if grep -q 'sources.list.d/maximus' "$ROOT/scripts/install.sh"; then
+	t_fail "install.sh schreibt in /etc/apt/sources.list.d. Das bricht spaeter 'apt update'."
+else
+	t_pass "install.sh schreibt nicht in /etc/apt/sources.list.d."
+fi
+LINK_COUNT="$(mt2_count_files "$ROOT" -type l ! -path '*/.git/*')"
+if [ "$LINK_COUNT" -eq 0 ]; then
+	t_pass "Das Paket enthaelt keine symbolische Verknuepfung (wichtig fuer exFAT)."
+else
+	t_fail "Das Paket enthaelt $LINK_COUNT symbolische Verknuepfungen. exFAT kann sie nicht speichern."
 fi
 
 # ---------------------------------------------------------------------------

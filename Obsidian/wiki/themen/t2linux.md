@@ -67,11 +67,18 @@ Die Paketquelle liefert vier Reihen. Alle sind fuer `noble` gebaut.
 
 ## Bekannte Fehler beim MacBookPro16,1
 
-| Bericht | Inhalt |
-| --- | --- |
-| Kernel-Repository 179 | "Scheduling while atomic" im Audio-Pfad. Folge sind unerwartete Neustarts. |
-| Kernel-Repository 215 | Nullzeigerzugriff beim Aufwachen aus S3. Betrifft die Reihe 7.2. |
-| `t2linux/kernel` 31 | Zustandsspeicher fuer den Ruhezustand zu klein. Folge sind minutenlange Haenger. |
+| Bericht | Inhalt | Quellenart |
+| --- | --- | --- |
+| Kernel-Repository 179 | "Scheduling while atomic" im Audio-Pfad. Folge sind unerwartete Neustarts. | Projektbericht |
+| Kernel-Repository 215 | Nullzeigerzugriff beim Aufwachen aus S3. Betrifft die Reihe 7.2. | Projektbericht |
+| `t2linux/kernel` 31 | Zustandsspeicher fuer den Ruhezustand zu klein. Folge sind minutenlange Haenger. Gemessen auf 6.18.52 LTS. | Projektbericht |
+| CachyOS-Bericht | Tastatur, Trackpad und Touch Bar brachen auf Kernel 7.1.2 ab. Auf LTS 6.18.37 arbeiteten sie wieder. | andere Distribution, mittelbar |
+| Omarchy-Bericht | `gmux` kann den internen Bildschirm an die AMD-Grafik legen. Folge ist ein Haenger beim Sitzungsstart. | andere Distribution, mittelbar |
+| Omarchy-Bericht | `s2idle` weckt die Radeon-Grafik nicht auf. Empfohlen ist `deep`. | andere Distribution, mittelbar |
+| CachyOS-Bericht | Der Bildschirm bleibt nach dem Aufwachen dunkel, wenn `apple-set-os` fehlt. | andere Distribution, mittelbar |
+
+Die Berichte anderer Distributionen stuetzen zwei Entscheidungen
+unabhaengig: die Wahl der LTS-Reihe und den Ausschluss von `apple-bce`.
 
 ## Notwendige Kernelparameter
 
@@ -81,6 +88,15 @@ intel_iommu=on iommu=pt pm_async=off
 
 Ohne diese Parameter bleibt der Audio- und Eingabepfad haengen.
 Fuer Thunderbolt kommt `pcie_ports=native` hinzu.
+
+## Pruefung am Geraet
+
+Zwei Angaben gelten erst nach einer Messung am Geraet:
+
+1. Der Funkchip. Lies ihn mit `lspci -nn | grep -i network` und mit
+   `journalctl -k --grep=brcmfmac`.
+2. Der Treiber des internen Bildschirms. Lies ihn unter
+   `/sys/class/drm/card*-eDP-*`.
 
 ## Verweise
 

@@ -1,7 +1,7 @@
 {
   "schema": "maximus-t2-installer/1",
   "name": "MAXIMUS_T2_INSTALLER_V4",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "created": "2026-10-10",
   "language": "de",
   "target": {
@@ -391,6 +391,7 @@
   },
   "offline_capability": "PARTIAL",
   "status": {
+    "SOURCE_READY": true,
     "PACKAGE_READY": true,
     "INSTALLATION_READY": false,
     "HARDWARE_READY": false,
@@ -423,6 +424,187 @@
     "16": "GRUB-Fehler",
     "17": "Sicherung fehlgeschlagen",
     "19": "Hardwaretest fehlgeschlagen oder unvollstaendig",
-    "20": "Abbruch durch Benutzer"
+    "20": "Abbruch durch Benutzer",
+    "6": "Ein benoetigtes Programm fehlt, zum Beispiel grub-script-check"
+  },
+  "based_on": {
+    "version": "4.0.0",
+    "commit": "d50803c"
+  },
+  "v41_fixes": [
+    {
+      "id": "F1",
+      "herkunft": "gemeldet",
+      "bereich": "GRUB-Syntaxpruefung",
+      "befund": "bash -n war fuer grub.cfg zustaendig gemacht. Gemessen: Fehlalarm bei gueltiger Datei (rc=2), kein Alarm bei nicht geschlossener menuentry-Klammer (rc=0).",
+      "korrektur": "mt2_grub_check_cfg nutzt grub-script-check. install.sh bricht ohne das Programm mit Code 6 ab.",
+      "tests": "R1.1-R1.8"
+    },
+    {
+      "id": "F2",
+      "herkunft": "gemeldet",
+      "bereich": "Offline-Installation",
+      "befund": "Nur apt-get update war auf die lokale Quelle ausgerichtet. Simulation und Installation liefen gegen die Systemquellen.",
+      "korrektur": "Gepinnte Paketverwaltung mit sourcelist, sourceparts=/dev/null und eigener Listenablage. Jeder Aufruf laeuft ueber mt2_apt. Dreistufige Pruefung in mt2_apt_pin_verify.",
+      "tests": "R2.1-R2.11"
+    },
+    {
+      "id": "F3",
+      "herkunft": "gemeldet",
+      "bereich": "Rueckfall",
+      "befund": "apt-get autoremove war unbegrenzt. Die Entfernungsliste entstand aus Namensmustern. Die Sicherung wurde ungeprueft zurueckgeschrieben.",
+      "korrektur": "Kein autoremove. Aufzeichnung jeder Datei- und Paketaenderung. Siegelpruefung der Sicherung mit Abbruch bei Abweichung.",
+      "tests": "R5.1-R5.9, R6.1-R6.9"
+    },
+    {
+      "id": "F4",
+      "herkunft": "gemeldet",
+      "bereich": "Pruefsummen",
+      "befund": "Eine abweichende Pruefsummenliste wurde selbsttaetig ueberschrieben.",
+      "korrektur": "Abbruch mit Code 13. Uebernahme nur mit --accept-new-checksums und Herkunftsvermerk.",
+      "tests": "R4.1-R4.7"
+    },
+    {
+      "id": "F5",
+      "herkunft": "gemeldet",
+      "bereich": "exFAT",
+      "befund": "Es gab nur eine Warnung. Die Startbarkeit am Ziel wurde nicht geprueft.",
+      "korrektur": "Dateisystembewertung, Pruefung der Startbarkeit nach der Uebertragung, START-HIER.txt, Verknuepfungspruefung, alle Anleitungen mit bash.",
+      "tests": "R8.1-R8.11"
+    },
+    {
+      "id": "F6",
+      "herkunft": "selbst gefunden",
+      "bereich": "Pfade mit Sonderzeichen",
+      "befund": "Ein Leerzeichen im Paketpfad zerlegte die apt-Quelle. udisks2 haengt Wechselmedien unter /media/<benutzer>/<bezeichnung> ein.",
+      "korrektur": "mt2_url_encode_path kodiert Leerzeichen, Prozent, Raute, Fragezeichen und eckige Klammern.",
+      "tests": "R3.1-R3.5"
+    },
+    {
+      "id": "F7",
+      "herkunft": "selbst gefunden",
+      "bereich": "apt-Sandkasten",
+      "befund": "apt laesst die Rechte auf _apt fallen. Auf einem Wechseldatentraeger mit Modus 0700 bricht apt-get update mit Rueckgabe 100 ab.",
+      "korrektur": "Lesbarkeitsprobe mit runuser oder setpriv. Bei Bedarf APT::Sandbox::User root mit Begruendung im Protokoll.",
+      "tests": "R11.6"
+    },
+    {
+      "id": "F8",
+      "herkunft": "Code-Review der eigenen Korrekturen",
+      "bereich": "set -e",
+      "befund": "Eine Funktion direkt vor 'case $?' beendete das Skript unter set -e. Der Fehlerzweig wurde nie erreicht. Betroffen: install.sh, preflight.sh, rollback.sh.",
+      "korrektur": "Der Rueckgabewert wird in einer Variablen aufgefangen.",
+      "tests": "R11.1-R11.3"
+    },
+    {
+      "id": "F9",
+      "herkunft": "Code-Review der eigenen Korrekturen",
+      "bereich": "case-Muster",
+      "befund": "*\"$(printf '\\n')\"* ist unwirksam. Die Substitution ergibt eine leere Zeichenkette, das Muster trifft jeden Pfad.",
+      "korrektur": "ANSI-C-Form *$'\\n'*.",
+      "tests": "R3.6-R3.9"
+    },
+    {
+      "id": "F10",
+      "herkunft": "Code-Review der eigenen Korrekturen",
+      "bereich": "Schluesselwort als Wert",
+      "befund": "set_phase done wurde von bash als Schluesselwort gelesen. Die Funktion run() war toter Code.",
+      "korrektur": "Phasennamen sind gequotet. Toter Code entfernt.",
+      "tests": "ShellCheck"
+    },
+    {
+      "id": "F11",
+      "herkunft": "unabhaengiger Code-Review",
+      "bereich": "siebzehn Befunde",
+      "befund": "Unter anderem: unbestimmter Vorgabeeintrag im Bootmenue, ueberschriebene Abnahmevorlage, Dekodierung nur von %20, zweiter Installationslauf, unmaskierte Markdown-Tabelle, nur doppelte Anfuehrungszeichen entfernt, Option ohne Wert mit stillem Abbruch, apt-mark hold vor der Freigabe, ACPI-BIOS-Meldungen als Fehlbefund, sed-Ersetzung mit kaufmaennischem Und.",
+      "korrektur": "Alle siebzehn Befunde abgearbeitet. Einzelheiten in reports/RELEASE_V4_1.md, Abschnitt 5.4.",
+      "tests": "R12.1-R12.28"
+    }
+  ],
+  "tests": {
+    "regression": {
+      "script": "scripts/regression.sh",
+      "groups": 12,
+      "cases": 114,
+      "passed": 114,
+      "failed": 0,
+      "skipped": 0,
+      "rate_percent": 100.0,
+      "raw_data": "reports/REGRESSION_RESULTS.tsv",
+      "rate_history": [
+        {
+          "run": 1,
+          "cases": 73,
+          "passed": 61,
+          "rate_percent": 83.6
+        },
+        {
+          "run": 2,
+          "cases": 75,
+          "passed": 69,
+          "rate_percent": 92.0
+        },
+        {
+          "run": 3,
+          "cases": 75,
+          "passed": 74,
+          "rate_percent": 98.7
+        },
+        {
+          "run": 4,
+          "cases": 86,
+          "passed": 86,
+          "rate_percent": 100.0
+        },
+        {
+          "run": 5,
+          "cases": 114,
+          "passed": 114,
+          "rate_percent": 100.0
+        }
+      ],
+      "preconditions": [
+        "Rootrechte",
+        "grub-script-check",
+        "Paketindex in packages/",
+        "shellcheck"
+      ]
+    },
+    "selftest": {
+      "script": "scripts/selftest.sh",
+      "groups": 14,
+      "cases_with_payload": 118,
+      "passed_with_payload": 118,
+      "cases_without_payload": 118,
+      "passed_without_payload": 117,
+      "skipped_without_payload": 1
+    },
+    "shellcheck": {
+      "version": "0.9.0",
+      "scripts": 11,
+      "findings": 0
+    }
+  },
+  "apt_pinning": {
+    "sourcelist": "/var/lib/maximus-t2/apt/offline.list",
+    "sourceparts": "/dev/null",
+    "lists": "/var/lib/maximus-t2/apt/lists",
+    "note": "Simulation und Installation nutzen dieselbe Quelle. Es gibt keine Netzquelle. Die Systemlisten bleiben unberuehrt."
+  },
+  "recorded_state": {
+    "dir": "/var/lib/maximus-t2",
+    "files": [
+      "install-state (mit phase=)",
+      "files-written.txt",
+      "pkg-before.txt",
+      "pkg-after.txt",
+      "packages-added.txt",
+      "packages-changed.txt",
+      "packages-removed.txt",
+      "held-by-maximus.txt",
+      "last-backup",
+      "test-boot-entry"
+    ],
+    "note": "rollback.sh nimmt ausschliesslich diese aufgezeichneten Aenderungen zurueck."
   }
 }

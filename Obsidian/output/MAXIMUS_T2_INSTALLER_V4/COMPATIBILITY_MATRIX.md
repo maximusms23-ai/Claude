@@ -32,13 +32,14 @@ Das Testergebnis steht ausschließlich in `reports/HARDWARE_TEST_REPORT.md`.
 | Trackpad | `linux-t2-lts`, `libinput-tools` zur Prüfung | ERWARTET_PARTIAL | Force Touch fehlt. Die Handballenerkennung fehlt. |
 | Touch Bar | `linux-t2-lts`, `tiny-dfr` 0.3.7-4, `hid-appletb-kbd mode=1` | ERWARTET_PASS | Die Grundfassung zeigt nur Funktions- oder Medientasten. Treiber seit Kernel 6.15 im Hauptzweig. |
 | Tastaturbeleuchtung | `linux-t2-lts` | ERWARTET_PASS | — |
-| Interner Bildschirm | `i915` | ERWARTET_PASS | — |
+| Interner Bildschirm | `i915`, Prüffeld in `verify.sh` über eDP und `apple-gmux` | ERWARTET_PARTIAL | Für dieses Modell ist dokumentiert, dass `gmux` den internen Bildschirm an die AMD-Grafik legen kann. Das Gerät hängt dann beim Sitzungsstart. |
 | Touch ID | `t2-touchid` 0.1.0-3 | ERWARTET_PARTIAL | Nur Fingerabdrücke, die in macOS angelegt wurden. Auf dem Zielgerät ist macOS entfernt. Damit ist die Funktion praktisch ERWARTET_FAIL. |
 
 ## 2. Funk
 
 | Hardware | Maßnahme im Paket | Erwartung | Nachgewiesene Einschränkung |
 | --- | --- | --- | --- |
+| WLAN-Chip | Erkennung über `lspci`, Kernelprotokoll und Firmwaredateien | OFFEN | Der Chip wird **nur** durch Hardwareerkennung am Gerät bestätigt. Eine Annahme aus einem Bericht gilt nicht. |
 | WLAN | Treiber `brcmfmac` im Kernel. Firmware über `apple-firmware-script`. | OFFEN | Ohne Apple-Firmware keine Funktion. Die Firmware liegt nicht im Paket. |
 | Bluetooth | Treiber im Kernel. Dieselbe Firmware. `bluez` 5.72. | ERWARTET_PARTIAL | Bei einem BCM4377-Chip stört eine 2,4-GHz-WLAN-Verbindung die Bluetooth-Verbindung. Nutze 5 GHz oder schalte WLAN ab. |
 
@@ -78,7 +79,7 @@ Das Werkzeug `get-apple-firmware` wählt den passenden Namen selbst.
 | --- | --- | --- | --- |
 | Lüfter | `applesmc` im Kernel, `t2fanrd` 0.1.0-4, Kurve 55 bis 80 Grad Celsius | ERWARTET_PASS | Ohne Dienst laufen die Lüfter oft auf Grundlast. |
 | CPU-Temperatur | `lm-sensors`, Lasttest mit `stress-ng`, Abbruch bei 90 Grad Celsius | OFFEN | Das letzte Audit meldete 98 Grad Celsius und mehrfache Drosselung. |
-| Ruhezustand | bewusst abgeschaltet durch `config/power/99-maximus-t2-sleep.conf` | ERWARTET_FAIL | Bericht 31: minutenlange Hänger. Bericht 215: Absturz beim Aufwachen. Die Radeon-Grafik kann in `s2idle` hängen. |
+| Ruhezustand | bewusst abgeschaltet durch `config/power/99-maximus-t2-sleep.conf` | ERWARTET_FAIL | Bericht 31: minutenlange Hänger. Bericht 215: Absturz beim Aufwachen. In `s2idle` weckt die Radeon-Grafik nicht auf; empfohlen ist `deep`. `verify.sh` liest `/sys/power/mem_sleep` und warnt. |
 | Akku | `upower`, `acpi` | ERWARTET_PASS | — |
 
 ## 6. Anschlüsse und Datenträger
@@ -101,5 +102,7 @@ Diese Funktionen dürfen **nicht** ohne Einzeltest als arbeitsfähig gelten:
 4. Ruhezustand und Aufwachen.
 5. Umschaltung zwischen interner und dedizierter Grafik.
 6. Dauerbetrieb über mehrere Stunden.
+7. Der Funkchip. Er gilt erst nach Hardwareerkennung als bestätigt.
+8. Der interne Bildschirm. Er kann über `gmux` an der AMD-Grafik hängen.
 
 Ein nicht getestetes Gerät erhält niemals PASS.

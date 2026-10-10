@@ -15,7 +15,10 @@ tags:
 # MAXIMUS T2 Installer
 
 Offline-Installationspaket fuer Apple MacBookPro16,1 unter Ubuntu 24.04.5 LTS.
-Fassung V4, erstellt am 2026-10-10.
+Fassung **4.1.0** vom 2026-10-10.
+Die Fassung 4.1 behebt funf gemeldete, zwei selbst gefundene und
+siebzehn im Code-Review gefundene Fehler der Fassung 4.0.
+Einzelheiten: `reports/RELEASE_V4_1.md`.
 
 Speicherort im Repositorium:
 `Obsidian/output/MAXIMUS_T2_INSTALLER_V4/`
@@ -30,7 +33,8 @@ Es laedt alle Pakete vorab, damit die Installation ohne Netz laeuft.
 
 | Status | Wert | Nachweis |
 | --- | --- | --- |
-| PACKAGE_READY | erteilt | `reports/BUILD_REPORT.md` |
+| SOURCE_READY | erteilt | `reports/RELEASE_V4_1.md`, Abschnitt 2 |
+| PACKAGE_READY | erteilt | `reports/RELEASE_V4_1.md`, Abschnitt 6 |
 | INSTALLATION_READY | nicht erteilt | Vorpruefung am Zielgeraet fehlt |
 | HARDWARE_READY | nicht erteilt | Hardwaretest fehlt |
 | MAXIMUS_WORKER_READY | nicht erteilt | Dauerbetriebsnachweis fehlt |
@@ -60,15 +64,34 @@ Siehe [[T2Linux]], Abschnitt zu den bekannten Fehlern.
 
 ## Skripte
 
+Rufe jedes Skript mit `bash` auf. Die Samsung T7 nutzt exFAT.
+exFAT speichert keine Unix-Rechte. Das Ausfuehrungsbit geht verloren.
+
 | Skript | Laeuft auf | Zweck |
 | --- | --- | --- |
 | `fetch-packages.sh` | Baurechner | Paketnutzlast herstellen |
-| `selftest.sh` | ueberall | 13 Testgruppen, 102 Tests |
+| `selftest.sh` | ueberall | 14 Testgruppen, 118 Tests |
+| `regression.sh` | ueberall | 12 Gruppen, 114 Regressionstests |
 | `deploy-to-t7.sh` | Baurechner | auf die Samsung T7 uebertragen |
 | `preflight.sh` | MacBook | System und Hardware pruefen |
 | `install.sh` | MacBook | installieren, mit Simulationsbetrieb |
 | `verify.sh` | MacBook | Hardware abnehmen |
 | `rollback.sh` | MacBook | Aenderungen zuruecknehmen |
+
+## Korrekturen der Fassung 4.1
+
+| Bereich | Fehler in 4.0 | Korrektur |
+| --- | --- | --- |
+| GRUB-Pruefung | `bash -n` war fuer `grub.cfg` zustaendig gemacht | `grub-script-check` |
+| Offline-Installation | Simulation und Installation liefen gegen die Systemquellen | eine gepinnte lokale Quelle fuer beides |
+| Rueckfall | `apt-get autoremove` und Paketnamensmuster | nur aufgezeichnete Aenderungen |
+| Sicherung | wurde ungeprueft zurueckgeschrieben | Siegelpruefung mit Abbruch |
+| Pruefsummen | wurden still ueberschrieben | Abbruch, Uebernahme nur mit Freigabe |
+| exFAT | nur eine Warnung | Erkennung, Pruefung am Ziel, Startblatt |
+| Pfade mit Leerzeichen | brachen die Paketquelle | werden kodiert |
+| Bootvorgabe | unbestimmt | ausdruecklich gesetzt |
+
+Siehe [[t2bce]] und [[T2Linux]] fuer die Hardwareseite.
 
 ## Sicherheitsregeln
 
@@ -80,6 +103,9 @@ Siehe [[T2Linux]], Abschnitt zu den bekannten Fehlern.
 6. Der Teststart in den T2-Kernel wirkt nur einmal.
 7. Es wird keine `curl | bash`-Kette genutzt.
 8. Jede Paketquelle nutzt einen eigenen Signaturschluessel.
+9. Es wird kein Eintrag in `/etc/apt/sources.list.d` abgelegt.
+10. Es wird kein `apt-get autoremove` ausgefuehrt.
+11. Bei der Installation wird kein Paket aus dem Netz geladen.
 
 ## Offene Punkte
 

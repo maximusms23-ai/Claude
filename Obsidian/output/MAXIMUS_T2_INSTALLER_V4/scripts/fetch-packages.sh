@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MAXIMUS_T2_INSTALLER_V4 - Paketbestand auf dem Baurechner herstellen
+# MAXIMUS_T2_INSTALLER V4.1 - Paketbestand auf dem Baurechner herstellen
 #
 # Ergebnis: Das Verzeichnis packages/ enthaelt danach alle Paketdateien,
 # einen Paketindex und eine Pruefsummenliste. Die Installation auf dem
@@ -16,6 +16,9 @@
 # Aufruf:  ./fetch-packages.sh [OPTIONEN]
 #   --out PFAD    Zielverzeichnis. Standard ist <Paketwurzel>/packages.
 #   --keep-cache  Loescht das Arbeitsverzeichnis nicht.
+#   --accept-new-checksums
+#                 Nimmt abweichende Pruefsummen als neuen Sollstand an.
+#                 Ohne diese Option bricht das Skript bei Abweichung ab.
 #   --no-color    Gibt keine Farbcodes aus.
 
 set -euo pipefail
@@ -27,10 +30,12 @@ ROOT="$(cd "$SELF_DIR/.." && pwd)"
 
 OUT="$ROOT/packages"
 KEEP_CACHE=0
+ACCEPT_NEW=0
 while [ "$#" -gt 0 ]; do
 	case "$1" in
-		--out)        shift; OUT="${1:-}" ;;
-		--keep-cache) KEEP_CACHE=1 ;;
+		--out)                   mt2_opt_needs_value "$#" --out; OUT="$2"; shift ;;
+		--keep-cache)            KEEP_CACHE=1 ;;
+		--accept-new-checksums)  ACCEPT_NEW=1 ;;
 		--no-color)   NO_COLOR=1; export NO_COLOR ;;
 		-h|--help)    sed -n '2,22p' "$0"; exit "$RC_OK" ;;
 		*)            die "$RC_USAGE" "Unbekannte Option '$1'." "Rufe '$0 --help' auf." ;;
@@ -50,7 +55,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-log "MAXIMUS_T2_INSTALLER_V4 - Paketbestand herstellen"
+log "MAXIMUS_T2_INSTALLER V$MT2_VERSION - Paketbestand herstellen"
 log "Zielverzeichnis: $OUT"
 log "Arbeitsverzeichnis: $WORK"
 
@@ -188,7 +193,9 @@ MIRROR="${MT2_UBUNTU_MIRROR:-https://archive.ubuntu.com/ubuntu}"
 			"$AR" "$MIRROR" "$suite"
 	done
 } > "$AR/etc/apt/sources.list"
-printf 'deb [arch=amd64 trusted=yes] file://%s ./\n' "$OUT/t2linux" > "$AR/etc/apt/sources.list.d/local-t2.list"
+# V4.1: Auch der Baupfad kann ein Leerzeichen tragen. Er wird kodiert.
+printf 'deb [arch=amd64 trusted=yes] file://%s ./\n' "$(mt2_url_encode_path "$OUT/t2linux")" \
+	> "$AR/etc/apt/sources.list.d/local-t2.list"
 
 cat > "$WORK/apt.conf" <<EOF
 Dir "$AR";
@@ -292,19 +299,40 @@ NEWLIST="$WORK/SHA256SUMS.debs"
 ( cd "$OUT" && find . -name '*.deb' -type f | sort | xargs -r sha256sum ) > "$NEWLIST"
 NEW_COUNT="$(wc -l < "$NEWLIST")"
 
-if [ -f "$EXPECTED" ]; then
-	if diff -q <(sort "$EXPECTED") <(sort "$NEWLIST") >/dev/null 2>&1; then
-		log_ok "Der Paketbestand stimmt mit der mitgelieferten Liste ueberein ($NEW_COUNT Dateien)."
-	else
-		log_warn "Der Paketbestand weicht von der mitgelieferten Liste ab."
-		log_warn "Das ist normal, wenn Ubuntu Sicherheitsaktualisierungen veroeffentlicht hat."
-		diff <(sort "$EXPECTED") <(sort "$NEWLIST") | head -20 | sed 's/^/         /' || true
-		cp "$EXPECTED" "$OUT/SHA256SUMS.debs.previous"
-		log_info "Die alte Liste liegt in SHA256SUMS.debs.previous."
+# V4.1: Eine bekannte Pruefsummenliste wird NIEMALS selbsttaetig ueberschrieben.
+# Fassung V4.0 ersetzte sie nach einer Warnung. Eine veraenderte Quelle waere
+# damit stillschweigend zum neuen Sollstand geworden.
+if [ ! -f "$EXPECTED" ]; then
+	cp "$NEWLIST" "$EXPECTED"
+	log_ok "Erstmalig erzeugt: packages/SHA256SUMS.debs mit $NEW_COUNT Eintraegen."
+elif diff -q <(sort "$EXPECTED") <(sort "$NEWLIST") >/dev/null 2>&1; then
+	log_ok "Der Paketbestand stimmt mit der mitgelieferten Liste ueberein ($NEW_COUNT Dateien)."
+else
+	ONLY_OLD="$(comm -23 <(sort "$EXPECTED") <(sort "$NEWLIST") | wc -l)"
+	ONLY_NEW="$(comm -13 <(sort "$EXPECTED") <(sort "$NEWLIST") | wc -l)"
+	log_err "Der Paketbestand weicht vom Sollstand ab."
+	log_err "Nur im Sollstand: $ONLY_OLD Eintraege. Nur im neuen Bestand: $ONLY_NEW Eintraege."
+	diff <(sort "$EXPECTED") <(sort "$NEWLIST") | head -24 | sed 's/^/         /' || true
+	cp "$NEWLIST" "$OUT/SHA256SUMS.debs.new"
+	log_info "Der neue Bestand liegt zum Vergleich in packages/SHA256SUMS.debs.new."
+	if [ "$ACCEPT_NEW" -eq 0 ]; then
+		die "$RC_CHECKSUM" "Der Paketbestand weicht vom bekannten Sollstand ab." \
+			"Pruefe jede Abweichung. Haeufige Ursache ist eine Sicherheitsaktualisierung von Ubuntu. Uebernimm den neuen Stand erst nach der Pruefung mit: bash $0 --accept-new-checksums"
 	fi
+	log_warn "Der neue Stand wird auf ausdrueckliche Anweisung uebernommen."
+	cp "$EXPECTED" "$OUT/SHA256SUMS.debs.previous"
+	cp "$NEWLIST" "$EXPECTED"
+	{
+		printf '# MAXIMUS_T2_INSTALLER V%s - Herkunft des Sollstands\n' "$MT2_VERSION"
+		printf 'uebernommen_am=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+		printf 'eintraege=%s\n' "$NEW_COUNT"
+		printf 'nur_im_alten_stand=%s\n' "$ONLY_OLD"
+		printf 'nur_im_neuen_stand=%s\n' "$ONLY_NEW"
+		printf 'freigabe=--accept-new-checksums\n'
+	} > "$OUT/SHA256SUMS.debs.provenance"
+	log_ok "packages/SHA256SUMS.debs enthaelt jetzt $NEW_COUNT Eintraege."
+	log_info "Die Herkunft steht in packages/SHA256SUMS.debs.provenance."
 fi
-cp "$NEWLIST" "$EXPECTED"
-log_ok "packages/SHA256SUMS.debs enthaelt $NEW_COUNT Eintraege."
 
 # ---------------------------------------------------------------------------
 log_step "Abschluss"
@@ -314,6 +342,7 @@ log_ok "PACKAGE_READY: Der Paketbestand ist vollstaendig und geprueft."
 log "Gesamtgroesse: $SIZE"
 log ""
 log "Naechste Schritte:"
-log "  1. Pruefung:   ./scripts/selftest.sh"
-log "  2. Uebertragen: sudo ./scripts/deploy-to-t7.sh"
+log "  1. Eigenpruefung:   bash scripts/selftest.sh"
+log "  2. Regressionstests: bash scripts/regression.sh"
+log "  3. Uebertragen:      sudo bash scripts/deploy-to-t7.sh --dry-run"
 exit "$RC_OK"

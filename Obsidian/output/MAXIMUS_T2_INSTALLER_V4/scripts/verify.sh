@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# MAXIMUS_T2_INSTALLER_V4 - Hardware-Abnahme nach der Installation
+# MAXIMUS_T2_INSTALLER V4.1 - Hardware-Abnahme nach der Installation
 #
 # Ergebnis: Das Skript prueft jede Hardwarefunktion und schreibt einen Bericht.
 # Es fuehrt echte Funktionstests aus, nicht nur Modulpruefungen.
 #
-# Aufruf:  sudo ./verify.sh [OPTIONEN]
+# Aufruf:  sudo bash verify.sh [OPTIONEN]
 #   --non-interactive   Fuehrt nur selbsttaetige Tests aus.
 #                       Tests mit Mitwirkung erhalten NOT_TESTED.
 #   --allow-suspend     Erlaubt den Standby-Test. Standard ist BLOCKED.
@@ -32,8 +32,8 @@ while [ "$#" -gt 0 ]; do
 	case "$1" in
 		--non-interactive)  INTERACTIVE=0 ;;
 		--allow-suspend)    ALLOW_SUSPEND=1 ;;
-		--thermal-seconds)  shift; THERMAL_SECONDS="${1:-60}" ;;
-		--out)              shift; OUTFILE="${1:-}" ;;
+		--thermal-seconds)  mt2_opt_needs_value "$#" --thermal-seconds; THERMAL_SECONDS="$2"; shift ;;
+		--out)              mt2_opt_needs_value "$#" --out; OUTFILE="$2"; shift ;;
 		--no-color)         NO_COLOR=1; export NO_COLOR ;;
 		-h|--help)          sed -n '2,20p' "$0"; exit "$RC_OK" ;;
 		*)                  die "$RC_USAGE" "Unbekannte Option '$1'." "Rufe '$0 --help' auf." ;;
@@ -83,6 +83,12 @@ ask_user() {
 	esac
 }
 
+# V4.1: Ein '|' im Text zerstoert die Markdown-Tabelle.
+# Gemessen: Die Zeile mit den Kernelparametern brach die Tabelle auf.
+md_cell() {
+	printf '%s' "$1" | sed -e 's/|/\\|/g' -e 's/\r//g' | tr '\n' ' '
+}
+
 max_temp_c() {
 	local t max=0 z
 	for z in /sys/class/thermal/thermal_zone*/temp; do
@@ -102,7 +108,7 @@ fan_rpm_list() {
 	done
 }
 
-log "MAXIMUS_T2_INSTALLER_V4 - Hardware-Abnahme"
+log "MAXIMUS_T2_INSTALLER V$MT2_VERSION - Hardware-Abnahme"
 log "Zeitpunkt: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 log "Kernel:    $(uname -r)"
 log "Bericht:   $OUTFILE"
@@ -209,6 +215,34 @@ fi
 # ---------------------------------------------------------------------------
 log_step "WLAN"
 # ---------------------------------------------------------------------------
+# V4.1: Der Funkchip wird AUSSCHLIESSLICH durch Hardwareerkennung bestimmt.
+# Eine Annahme aus einem frueheren Bericht gilt nicht als Nachweis.
+PCI_NET="$(lspci -nn 2>/dev/null | grep -iE 'network|wireless' | head -1 || true)"
+PCI_ID="$(printf '%s' "$PCI_NET" | sed -n 's/.*\[\([0-9a-f]\{4\}:[0-9a-f]\{4\}\)\].*/\1/p' | head -1)"
+CHIP_LOG="$(journalctl -k -b 0 --no-pager 2>/dev/null \
+	| sed -n 's/.*using brcm\/brcmfmac\([0-9a-z]*\)-pcie for chip \(BCM[0-9/]*\).*/\2 (Dateipraefix brcmfmac\1)/p' | head -1)"
+if [ -z "$CHIP_LOG" ]; then
+	CHIP_LOG="$(journalctl -k -b 0 --no-pager 2>/dev/null \
+		| sed -n 's/.*Firmware: \(BCM[0-9/]*\).*/\1/p' | head -1)"
+fi
+FW_FILES="$(find /lib/firmware/brcm -maxdepth 1 -name 'brcmfmac4*' -printf '%f\n' 2>/dev/null | sort || true)"
+CHIP_FW="$(printf '%s' "$FW_FILES" | sed -n 's/^brcmfmac\([0-9]\{4\}\).*/BCM\1/p' | sort -u | tr '\n' ' ')"
+
+log_info "PCI-Eintrag:      ${PCI_NET:-keiner}"
+log_info "PCI-Kennung:      ${PCI_ID:-unbekannt}"
+log_info "Chip laut Kernel: ${CHIP_LOG:-nicht gemeldet}"
+log_info "Chip laut Firmwaredateien: ${CHIP_FW:-keine}"
+
+if [ -n "$CHIP_LOG" ]; then
+	add_result "WLAN-Chip" PASS "Durch Hardwareerkennung bestaetigt: $CHIP_LOG. PCI-Kennung ${PCI_ID:-unbekannt}."
+elif [ -n "$PCI_ID" ]; then
+	add_result "WLAN-Chip" PARTIAL "Der Funkchip ist am PCI-Bus sichtbar (${PCI_ID}), der Treiber meldet ihn aber nicht. Vermutlich fehlt die Firmware."
+elif [ -n "$CHIP_FW" ]; then
+	add_result "WLAN-Chip" PARTIAL "Es liegt Firmware fuer $CHIP_FW vor. Das Geraet ist nicht am PCI-Bus sichtbar."
+else
+	add_result "WLAN-Chip" FAIL "Der Funkchip liess sich nicht bestimmen. Pruefe: lspci -nn | grep -i network"
+fi
+
 FW_COUNT="$(mt2_count_files /lib/firmware/brcm -maxdepth 1 -name 'brcmfmac43*')"
 WIFI_IF=''
 for n in /sys/class/net/wl*; do
@@ -444,6 +478,28 @@ if command -v vainfo >/dev/null 2>&1; then
 	vainfo >/dev/null 2>&1 && VAAPI="verfuegbar" || VAAPI="nicht verfuegbar"
 fi
 log_info "i915: $I915   amdgpu: $AMDGPU   Renderer: $RENDERER   VA-API: $VAAPI"
+
+# V4.1: Welcher Grafikchip treibt den internen Bildschirm?
+# Fuer dieses Modell ist dokumentiert, dass gmux den internen Bildschirm an
+# die AMD-Grafik legen kann. Das Geraet haengt dann beim Sitzungsstart.
+EDP_DRV=''
+for c in /sys/class/drm/card*-eDP-*; do
+	[ -e "$c/status" ] || continue
+	if [ "$(cat "$c/status" 2>/dev/null)" = "connected" ]; then
+		EDP_DRV="$(basename "$(readlink -f "$c/../device/driver" 2>/dev/null)" 2>/dev/null || true)"
+		log_info "Interner Bildschirm: $(basename "$c")   Treiber: ${EDP_DRV:-unbekannt}"
+		break
+	fi
+done
+GMUX=0
+[ -d /sys/bus/platform/devices/apple-gmux ] && GMUX=1
+log_info "apple-gmux vorhanden: $GMUX"
+case "$EDP_DRV" in
+	i915)   add_result "Interner Bildschirm" PASS "Der interne Bildschirm haengt an der Intel-Grafik (i915). Das ist der erwuenschte Zustand." ;;
+	amdgpu) add_result "Interner Bildschirm" PARTIAL "Der interne Bildschirm haengt an der AMD-Grafik. Fuer dieses Modell ist ein Haenger beim Sitzungsstart dokumentiert. Beobachte das Verhalten." ;;
+	'')     add_result "Interner Bildschirm" PARTIAL "Der Treiber des internen Bildschirms liess sich nicht bestimmen." ;;
+	*)      add_result "Interner Bildschirm" PARTIAL "Der interne Bildschirm haengt am Treiber '$EDP_DRV'." ;;
+esac
 if [ "$I915" -eq 1 ] && [ "$AMDGPU" -eq 1 ]; then
 	add_result "GPU" PARTIAL "Beide Treiber sind geladen. Renderer: $RENDERER. VA-API: $VAAPI. Das Abschalten der dedizierten Grafik funktioniert bauartbedingt nicht."
 elif [ "$I915" -eq 1 ]; then
@@ -461,6 +517,13 @@ if [ "$ALLOW_SUSPEND" -eq 0 ]; then
 	add_result "Standby" BLOCKED "Der Test ist absichtlich gesperrt. Der Ruhezustand ist auf diesem Modell nachweislich fehlerhaft. Siehe config/power/README.md. Freigabe mit --allow-suspend."
 else
 	log_warn "Der Standby-Test kann das Geraet zum Haengen bringen. Sichere alle Daten."
+	SLEEP_MODE="$(cat /sys/power/mem_sleep 2>/dev/null || echo unbekannt)"
+	log_info "Verfuegbare Ruhezustaende: $SLEEP_MODE"
+	case "$SLEEP_MODE" in
+		*'[s2idle]'*) log_warn "Aktiv ist 's2idle'. Fuer dieses Modell ist dokumentiert, dass die"
+		              log_warn "AMD-Grafik daraus nicht aufwacht. Setze vorher mem_sleep_default=deep." ;;
+		*'[deep]'*)   log_info "Aktiv ist 'deep'. Das ist fuer dieses Modell der empfohlene Zustand." ;;
+	esac
 	A="$(ask_user "Soll der Standby-Test jetzt starten? Antworte nur mit j, wenn alle Daten gesichert sind.")"
 	if [ "$A" = "PASS" ]; then
 		systemctl suspend || true
@@ -511,13 +574,21 @@ fi
 # ---------------------------------------------------------------------------
 log_step "Kernelmeldungen und Neustarts"
 # ---------------------------------------------------------------------------
-OOPS="$(journalctl -k -b 0 --no-pager 2>/dev/null | grep -ciE 'kernel panic|BUG:|Oops|scheduling while atomic|NULL pointer' || true)"
+# V4.1: Die Suche ist jetzt gross- und kleinschreibungsempfindlich und
+# schliesst bekannte harmlose Meldungen aus.
+# Gemessen: 'ACPI BIOS Bug:' kommt auf Apple-Firmware regelmaessig vor und
+# haette die Abnahme mit einem Fehlbefund blockiert.
+OOPS="$(journalctl -k -b 0 --no-pager 2>/dev/null \
+	| grep -E 'Kernel panic|BUG: |Oops|scheduling while atomic|NULL pointer dereference' \
+	| grep -cvE 'ACPI BIOS (Bug|Error)|DEBUG|debug' || true)"
+BENIGN="$(journalctl -k -b 0 --no-pager 2>/dev/null | grep -cE 'ACPI BIOS (Bug|Error)' || true)"
+[ "${BENIGN:-0}" -gt 0 ] && log_info "Zusaetzlich ${BENIGN} harmlose ACPI-BIOS-Meldungen der Apple-Firmware (nicht gewertet)."
 BOOTS="$(journalctl --list-boots --no-pager 2>/dev/null | wc -l)"
 log_info "Auffaellige Kernelmeldungen im laufenden Start: ${OOPS:-0}   Startvorgaenge im Protokoll: $BOOTS"
 if [ "${OOPS:-0}" -eq 0 ]; then
 	add_result "Kernelmeldungen" PASS "Es gibt keine auffaelligen Kernelmeldungen im laufenden Start."
 else
-	add_result "Kernelmeldungen" FAIL "Es gibt ${OOPS} auffaellige Kernelmeldungen. Pruefe: journalctl -k -b 0 | grep -iE 'BUG:|Oops|atomic'"
+	add_result "Kernelmeldungen" FAIL "Es gibt ${OOPS} auffaellige Kernelmeldungen. Pruefe: journalctl -k -b 0 | grep -E 'BUG: |Oops|atomic'"
 fi
 add_result "Dauerbetrieb" NOT_TESTED "Der Langzeittest ueber mehrere Stunden steht aus. Er ist Voraussetzung fuer MAXIMUS_WORKER_READY."
 
@@ -545,16 +616,18 @@ done
 	printf '# Hardware-Abnahme MacBookPro16,1\n\n'
 	printf '| Angabe | Wert |\n| --- | --- |\n'
 	printf '| Zeitpunkt | %s |\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-	printf '| Kernel | %s |\n' "$(uname -r)"
-	printf '| Modell | %s |\n' "$(mt2_model || echo unbekannt)"
-	printf '| Ubuntu | %s |\n' "$(mt2_release_id || echo unbekannt)"
+	printf '| Fassung | %s |\n' "$MT2_VERSION"
+	printf '| Kernel | %s |\n' "$(md_cell "$(uname -r)")"
+	printf '| Modell | %s |\n' "$(md_cell "$(mt2_model || echo unbekannt)")"
+	printf '| Ubuntu | %s |\n' "$(md_cell "$(mt2_release_id || echo unbekannt)")"
 	printf '| Betriebsart | %s |\n' "$([ "$INTERACTIVE" -eq 1 ] && echo 'mit Mitwirkung' || echo 'ohne Mitwirkung')"
-	printf '| Kernelparameter | %s |\n' "$CMDLINE"
+	# shellcheck disable=SC2016  # Die Backticks sind Markdown, keine Substitution.
+	printf '| Kernelparameter | `%s` |\n' "$(md_cell "$CMDLINE")"
 	printf '\n## Ergebnisse\n\n'
 	printf '| Prueffeld | Ergebnis | Anmerkung |\n| --- | --- | --- |\n'
 	i=0
 	while [ "$i" -lt "${#R_FIELD[@]}" ]; do
-		printf '| %s | %s | %s |\n' "${R_FIELD[$i]}" "${R_RESULT[$i]}" "${R_NOTE[$i]}"
+		printf '| %s | %s | %s |\n' "$(md_cell "${R_FIELD[$i]}")" "${R_RESULT[$i]}" "$(md_cell "${R_NOTE[$i]}")"
 		i=$((i + 1))
 	done
 	printf '\n## Zusammenfassung\n\n'
@@ -572,14 +645,24 @@ done
 } > "$OUTFILE"
 
 log_ok "Bericht geschrieben: $OUTFILE"
-if [ -w "$ROOT/reports" ]; then
-	if cp "$OUTFILE" "$ROOT/reports/HARDWARE_TEST_REPORT.md" 2>/dev/null; then
-		log_ok "Kopie: $ROOT/reports/HARDWARE_TEST_REPORT.md"
+# V4.1: Die mitgelieferte Vorlage wird NIE ueberschrieben.
+# Die Kopie traegt einen Zeitstempel und entsteht nur auf dem Zielgeraet.
+# Gemessen in V4.1: Ein Testlauf in der Bauumgebung hatte die Vorlage mit
+# unbrauchbaren Werten ersetzt.
+REPORT_MODEL="$(mt2_model || true)"
+if [ "$REPORT_MODEL" != "$MT2_SUPPORTED_MODEL" ]; then
+	log_warn "Dies ist nicht $MT2_SUPPORTED_MODEL (erkannt: '${REPORT_MODEL:-unbekannt}')."
+	log_warn "Der Bericht wird NICHT in das Paket kopiert. Er liegt nur unter $OUTFILE."
+elif [ ! -w "$ROOT/reports" ]; then
+	log_info "Das Verzeichnis $ROOT/reports ist nicht beschreibbar. Der Bericht liegt nur unter $OUTFILE."
+else
+	COPY_TARGET="$ROOT/reports/HARDWARE_TEST_REPORT-$STAMP.md"
+	if cp "$OUTFILE" "$COPY_TARGET" 2>/dev/null; then
+		log_ok "Kopie: $COPY_TARGET"
+		log_info "Die Vorlage reports/HARDWARE_TEST_REPORT.md bleibt unveraendert."
 	else
 		log_warn "Die Kopie nach $ROOT/reports/ gelang nicht. Das Medium ist vermutlich schreibgeschuetzt."
 	fi
-else
-	log_info "Das Verzeichnis $ROOT/reports ist nicht beschreibbar. Der Bericht liegt nur unter $OUTFILE."
 fi
 
 log ""

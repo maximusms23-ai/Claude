@@ -100,6 +100,14 @@ Regeln (Aufnahmekriterien, Groessengrenzen, Verbote) stehen im AI Memory Protoco
 
 Legt `~/.agentic-os/claude-projects/<projekt>/` an und verlinkt Repo, Vault und `MEMORY.md` dorthin. Erzeugt nur Symlinks, keine Kopien — damit es keine zweite Wahrheit gibt. Mehrfaches Ausfuehren ist unschaedlich.
 
+## Verhaeltnis zu Agent OS (Maximus_OS)
+
+Nicht zu verwechseln: **Agent OS** ist ein fertiges Desktop-Produkt des Users unter `/Users/maxim/Projects/Maximus_OS` mit einem Dashboard auf `http://localhost:3737`. Es bringt einen eigenen Obsidian-Connector mit (`install/11-MEMORY-OBSIDIAN.md`, „Memory Galaxy") und legt seine Laufzeitdaten in `~/.agentic-os/` ab.
+
+Die hier beschriebene Ebene ist **nicht** der Anschluss daran. Sie regelt, wie Claude Code in diesem Repo arbeitet, und erscheint in jenem Dashboard nicht — sie besteht aus Konfigurationsdateien, die beim Sessionstart gelesen werden, und registriert sich nirgends. Soll der Vault im Leitstand auftauchen, laeuft das ueber Agent OS' eigenen Connector.
+
+`scripts/agentic-os-bootstrap.sh` verlangt deshalb `--confirm`: sein Verzeichnis-Layout unter `~/.agentic-os/claude-projects/<projekt>/` ist geraten und nicht gegen Agent OS verifiziert.
+
 ## Abgrenzung zu PaperclipAI
 
 [[PaperclipAI]] ist eine externe Orchestrierungsplattform mit eigenem Server und eigener Agenten-Hierarchie. Agentic OS ist repo-intern und braucht keinen laufenden Dienst: es sind Dateien unter `.claude/`, die Claude Code beim Start einliest. Beide koennen ins selbe Wiki schreiben.

@@ -13,6 +13,7 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-10 | [[Agentic OS]] | Abgrenzung zu Agent OS (Maximus_OS) ergaenzt, Bootstrap-Warnung dokumentiert |
 | 2026-10-10 | [[Agentic OS]] | Erweitert (Slash-Commands, erzwingende Hooks, Pruefskript, CI) |
 | 2026-10-10 | [[Agentic OS]] | Neu erstellt (Agenten-Ebene, Gedaechtnis, Bootstrap) |
 | 2026-10-10 | AI Memory Protocol | Neu erstellt in `Obsidian/Agentic OS/` (Regelwerk fuer das Projektgedaechtnis, ausserhalb `wiki/`) |

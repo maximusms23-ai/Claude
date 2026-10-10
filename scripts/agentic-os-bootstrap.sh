@@ -8,20 +8,59 @@
 #     ├── MEMORY.md   -> Symlink auf das versionierte Gedaechtnis im Repo
 #     └── README.md     kurze Orientierung
 #
+# ACHTUNG — DIESES LAYOUT IST GERATEN, NICHT VERIFIZIERT.
+#
+# Agent OS (/Users/maxim/Projects/Maximus_OS) bringt einen EIGENEN, dokumentierten
+# Obsidian-Connector mit: siehe dort `install/11-MEMORY-OBSIDIAN.md`. Der ist der
+# richtige Weg, damit der Vault im Dashboard (http://localhost:3737) erscheint.
+# Laut dessen README genuegt es, einen Terminal-Agenten IN jenem Ordner zu starten
+# und zu sagen: "connect my Obsidian vault to the Agent OS".
+#
+# Dieses Skript wurde geschrieben, ohne Agent OS gesehen zu haben. Was es in
+# ~/.agentic-os/claude-projects/<projekt>/ anlegt, entspricht moeglicherweise
+# NICHT dem, was Agent OS dort erwartet — es koennte dessen Dashboard verwirren.
+# Deshalb laeuft es nur mit --confirm.
+#
 # Das Gedaechtnis selbst bleibt im Repo (siehe "Obsidian/Agentic OS/AI Memory
 # Protocol.md"): Cloud-Container sind ephemer, nur git ueberlebt den Wechsel.
 # Hier entstehen nur Verweise, keine Kopien — damit es keine zweite Wahrheit gibt.
 #
 # Aufruf (aus dem Repo heraus):
-#   ./scripts/agentic-os-bootstrap.sh              # Projekt "claude-default"
-#   ./scripts/agentic-os-bootstrap.sh mein-projekt # eigener Projektname
+#   ./scripts/agentic-os-bootstrap.sh --confirm                # "claude-default"
+#   ./scripts/agentic-os-bootstrap.sh mein-projekt --confirm   # eigener Name
 #
 # Idempotent: mehrfaches Ausfuehren ist unschaedlich. Vorhandene echte Dateien
 # werden nie ueberschrieben, nur Symlinks aktualisiert.
 
 set -euo pipefail
 
-project="${1:-claude-default}"
+confirm=0
+project=""
+for arg in "$@"; do
+  case "$arg" in
+    --confirm) confirm=1 ;;
+    -*) echo "Unbekannte Option: $arg" >&2; exit 1 ;;
+    *) project="$arg" ;;
+  esac
+done
+project="${project:-claude-default}"
+
+if [ "$confirm" -ne 1 ]; then
+  cat >&2 <<'WARNEOF'
+Dieses Skript legt ein Verzeichnis-Layout an, das GERATEN ist.
+
+Agent OS bringt einen eigenen Obsidian-Connector mit. Nimm zuerst den:
+
+  1. Terminal-Agenten in /Users/maxim/Projects/Maximus_OS starten
+  2. sagen: "connect my Obsidian vault to the Agent OS"
+  3. Details stehen dort in install/11-MEMORY-OBSIDIAN.md
+
+Nur wenn das nicht passt und du weisst, dass du dieses Layout willst:
+
+  ./scripts/agentic-os-bootstrap.sh [projektname] --confirm
+WARNEOF
+  exit 2
+fi
 
 case "$project" in
   */*|.|..|"")

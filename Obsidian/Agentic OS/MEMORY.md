@@ -21,6 +21,7 @@ tags:
 - Agent-OS-Ebene liegt in `.claude/` (Agenten, Commands, Hooks, Settings), `scripts/` (Pruefskript, Bootstrap) und `Obsidian/Agentic OS/` (Protokoll, Gedaechtnis).
 - **„Agent OS" des Users ist ein fertiges Produkt**, nicht dieses Repo: ein Desktop-Paket unter `/Users/maxim/Projects/Maximus_OS`, Version 2026-10-10, bezogen aus dem „AI Profit Boardroom". Dashboard („Leitstand") auf `http://localhost:3737`, Start via `Start Agent OS.command` bzw. `start-maximus-os.sh`. Struktur: `install/` (nummerierte Anleitungen), `source/`, `runtime/`, `config.example.json`, `SETUP-WITH-AI.md`.
 - **Agent OS hat einen eigenen Obsidian-Connector**: `install/11-MEMORY-OBSIDIAN.md` („Memory Galaxy", „Jarvis's memory"). Vorgesehener Weg laut dessen README: Terminal-Agenten IN jenem Ordner starten und sagen „connect my Obsidian vault to the Agent OS". Der User soll dabei keine Dateien selbst editieren.
+- **Obsidian-Vault-ID des Arbeits-Vaults: `53213b4610731fc1`** (vom User genannt). Pfad aufloesbar ueber `~/Library/Application Support/obsidian/obsidian.json` (macOS). Damit ist geklaert, welcher Vault gemeint ist — auf `/Volumes/Daten_Bank/Obsidian/` liegen mehrere Vaults und Backups, die NICHT der Arbeits-Vault sind.
 - Laufzeitdaten von Agent OS liegen in `~/.agentic-os/` — eigenes Verzeichnis pro Modul (`project-memory/`, `todos/`, `bots/`, `radar/`, `app-lab/`, `ultracode-runs/` u. a.). `~/.agentic-os/claude-projects/` enthaelt `claude-default/`, `ultracode-plan/`, `verbindungstest/` — alle drei leer.
 - Offene `[[Wikilinks]]` sind in diesem Vault **keine Fehler**, sondern Themenvorschlaege fuer noch nicht existierende Seiten. `wiki/themen/Mannheim.md` haelt allein 36 davon.
 
@@ -66,5 +67,6 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 
 - 2026-10-10 — Geprueft, ob Agent OS integriert war: war es nicht (leerer Branch, keine Agenten, kein Protokoll). Anschliessend die repo-seitige Integration gebaut und committet.
 - 2026-10-10 — Integration im Cloud-Resume verifiziert: Hook feuert, Agenten laden. Zugriff auf den Mac geprueft und ausgeschlossen (siehe "Offene Punkte").
+- 2026-10-10 — Vault-ID `53213b4610731fc1` vom User erhalten; die Frage "welcher Vault" ist damit beantwortet.
 - 2026-10-10 — Agent OS erstmals eingesehen (Verzeichnislisting und README vom User eingefuegt). Befund: eigenes Produkt mit eigenem Obsidian-Connector; die hier gebaute Ebene ist nicht der gesuchte Anschluss. Bootstrap daraufhin hinter `--confirm` gelegt.
 - 2026-10-10 — Ebene voll ausgebaut: Commands, Guard-Hook, Stop-Gate, Pruefskript, Hook-Tests, CI. Drei eigene Entwurfsfehler dabei gefunden und behoben — zwei davon, weil die Hooks diese Session selbst blockiert haben (siehe "Entscheidungen").

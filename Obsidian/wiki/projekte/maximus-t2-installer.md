@@ -15,10 +15,11 @@ tags:
 # MAXIMUS T2 Installer
 
 Offline-Installationspaket fuer Apple MacBookPro16,1 unter Ubuntu 24.04.5 LTS.
-Fassung **4.2.0** vom 2026-10-10.
+Fassung **4.2.1** vom 2026-10-10.
 Die Fassung 4.2 behebt vier gemeldete Sicherheitsbefunde und vier Fehler
 aus dem Code-Review der Korrekturen.
-Einzelheiten: `reports/RELEASE_V4_2.md`.
+Die Fassung 4.2.1 schliesst drei Luecken in den Nachweisen.
+Einzelheiten: `reports/RELEASE_V4_2.md`, die drei Luecken in Abschnitt 11.
 Die Fassung 4.1 behob funf gemeldete, zwei selbst gefundene und
 siebzehn im Code-Review gefundene Fehler der Fassung 4.0.
 Einzelheiten: `reports/RELEASE_V4_1.md`.
@@ -73,8 +74,9 @@ exFAT speichert keine Unix-Rechte. Das Ausfuehrungsbit geht verloren.
 | Skript | Laeuft auf | Zweck |
 | --- | --- | --- |
 | `fetch-packages.sh` | Baurechner | Paketnutzlast herstellen |
-| `selftest.sh` | ueberall | 16 Testgruppen, 138 Tests |
-| `regression.sh` | ueberall | 16 Gruppen, 203 Regressionstests |
+| `selftest.sh` | ueberall | 17 Testgruppen, 150 Tests |
+| `regression.sh` | ueberall | 17 Gruppen, 213 Regressionstests |
+| `make-inventory.sh` | ueberall | Fallliste aus dem Quelltext erzeugen |
 | `deploy-to-t7.sh` | Baurechner | auf die Samsung T7 uebertragen |
 | `preflight.sh` | MacBook | System und Hardware pruefen |
 | `install.sh` | MacBook | installieren, mit Simulationsbetrieb |
@@ -128,6 +130,40 @@ Daraus folgt die Regel fuer den CPU-Lasttest:
 Ohne Lasttest erhalten die Prueffelder CPU und Luefterregelung
 `NOT_TESTED`. Ein nicht getestetes Geraet erhaelt niemals `PASS`.
 
+## Korrekturen der Fassung 4.2.1
+
+Eine Pruefung des Release-Berichts fand drei Luecken. Alle drei bestaetigt.
+
+| Bereich | Luecke | Korrektur |
+| --- | --- | --- |
+| Testzahlen | `skip` zaehlte einen Eintrag je Bereich. Ein Lauf meldete 158 statt 203 Faelle. 45 Faelle waren nicht nachlesbar. | Fallverzeichnis aus dem Quelltext. Jeder uebersprungene Fall erhaelt eine eigene Zeile. Schlussrechnung bei jedem Lauf. |
+| Formulierung | "Keine Qualitaetsverschlechterung" galt dem ganzen Vorhaben. | Die Aussage traegt jetzt ihren Pruefumfang. |
+| Wiederherstellung | Ein durchgefuehrter Rueckfall war nicht bewiesen. | Gruppe R18 fuehrt einen echten Rueckfall in einem eigenen Mount-Namensraum aus. |
+
+### Nachweis der Wiederherstellung
+
+`scripts/tests/restore-probe.sh` aendert Dateien wie eine Installation.
+Danach ruft es `rollback.sh --yes` auf. Das ist keine Simulation.
+
+| Messung | gueltige Sicherung | beschaedigte Sicherung |
+| --- | --- | --- |
+| Rueckgabecode | 0 | 13 |
+| `/etc/default/grub` zurueck | ja | nein |
+| `/boot/grub/grub.cfg` zurueck | ja | nein |
+| neue Datei entfernt | ja | nein |
+
+Die Probe laeuft in einem eigenen Mount-Namensraum.
+Das Wirtsystem bleibt unveraendert. Fall `R18.10` weist das nach.
+
+Nicht geprueft sind `update-grub`, `update-initramfs` und das Bootverhalten.
+Diese Programme fehlen in der Bauumgebung.
+
+### Nachvollziehbarkeit
+
+`reports/TESTFALL_INVENTAR.md` nennt alle 213 Faelle.
+Jede Zeile traegt Kennung, Gruppe, Bezeichnung und die Quellzeile.
+Der Fall `R17.2` prueft bei jedem Lauf, ob die Datei zum Quelltext passt.
+
 Siehe [[t2bce]] und [[T2Linux]] fuer die Hardwareseite.
 
 ## Sicherheitsregeln
@@ -155,6 +191,7 @@ Siehe [[t2bce]] und [[T2Linux]] fuer die Hardwareseite.
 | Paket liegt nicht auf der Samsung T7 | `deploy-to-t7.sh` auf dem RTX-Rechner ausfuehren |
 | Installation nicht erfolgt | `preflight.sh` und `install.sh --dry-run` auf dem MacBook |
 | Hardwaretest fehlt | `verify.sh` nach dem Teststart, ohne Lasttest |
+| `update-grub` und Bootpfad unerprobt | braucht das Zielgeraet |
 | Luefterregelung unbewertet | erst danach `verify.sh --thermal-test` |
 | WLAN-Firmware fehlt | `get-apple-firmware`, Methode 5 |
 | Kein Live-USB-Rettungsmedium | Startmedium erstellen, sobald das Geraet laeuft |

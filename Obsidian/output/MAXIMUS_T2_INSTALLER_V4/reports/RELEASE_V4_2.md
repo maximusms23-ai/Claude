@@ -8,8 +8,12 @@ tags: [maximus, t2linux, release, sicherheit, reparatur]
 # Release-Bericht V4.2
 
 Ausgangsstand: Commit `7d23e48`, Fassung V4.1.0.
-Neue Fassung: V4.2.0.
+Neue Fassung: V4.2.1.
 Grundsatz: dieselbe Architektur. Es gibt keinen zweiten Installer.
+
+**Die Fassung 4.2.1 schliesst drei Lücken, die eine Prüfung dieses Berichts
+gemeldet hat.** Abschnitt 11 nennt sie einzeln.
+Die Abschnitte 1 bis 10 sind auf den neuen Stand gebracht.
 
 ## 1. Ergebnis zuerst
 
@@ -18,14 +22,18 @@ Das unabhängige Code-Review der Korrekturen fand vier weitere Fehler im
 Code und einen Fehlalarm in einer neuen Prüfung.
 Alle fünf sind behoben.
 
-Die Regressionstests laufen mit 203 von 203 Fällen durch.
+Die Regressionstests laufen mit 215 von 215 Fällen durch.
 Das sind 100,0 Prozent.
-Es gibt keine Qualitätsverschlechterung (`REPAIR_REGRESSION`: keine).
+
+**Zur Formulierung `REPAIR_REGRESSION`:** In den beschriebenen Tests wurde
+keine unbeabsichtigte Verschlechterung festgestellt.
+Die Installation auf dem MacBook und das Hardwareverhalten sind nicht
+geprüft. Für diese Bereiche gilt die Aussage nicht.
 
 | Status | Wert | Begründung |
 | --- | --- | --- |
 | `SOURCE_READY` | **JA** | Alle Quellen sind erneut geprüft. Die Prüfsummen stimmen. |
-| `PACKAGE_READY` | **JA** | Das Paket ist vollständig. 203 Regressionstests sind bestanden. |
+| `PACKAGE_READY` | **JA** | Das Paket ist vollständig. 215 Regressionstests sind bestanden. |
 | `INSTALLATION_READY` | **NEIN** | Es gab keine Installation auf dem MacBook. |
 | `HARDWARE_READY` | **NEIN** | Es gab keinen Hardwaretest auf dem MacBook. |
 | `MAXIMUS_WORKER_READY` | **NEIN** | Die Hardware-Abnahme entscheidet darüber. |
@@ -135,6 +143,13 @@ Der Fingerabdruck erfasst Typ, Pfad, Größe und Änderungszeit.
          Die Vorpruefung war schreibfrei.
 /var/lib/maximus-t2 nach dem Lauf: 0 Pfade
 ```
+
+**Grenze dieses Nachweises.** Der Fingerabdruck überwacht vier Pfade:
+`/etc`, `/boot`, `/var/lib/maximus-t2` und `/var/backups/maximus-t2`.
+Er belegt damit **keine** vollständige Schreibfreiheit im gesamten System.
+Ein Schreibzugriff außerhalb dieser Pfade fällt nicht auf.
+Die vier Pfade decken jeden Pfad ab, den `install.sh` nachweislich anfasst.
+Mehr sagt die Messung nicht.
 
 Flüchtige Systempfade zählen nicht als Änderung.
 Die Liste `MT2_FS_VOLATILE` nennt neun Pfade, darunter `/etc/resolv.conf`
@@ -361,16 +376,28 @@ mit 485 Dateien.
 | **R14** | **Schreibfreiheit (neu)** | **21** |
 | **R15** | **Vollständige Sicherungen (neu)** | **15** |
 | **R16** | **Git-Anleitung (neu)** | **7** |
-| | **Summe** | **203** |
+| **R18** | **Echte Wiederherstellung (neu in 4.2.1)** | **10** |
+| | **Summe der Fälle** | **213** |
+| R17 | Schlussrechnung (zählt nicht mit) | 2 |
+| | **Summe der Zeilen** | **215** |
 
 ```text
-Tests:         203
-Bestanden:     203
+Tests:         215
+Bestanden:     215
 Fehler:          0
 Übersprungen:    0
-Bewertet:      203
-Erfolgsquote:  203 / 203 = 100,0 Prozent
+Bewertet:      215
+Erfolgsquote:  215 / 215 = 100,0 Prozent
+
+Schlussrechnung:
+  Faelle im Verzeichnis: 213
+  Faelle im Lauf:        213
+  Bestanden 213 + Fehler 0 + Uebersprungen 0 = 213
 ```
+
+Die vollständige Fallliste steht in `reports/TESTFALL_INVENTAR.md`.
+Jede Zeile nennt Kennung, Gruppe, Bezeichnung und die Quellzeile in
+`scripts/regression.sh`.
 
 ### 5.2 Die 114 Tests der Fassung V4.1
 
@@ -389,17 +416,25 @@ Die 10 neuen Fälle prüfen die Korrekturen dieser Fassung:
 Derselbe Lauf ohne Rootrechte und ohne die beiden Prüfwerkzeuge:
 
 ```text
-Tests:         158
-Bestanden:     149
+Tests:         214
+Bestanden:     150
 Fehler:          0
-Übersprungen:    9
-Bewertet:      149
-Erfolgsquote:  149 / 149 = 100,0 Prozent
+Übersprungen:   64
+Bewertet:      150
+Erfolgsquote:  150 / 150 = 100,0 Prozent
+
+Schlussrechnung:
+  Faelle im Verzeichnis: 213
+  Faelle im Lauf:        213
+  Bestanden 149 + Fehler 0 + Uebersprungen 64 = 213
 ```
 
-Übersprungen werden die Gruppen, die Rootrechte oder ein Werkzeug brauchen.
-Der Kopf der Rohdaten nennt jede Voraussetzung.
+**149 + 64 = 213.** Die Rechnung geht auf.
+Jeder übersprungene Fall trägt eine eigene Zeile in den Rohdaten.
 Ein übersprungener Fall gilt nie als bestanden.
+Der Kopf der Rohdaten nennt jede Voraussetzung.
+
+Abschnitt 11.1 beschreibt, warum diese Rechnung vorher nicht aufging.
 
 ### 5.4 Verlauf der Erfolgsquote
 
@@ -414,6 +449,8 @@ Ein übersprungener Fall gilt nie als bestanden.
 | 7 | V4.2 | 199 | 199 | 100,0 % |
 | 8 | V4.2 | 203 | 202 | 99,5 % |
 | 9 | V4.2 | 203 | 203 | 100,0 % |
+| 10 | V4.2.1 | 203 | 202 | 99,5 % |
+| 11 | V4.2.1 | 215 | 215 | 100,0 % |
 
 Lauf 6 fand 11 Fehler.
 Vier betrafen die Gruppe R2: der Aufruf lief in einer Befehlsersetzung,
@@ -424,6 +461,10 @@ Einer betraf die Gruppe R16: der Test erkannte das Gegenbeispiel der README
 als Arbeitsschritt.
 Alle 11 Fehler lagen in den Tests, nicht im Installationspaket.
 Lauf 8 fand einen Fehler derselben Art (`pipefail` in einem neuen Test).
+Lauf 10 fand einen Fehler durch die neue Schlussrechnung: Der Fall `R10.1b`
+fiel aus dem Auswahlmuster `^R10\.[1-3]$`.
+Das Muster war zu eng. Der Fehler lag in der Buchhaltung, nicht im Paket.
+Lauf 11 enthält die Gruppe R18 und die beiden Fälle der Schlussrechnung.
 
 ### 5.5 Eigenprüfung des Pakets
 
@@ -431,24 +472,25 @@ Lauf 8 fand einen Fehler derselben Art (`pipefail` in einem neuen Test).
 Die Gruppe "Test 12c" ist neu.
 Sie sichert die vier Korrekturen dieser Fassung mit 18 Prüfungen ab.
 
+Die Gruppe "Test 12d" prüft die Nachvollziehbarkeit der Tests (10 Fälle).
+
 | Lauf | Fälle | Bestanden | Übersprungen |
 | --- | --- | --- | --- |
-| mit Paketnutzlast (485 Dateien) | 138 | 138 | 0 |
-| ohne Paketnutzlast | 138 | 137 | 1 |
+| mit Paketnutzlast (485 Dateien) | 155 | 155 | 0 |
+| ohne Paketnutzlast | 143 | 141 | 2 |
 
-Der übersprungene Fall prüft die Prüfsummen der `.deb`-Dateien.
+Die übersprungenen Fälle prüfen die Prüfsummen der `.deb`-Dateien.
 Ohne Nutzlast gibt es diese Dateien nicht.
 
 ### 5.6 ShellCheck
 
-Alle 11 Skripte sind ohne Befund.
+Alle 13 Skripte sind ohne Befund.
 
 ```text
-shellcheck 0.9.0, 11 Skripte, 0 Befunde
+shellcheck 0.9.0, 13 Skripte, 0 Befunde
 ```
 
-19 Stellen tragen `# shellcheck disable=SC2016` mit Begründung.
-Davon liegen 16 in `regression.sh`, 2 in `selftest.sh` und 1 in `verify.sh`.
+23 Stellen tragen `# shellcheck disable=SC2016` mit Begründung.
 Sie suchen absichtlich nach wörtlichen `$`-Mustern im Quelltext.
 
 ## 6. Qualitätsvergleich mit V4.1
@@ -470,9 +512,18 @@ Sie suchen absichtlich nach wörtlichen `$`-Mustern im Quelltext.
 | Regressionstests | 114 | 203 |
 | ShellCheck-Befunde | 0 | 0 |
 
-**REPAIR_REGRESSION: keine.**
-Kein Prüffeld ist schlechter als in V4.1.
+**REPAIR_REGRESSION: in den beschriebenen Tests keine.**
+
+Diese Aussage gilt genau für den Prüfumfang dieses Berichts:
+215 Regressionstests, 155 Fälle der Eigenprüfung, ShellCheck über
+13 Skripte und die Wiederherstellungsprobe im Mount-Namensraum.
+Kein Prüffeld dieser Läufe ist schlechter als in V4.1.
 Keine Funktion ist entfallen.
+
+**Nicht abgedeckt:** die Installation auf dem MacBook, das Verhalten der
+Temperatursensoren und der Lüfterregelung am Gerät sowie der Dauerbetrieb.
+Für diese Bereiche liegt kein Messwert vor.
+Eine Verschlechterung ist dort weder festgestellt noch ausgeschlossen.
 
 Zwei Änderungen sind Absicht und keine Verschlechterung:
 
@@ -501,6 +552,10 @@ Zwei Änderungen sind Absicht und keine Verschlechterung:
 | `scripts/deploy-to-t7.sh` | nur die Fassungsangabe im Kopf |
 | `scripts/fetch-packages.sh` | nur die Fassungsangabe im Kopf |
 | `reports/RELEASE_V4_2.md` | neu, dieser Bericht |
+| `scripts/regression.sh` (4.2.1) | Fallverzeichnis, Schlussrechnung R17, Gruppe R18 |
+| `scripts/tests/restore-probe.sh` | neu, echte Wiederherstellung im Mount-Namensraum |
+| `scripts/make-inventory.sh` | neu, erzeugt die Fallliste aus dem Quelltext |
+| `reports/TESTFALL_INVENTAR.md` | neu, 213 Fälle mit Quellzeile |
 | `SHA256SUMS` | neu gebildet, 49 Dateien |
 
 Der Gesamtumfang: 14 Dateien, 1443 eingefügte und 160 entfernte Zeilen.
@@ -521,6 +576,7 @@ Der Gesamtumfang: 14 Dateien, 1443 eingefügte und 160 entfernte Zeilen.
    Geprüft werden `/etc`, `/boot`, `/var/lib/maximus-t2` und
    `/var/backups/maximus-t2`.
    Ein Schreibzugriff außerhalb dieser Pfade fällt nicht auf.
+   Die Aussage „schreibfrei" gilt deshalb nur für diese vier Pfade.
 4. **Die Liste der flüchtigen Pfade ist eine Annahme.**
    Sie nennt neun Pfade.
    Ein weiterer flüchtiger Pfad würde einen Fehlalarm erzeugen.
@@ -531,6 +587,10 @@ Der Gesamtumfang: 14 Dateien, 1443 eingefügte und 160 entfernte Zeilen.
 6. **Keine Prüfung gegen echte Paketinstallation.**
    Die Auflösung ist offline bewiesen.
    Die Installation selbst ist nicht ausgeführt.
+7. **Die Wiederherstellungsprobe deckt nicht alles ab.**
+   Gruppe R18 weist das Zurückschreiben von Konfigurationsdateien nach.
+   Sie prüft `update-grub`, `update-initramfs` und das Bootverhalten nicht.
+   Diese Programme fehlen in der Bauumgebung.
 
 ## 9. Erforderliche Freigaben
 
@@ -555,3 +615,123 @@ Keiner dieser Schritte ist ausgeführt.
 7. Die Lüfterregelung bewerten.
 8. Erst danach: `sudo bash scripts/verify.sh --thermal-test`
 9. Erst nach `HARDWARE_READY`: MAXIMUS-Arbeiter einrichten.
+
+## 11. Nachtrag 4.2.1: drei gemeldete Lücken
+
+Eine Prüfung des Berichts V4.2.0 nannte drei Lücken.
+Alle drei sind bestätigt. Alle drei sind geschlossen.
+
+### 11.1 Die Testzahlen waren nicht nachvollziehbar (bestätigt)
+
+**Befund.** Der eingeschränkte Lauf meldete 158 Fälle.
+Der vollständige Lauf meldete 203 Fälle.
+Die Darstellung erklärte die Differenz von 45 Fällen nicht.
+
+**Ursache.** Die Funktion `skip` zählte **einen** Eintrag je Bereich, nicht
+einen je Fall. Ein Eintrag wie `R6.1-R6.18 Rueckfallverhalten` stand für
+17 Fälle und wurde als ein übersprungener Test gezählt.
+Die Bereichsangaben waren zusätzlich veraltet: `R2.1-R2.8` nannte 8 Fälle,
+die Gruppe R2 führte aber 13.
+
+**Korrektur.** Das Fallverzeichnis entsteht jetzt aus dem eigenen Quelltext.
+`skip` wählt die betroffenen Kennungen daraus aus.
+Jeder übersprungene Fall erhält eine eigene Zeile in den Rohdaten.
+Am Ende jedes Laufs vergleicht die neue Gruppe R17 das Verzeichnis mit dem
+Lauf: Fall für Fall, ohne Ausnahme.
+
+```text
+vorher (eingeschraenkt): Tests 158, Bestanden 149, Uebersprungen  9
+                         149 + 9 = 158, aber 203 Faelle gibt es
+nachher (eingeschraenkt): Tests 214, Bestanden 150, Uebersprungen 64
+                         149 + 64 = 213 Faelle, Rechnung geht auf
+```
+
+Die Rechnung fand sofort einen echten Fehler: Der Fall `R10.1b` lag
+außerhalb des Auswahlmusters und war in keinem Lauf nachlesbar.
+
+**Neu:** `reports/TESTFALL_INVENTAR.md` nennt alle 213 Fälle mit Kennung,
+Gruppe, Bezeichnung und Quellzeile.
+`scripts/make-inventory.sh` erzeugt die Datei aus `scripts/regression.sh`.
+Der Fall `R17.2` prüft bei jedem Lauf, ob die Datei zum Quelltext passt.
+Gegenprobe: Nach dem Entfernen einer Zeile schlug `R17.2` an und nannte
+`R18.10`.
+
+### 11.2 `REPAIR_REGRESSION` war zu weit formuliert (bestätigt)
+
+**Befund.** Die Aussage „keine Qualitätsverschlechterung" galt dem ganzen
+Vorhaben. Belegt war sie nur für die beschriebenen Tests.
+
+**Korrektur.** Abschnitt 1 und Abschnitt 6 tragen die Aussage jetzt mit
+ihrem Prüfumfang. Nicht abgedeckt sind die Installation, das Verhalten der
+Sensoren und der Lüfterregelung am Gerät sowie der Dauerbetrieb.
+
+### 11.3 Die Sicherheitsnachweise hatten Grenzen (bestätigt, teils geschlossen)
+
+**Befund A: Schreibfreiheit.** Der Fingerabdruck überwacht vier Pfade.
+Er belegt keine Schreibfreiheit im gesamten System.
+**Stand:** Die Grenze steht jetzt in Abschnitt 2.2 und in Abschnitt 8.
+Der Nachweis selbst bleibt auf diese vier Pfade beschränkt.
+
+**Befund B: Wiederherstellung.** Die Sicherungsprüfung erkannte fehlende und
+abweichende Dateien. Ein erfolgreich **durchgeführter** Rückfall war damit
+nicht bewiesen.
+**Stand:** geschlossen. Die neue Gruppe R18 führt einen echten Rückfall aus.
+
+Der Ablauf von `scripts/tests/restore-probe.sh`:
+
+1. Die Probe öffnet einen eigenen Mount-Namensraum.
+2. Sie hängt temporäre Verzeichnisse über `/etc/default`, `/boot`,
+   `/etc/modules-load.d` und die eigenen Zustandspfade.
+3. Sie legt einen Urzustand an und sichert ihn wie `install.sh`.
+4. Sie ändert die Dateien, wie eine Installation es tut.
+5. Sie ruft `rollback.sh --yes` auf. Das ist **keine** Simulation.
+6. Sie vergleicht die Dateien Byte für Byte mit dem Urzustand.
+
+**Gemessen, gültige Sicherung:**
+
+```text
+vorher_geaendert=ja
+rueckfall_rc=0
+grub_zurueck=ja
+grubcfg_zurueck=ja
+neue_datei_entfernt=ja
+```
+
+**Gemessen, Pflichtdatei aus der Sicherung entfernt:**
+
+```text
+rueckfall_rc=13
+grub_zurueck=nein
+grubcfg_zurueck=nein
+neue_datei_entfernt=nein
+```
+
+Der zweite Fall ist die Gegenprobe. Eine beschädigte Sicherung bricht ab.
+Sie fasst keine Datei an. Das Protokoll nennt die fehlende Pflichtdatei.
+
+Der Fall `R18.10` weist nach, dass das Wirtsystem unverändert bleibt.
+Er vergleicht einen Fingerabdruck von `/etc/default`, `/boot` und
+`/etc/modules-load.d` vor und nach beiden Proben.
+
+**Was R18 nicht beweist.** Die Probe läuft auf dem Baurechner, nicht auf dem
+MacBook. Sie prüft das Zurückschreiben von Konfigurationsdateien.
+Sie prüft **nicht** `update-grub`, `update-initramfs` oder das Bootverhalten.
+Diese Programme fehlen in der Bauumgebung.
+Der Rückfall nutzte deshalb den dokumentierten Ersatzweg: Er schrieb die
+gesicherte `grub.cfg` unmittelbar zurück.
+
+### 11.4 Was weiterhin offen bleibt
+
+| Punkt | Stand |
+| --- | --- |
+| Testfallliste nachvollziehbar | geschlossen, `reports/TESTFALL_INVENTAR.md` |
+| Abgleich mit dem Quellcode | geschlossen, `R17.1` und `R17.2` bei jedem Lauf |
+| Wiederherstellung geprüft | für Konfigurationsdateien geschlossen, `R18` |
+| `update-grub` und Bootpfad | offen, braucht das Zielgerät |
+| Temperatursensoren am Gerät | offen, braucht das Zielgerät |
+| Lüfterregelung am Gerät | offen, braucht das Zielgerät |
+| Ursache der 98 Grad Celsius | offen |
+| Schreibfreiheit über vier Pfade hinaus | offen, bewusst nicht abgedeckt |
+
+Die **98 Grad Celsius** bleiben bis zur Ursachenklärung ein offener Befund.
+

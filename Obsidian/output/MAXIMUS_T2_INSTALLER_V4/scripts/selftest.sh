@@ -79,6 +79,9 @@ scripts/regression.sh
 reports/RELEASE_V4_1.md
 reports/RELEASE_V4_2.md
 reports/REGRESSION_RESULTS.tsv
+reports/TESTFALL_INVENTAR.md
+scripts/make-inventory.sh
+scripts/tests/restore-probe.sh
 "
 for f in $REQUIRED_FILES; do
 	if [ -f "$ROOT/$f" ]; then t_pass "vorhanden: $f"; else t_fail "fehlt: $f"; fi
@@ -584,6 +587,67 @@ if grep -q 'git clone --branch' "$ROOT/reports/BUILD_REPORT.md"; then
 	t_pass "Der Baubericht nennt den Zweig beim Klonen."
 else
 	t_fail "Der Baubericht nennt den Zweig nicht beim Klonen."
+fi
+
+# ---------------------------------------------------------------------------
+log_step "Test 12d: Nachweisbarkeit der Tests (Fassung 4.2.1)"
+# ---------------------------------------------------------------------------
+# Gemeldete Luecke: Ein Lauf meldete 158 statt 203 Faelle. 45 Faelle waren
+# weder als bestanden noch als uebersprungen nachlesbar.
+if grep -q 'INVENTORY=' "$ROOT/scripts/regression.sh"; then
+	t_pass "regression.sh fuehrt ein Fallverzeichnis."
+else
+	t_fail "regression.sh fuehrt kein Fallverzeichnis."
+fi
+if awk '/^skip\(\)/,/^}/' "$ROOT/scripts/regression.sh" | grep -q 'mt2_inv_ids'; then
+	t_pass "Jeder uebersprungene Fall wird einzeln erfasst."
+else
+	t_fail "Uebersprungene Faelle werden als Sammeleintrag gezaehlt."
+fi
+if grep -q 'R17.1 jeder Fall des Verzeichnisses ist erfasst' "$ROOT/scripts/regression.sh"; then
+	t_pass "Jeder Lauf fuehrt eine Schlussrechnung."
+else
+	t_fail "Es gibt keine Schlussrechnung."
+fi
+if grep -q 'R17.2 die veroeffentlichte Fallliste' "$ROOT/scripts/regression.sh"; then
+	t_pass "Die veroeffentlichte Fallliste wird gegen den Quelltext geprueft."
+else
+	t_fail "Die Fallliste wird nicht gegen den Quelltext geprueft."
+fi
+# shellcheck disable=SC2016  # Das Muster ist absichtlich woertlich.
+INV_N="$(grep -cE '^\| `R[0-9]+\.[0-9]+[a-z]?`' "$ROOT/reports/TESTFALL_INVENTAR.md" 2>/dev/null || echo 0)"
+if [ "$INV_N" -ge 200 ]; then
+	t_pass "Die Fallliste nennt $INV_N Faelle mit Quellzeile."
+else
+	t_fail "Die Fallliste nennt nur $INV_N Faelle."
+fi
+INV_SRC="$(bash "$ROOT/scripts/make-inventory.sh" --check 2>/dev/null | awk -F': ' '/^Faelle/{print $2}')"
+if [ "${INV_SRC:-0}" = "$INV_N" ]; then
+	t_pass "Fallliste und Quelltext nennen dieselbe Zahl ($INV_N)."
+else
+	t_fail "Quelltext nennt ${INV_SRC:-?} Faelle, die Liste $INV_N."
+fi
+
+# Echte Wiederherstellung: Gruppe R18 und die Probe
+if grep -q 'group "R18 - Echte Wiederherstellung' "$ROOT/scripts/regression.sh"; then
+	t_pass "Es gibt eine Gruppe fuer die echte Wiederherstellung."
+else
+	t_fail "Die echte Wiederherstellung wird nicht geprueft."
+fi
+if grep -q 'rollback.sh" --yes' "$ROOT/scripts/tests/restore-probe.sh"; then
+	t_pass "Die Probe fuehrt einen echten Rueckfall aus, keine Simulation."
+else
+	t_fail "Die Probe fuehrt keinen echten Rueckfall aus."
+fi
+if grep -q 'mount --make-rprivate' "$ROOT/scripts/tests/restore-probe.sh"; then
+	t_pass "Die Probe laeuft in einem abgeschotteten Mount-Namensraum."
+else
+	t_fail "Die Probe schottet ihre Einhaengungen nicht ab."
+fi
+if grep -q 'R18.10 das Wirtsystem bleibt unveraendert' "$ROOT/scripts/regression.sh"; then
+	t_pass "Die Probe weist nach, dass das Wirtsystem unveraendert bleibt."
+else
+	t_fail "Es gibt keinen Nachweis fuer das Wirtsystem."
 fi
 
 # ---------------------------------------------------------------------------

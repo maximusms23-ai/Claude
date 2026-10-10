@@ -53,6 +53,39 @@ N_FAIL=0
 N_SKIP=0
 GROUP='-'
 
+# ---------------------------------------------------------------------------
+# V4.2.1: Vollstaendiges Fallverzeichnis
+# ---------------------------------------------------------------------------
+# Gemeldeter Darstellungsfehler: 'skip' zaehlte EINEN Eintrag je Bereich.
+# Ein Lauf ohne Rootrechte meldete deshalb 158 statt 203 Faelle.
+# 45 Faelle waren weder als bestanden noch als uebersprungen nachlesbar.
+#
+# Korrektur: Das Verzeichnis entsteht aus dem eigenen Quelltext.
+# Jeder uebersprungene Fall erhaelt eine eigene Zeile in den Rohdaten.
+# Am Ende vergleicht das Skript Verzeichnis und Lauf Fall fuer Fall.
+#
+# Zwei Zweige einer Verzweigung koennen denselben Fall fuehren. Nur einer
+# laeuft. Deshalb bleibt je Kennung nur die erste Zeile stehen.
+SELF_FILE="${BASH_SOURCE[0]}"
+# Die Gruppe R17 fuehrt die Schlussrechnung selbst. Sie zaehlt nicht mit.
+INVENTORY="$(sed -n 's/^[[:space:]]*record "\(R[0-9]\{1,\}\.[0-9]\{1,\}[a-z]\{0,1\}[^"]*\)".*/\1/p' \
+	"$SELF_FILE" | grep -v '^R17\.' | awk '{ if (!($1 in seen)) { seen[$1]=1; print } }')"
+INV_COUNT="$(printf '%s\n' "$INVENTORY" | grep -c . || true)"
+
+# mt2_inv_ids <muster> - gibt die Kennungen aus, die auf das Muster passen
+mt2_inv_ids() {
+	printf '%s\n' "$INVENTORY" | awk '{print $1}' | grep -E "$1" || true
+}
+
+# mt2_inv_label <kennung> - gibt die vollstaendige Bezeichnung aus
+mt2_inv_label() {
+	printf '%s\n' "$INVENTORY" | awk -v id="$1" '$1==id {print; exit}'
+}
+
+# Alle tatsaechlich erfassten Kennungen. Grundlage der Schlussrechnung.
+SEEN_IDS="$WORK/seen-ids.txt"
+: > "$SEEN_IDS"
+
 # Sicherung der eigenen Zustandsverzeichnisse
 SAVED_STATE=''
 SAVED_BACKUPS=''
@@ -94,12 +127,30 @@ record() {
 		printf '%s[ FAIL ]%s %-62s erwartet=%s gemessen=%s\n' "$C_R" "$C_0" "$name" "$want" "$got"
 	fi
 	printf '%s\t%s\t%s\t%s\t%s\n' "$GROUP" "$name" "$want" "$got" "$verdict" >> "$OUTFILE"
+	printf '%s\n' "${name%% *}" >> "$SEEN_IDS"
 }
 
+# skip <muster> <grund>
+# Das Muster waehlt die betroffenen Kennungen aus dem Fallverzeichnis.
+# JEDER einzelne Fall erhaelt eine eigene Zeile in den Rohdaten.
+# Ein uebersprungener Fall gilt nie als bestanden.
 skip() {
-	N_TOTAL=$((N_TOTAL + 1)); N_SKIP=$((N_SKIP + 1))
-	printf '%s[ SKIP ]%s %-62s %s\n' "$C_Y" "$C_0" "$1" "$2"
-	printf '%s\t%s\t-\t-\tSKIP\n' "$GROUP" "$1" >> "$OUTFILE"
+	local pattern="$1" reason="$2" id label n=0
+	for id in $(mt2_inv_ids "$pattern"); do
+		label="$(mt2_inv_label "$id")"
+		[ -n "$label" ] || label="$id"
+		N_TOTAL=$((N_TOTAL + 1)); N_SKIP=$((N_SKIP + 1)); n=$((n + 1))
+		printf '%s\t%s\t-\t-\tSKIP\n' "$GROUP" "$label" >> "$OUTFILE"
+		printf '%s\n' "$id" >> "$SEEN_IDS"
+	done
+	if [ "$n" -eq 0 ]; then
+		printf '%s[ SKIP ]%s %-62s %s\n' "$C_R" "$C_0" \
+			"KEIN Fall passt auf '$pattern'" "$reason"
+		N_FAIL=$((N_FAIL + 1))
+		printf '%s\tMuster ohne Treffer: %s\t-\t-\tFAIL\n' "$GROUP" "$pattern" >> "$OUTFILE"
+		return 0
+	fi
+	printf '%s[ SKIP ]%s %-62s %s\n' "$C_Y" "$C_0" "$n Faelle ($pattern)" "$reason"
 }
 
 # rc_of <befehl...> - gibt den Rueckgabecode aus
@@ -183,7 +234,7 @@ if mt2_grub_check_tool >/dev/null 2>&1; then
 	record "R1.5 Gegenprobe: 'bash -n' meldet Fehlalarm"       2 "$(rc_of bash -n "$G/valid.cfg")"
 	record "R1.6 Gegenprobe: 'bash -n' uebersieht den Fehler"  0 "$(rc_of bash -n "$G/unclosed.cfg")"
 else
-	skip "R1.1-R1.4 GRUB-Pruefung" "grub-script-check fehlt. Installiere grub-common."
+	skip '^R1\.[1-4]$' "grub-script-check fehlt. Installiere grub-common."
 	record "R1.5 Gegenprobe: 'bash -n' meldet Fehlalarm"       2 "$(rc_of bash -n "$G/valid.cfg")"
 	record "R1.6 Gegenprobe: 'bash -n' uebersieht den Fehler"  0 "$(rc_of bash -n "$G/unclosed.cfg")"
 fi
@@ -209,9 +260,9 @@ fi
 group "R2 - Gepinnte Offline-Paketquelle (Fehler 2)"
 # ===========================================================================
 if [ ! -f "$PKG_SRC/Packages" ]; then
-	skip "R2.1-R2.8 Offline-Paketquelle" "Die Paketquelle '$PKG_SRC' hat keinen Index. Fuehre fetch-packages.sh aus."
+	skip '^R2\.' "Die Paketquelle '$PKG_SRC' hat keinen Index. Fuehre fetch-packages.sh aus."
 elif [ "$(id -u)" -ne 0 ]; then
-	skip "R2.1-R2.8 Offline-Paketquelle" "Die Tests brauchen Rootrechte. Starte: sudo bash $0"
+	skip '^R2\.' "Die Tests brauchen Rootrechte. Starte: sudo bash $0"
 else
 	# Der Aufruf laeuft in DIESER Schale. Nur so wirken die gesetzten Variablen
 	# in den folgenden Tests. Eine Befehlsersetzung wuerde sie verlieren.
@@ -272,7 +323,7 @@ if [ -f "$PKG_SRC/Packages" ] && [ "$(id -u)" -eq 0 ]; then
 	fi
 	rm -rf "$WORK/My T7 Disk"
 else
-	skip "R3.4-R3.5 Quelle mit Leerzeichen" "Rootrechte oder Paketindex fehlen."
+	skip '^R3\.[45]$' "Rootrechte oder Paketindex fehlen."
 fi
 
 # V4.1: Eine Kommandosubstitution in einem case-Muster ist unwirksam.
@@ -396,7 +447,7 @@ record "R5.9 Sicherung ohne Siegel wird erkannt" 2 "$(rc_of mt2_backup_verify "$
 group "R6 - Rueckfall gegen vorhandene Systemkonfiguration"
 # ===========================================================================
 if [ "$(id -u)" -ne 0 ]; then
-	skip "R6.1-R6.18 Rueckfallverhalten" "Die Tests brauchen Rootrechte."
+	skip '^R6\.' "Die Tests brauchen Rootrechte."
 else
 	mkdir -p "$MT2_STATE_DIR"
 	STAMP_T="19700101T000000Z"
@@ -504,7 +555,7 @@ fi
 group "R7 - Unterbrochene Installation"
 # ===========================================================================
 if [ "$(id -u)" -ne 0 ]; then
-	skip "R7.1-R7.4 unterbrochene Installation" "Die Tests brauchen Rootrechte."
+	skip '^R7\.' "Die Tests brauchen Rootrechte."
 else
 	if grep -q 'set_phase "' "$SELF_DIR/install.sh"; then
 		record "R7.1 install.sh haelt den Fortschritt fest" ja ja
@@ -564,9 +615,9 @@ record "R8.11 Anleitungen nennen den Aufruf ueber bash" ja \
 group "R9 - Samsung T7 fehlt"
 # ===========================================================================
 if [ "$(id -u)" -ne 0 ]; then
-	skip "R9.1-R9.2 Samsung T7" "Die Tests brauchen Rootrechte."
+	skip '^R9\.[12]$' "Die Tests brauchen Rootrechte."
 elif lsblk -dno MODEL 2>/dev/null | grep -qi 't7'; then
-	skip "R9.1-R9.2 Samsung T7" "Es ist ein Datentraeger mit 'T7' angeschlossen. Der Negativtest entfaellt."
+	skip '^R9\.[12]$' "Es ist ein Datentraeger mit 'T7' angeschlossen. Der Negativtest entfaellt."
 else
 	record "R9.1 fehlende Samsung T7 bricht ab" 4 \
 		"$(rc_of bash "$SELF_DIR/deploy-to-t7.sh" --dry-run --no-color)"
@@ -583,11 +634,11 @@ record "R9.4 deploy-to-t7 nutzt kein rsync --delete" ja \
 group "R10 - Sperren des Installationsskripts"
 # ===========================================================================
 if [ "$(id -u)" -ne 0 ]; then
-	skip "R10.1-R10.3 Sperren" "Die Tests brauchen Rootrechte."
+	skip '^R10\.(1|1b|2|3)$' "Die Tests brauchen Rootrechte."
 else
 	MODEL_NOW="$(mt2_model || true)"
 	if [ "$MODEL_NOW" = "$MT2_SUPPORTED_MODEL" ]; then
-		skip "R10.1 Modellsperre" "Dies ist das Zielgeraet. Der Negativtest entfaellt."
+		skip '^R10\.1b?$' "Dies ist das Zielgeraet. Der Negativtest entfaellt."
 	else
 		# V4.1: Die Modellsperre ist der erste Schritt. Sie greift auch dann,
 		# wenn der Bauumgebung Werkzeuge wie update-grub fehlen.
@@ -828,7 +879,7 @@ record "R13.29 Ruhetemperaturgrenze ist gesetzt" ja \
 
 # --- Funktionale Gegenproben ---
 if [ "$(id -u)" -ne 0 ]; then
-	skip "R13.30-R13.34 Lasttestsperren" "Die Tests brauchen Rootrechte."
+	skip '^R13\.3[0-4]$' "Die Tests brauchen Rootrechte."
 else
 	VOUT="$WORK/verify"; mkdir -p "$VOUT"
 	bash "$SELF_DIR/verify.sh" --non-interactive --no-color --out "$VOUT/a.md" >"$VOUT/a.log" 2>&1 || true
@@ -899,7 +950,7 @@ record "R14.14 rollback.sh raeumt die festen Pfade" ja \
 	"$(grep -q 'MT2_APT_LIST_PERSISTENT' "$SELF_DIR/rollback.sh" && echo ja || echo nein)"
 
 if [ "$(id -u)" -ne 0 ] || [ ! -f "$PKG_SRC/Packages" ]; then
-	skip "R14.15-R14.17 Schreibfreiheit in der Praxis" "Rootrechte oder Paketindex fehlen."
+	skip '^R14\.1[5-7]$' "Rootrechte oder Paketindex fehlen."
 else
 	PIN="$WORK/pinbase"
 	BEFORE_PERSIST="$(mt2_count_files "$MT2_APT_DIR" -mindepth 1)"
@@ -1010,6 +1061,122 @@ record "R16.6 die flache Variante ist dokumentiert" ja \
 record "R16.7 das Gegenbeispiel steht in einem text-Block" ja \
 	"$(awk '/^\*\*Falsch ist diese Reihenfolge/{f=1} f&&/^```/{print $0; exit}' "$ROOT/README.md" \
 		| grep -q '^```text$' && echo ja || echo nein)"
+
+# ===========================================================================
+group "R18 - Echte Wiederherstellung (Nachweis statt Ankuendigung)"
+# ===========================================================================
+# Gemeldete Luecke: Die Sicherungspruefung erkennt fehlende Pflichtdateien.
+# Ein erfolgreich durchgefuehrter Rueckfall war damit aber nicht bewiesen.
+#
+# Diese Gruppe fuehrt einen ECHTEN Rueckfall aus. Sie laeuft in einem
+# eigenen Mount-Namensraum. Temporaere Verzeichnisse liegen ueber
+# /etc/default, /boot, /etc/modules-load.d und den eigenen Zustandspfaden.
+# Das Wirtsystem bleibt unveraendert. Fall R18.10 weist das nach.
+if [ "$(id -u)" -ne 0 ] || ! unshare -m true 2>/dev/null; then
+	skip '^R18\.' "Rootrechte oder Mount-Namensraum fehlen."
+else
+	R18="$WORK/r18"; mkdir -p "$R18/gut" "$R18/kaputt"
+	FP18="$WORK/fp18"; mkdir -p "$FP18"
+	FP18_PATHS="/etc/default /etc/modules-load.d"
+	[ -d /boot ] && FP18_PATHS="$FP18_PATHS /boot"
+	# shellcheck disable=SC2086  # Die Pfadliste muss expandieren.
+	mt2_fs_fingerprint "$FP18/before.txt" $FP18_PATHS
+
+	PROBE="$SELF_DIR/tests/restore-probe.sh"
+	unshare -m bash "$PROBE" "$SELF_DIR" "$R18/gut" gut > "$R18/gut.out" 2>&1 || true
+	unshare -m bash "$PROBE" "$SELF_DIR" "$R18/kaputt" kaputt > "$R18/kaputt.out" 2>&1 || true
+
+	# probe_val <datei> <schluessel>
+	probe_val() {
+		awk -F= -v k="$2" '$1==k {print $2; found=1} END{if(!found) print "fehlt"}' "$1" | tail -1
+	}
+
+	record "R18.1 der Mount-Namensraum ist aktiv" aktiv 		"$(probe_val "$R18/gut.out" namensraum)"
+	record "R18.2 die Installation hat die Datei wirklich geaendert" ja 		"$(probe_val "$R18/gut.out" vorher_geaendert)"
+	record "R18.3 der echte Rueckfall endet mit 0" 0 		"$(probe_val "$R18/gut.out" rueckfall_rc)"
+	record "R18.4 /etc/default/grub stimmt Byte fuer Byte" ja 		"$(probe_val "$R18/gut.out" grub_zurueck)"
+	record "R18.5 /boot/grub/grub.cfg stimmt Byte fuer Byte" ja 		"$(probe_val "$R18/gut.out" grubcfg_zurueck)"
+	record "R18.6 die neu angelegte Datei ist entfernt" ja 		"$(probe_val "$R18/gut.out" neue_datei_entfernt)"
+
+	# Gegenprobe: Eine beschaedigte Sicherung darf nichts anfassen.
+	record "R18.7 beschaedigte Sicherung bricht mit 13 ab" 13 		"$(probe_val "$R18/kaputt.out" rueckfall_rc)"
+	record "R18.8 beschaedigte Sicherung laesst die Konfiguration unberuehrt" nein 		"$(probe_val "$R18/kaputt.out" grub_zurueck)"
+	record "R18.9 beschaedigte Sicherung laesst die neue Datei liegen" nein 		"$(probe_val "$R18/kaputt.out" neue_datei_entfernt)"
+
+	# shellcheck disable=SC2086  # Die Pfadliste muss expandieren.
+	mt2_fs_fingerprint "$FP18/after.txt" $FP18_PATHS
+	FP18_DIFF="$(mt2_fs_fingerprint_changes "$FP18/before.txt" "$FP18/after.txt")"
+	record "R18.10 das Wirtsystem bleibt unveraendert" "" "$FP18_DIFF"
+	[ -n "$FP18_DIFF" ] && printf '%s\n' "$FP18_DIFF" | head -10 | sed 's/^/         /'
+fi
+
+# ===========================================================================
+group "Schlussrechnung"
+# ===========================================================================
+# V4.2.1: Jeder Fall des Verzeichnisses muss genau einmal erfasst sein.
+# Diese Rechnung schliesst die gemeldete Luecke von 45 nicht erklaerten
+# Faellen. Sie gleicht den Lauf mit dem Quelltext ab.
+{ grep -v '^R17\.' "$SEEN_IDS" || true; } | LC_ALL=C sort -u > "$WORK/seen-sorted.txt"
+printf '%s\n' "$INVENTORY" | awk '{print $1}' | LC_ALL=C sort -u > "$WORK/inv-sorted.txt"
+SEEN_COUNT="$(grep -c . "$WORK/seen-sorted.txt" || true)"
+MISSING="$(comm -23 "$WORK/inv-sorted.txt" "$WORK/seen-sorted.txt")"
+EXTRA="$(comm -13 "$WORK/inv-sorted.txt" "$WORK/seen-sorted.txt")"
+DOUBLE="$( { grep -v '^R17\.' "$SEEN_IDS" || true; } | LC_ALL=C sort | uniq -d)"
+
+log_info "Faelle im Verzeichnis: $INV_COUNT"
+log_info "Faelle im Lauf:        $SEEN_COUNT"
+log_info "Bestanden $N_PASS + Fehler $N_FAIL + Uebersprungen $N_SKIP = $N_TOTAL"
+
+RECON_OK=1
+if [ -n "$MISSING" ]; then
+	RECON_OK=0
+	log_err "Diese Faelle sind weder ausgefuehrt noch uebersprungen:"
+	printf '%s\n' "$MISSING" | sed 's/^/         /'
+fi
+if [ -n "$EXTRA" ]; then
+	RECON_OK=0
+	log_err "Diese Faelle stehen nicht im Verzeichnis:"
+	printf '%s\n' "$EXTRA" | sed 's/^/         /'
+fi
+if [ -n "$DOUBLE" ]; then
+	RECON_OK=0
+	log_err "Diese Faelle sind doppelt erfasst:"
+	printf '%s\n' "$DOUBLE" | sed 's/^/         /'
+fi
+if [ "$N_TOTAL" -ne "$INV_COUNT" ]; then
+	RECON_OK=0
+	log_err "Die Summe $N_TOTAL weicht vom Verzeichnis ($INV_COUNT) ab."
+fi
+# Die Summe wird vor dem Fall R17.1 gezogen. Danach steigt sie um eins.
+
+if [ "$RECON_OK" -eq 1 ]; then
+	record "R17.1 jeder Fall des Verzeichnisses ist erfasst" "$INV_COUNT" "$SEEN_COUNT"
+	log_ok "Die Schlussrechnung geht auf. Jeder Fall ist nachlesbar."
+else
+	record "R17.1 jeder Fall des Verzeichnisses ist erfasst" "$INV_COUNT" "$SEEN_COUNT"
+	log_err "Die Schlussrechnung geht NICHT auf."
+fi
+
+# Die Datei reports/TESTFALL_INVENTAR.md muss zum Quelltext passen.
+# Sonst waere die veroeffentlichte Fallliste veraltet.
+INV_FILE="$ROOT/reports/TESTFALL_INVENTAR.md"
+if [ -f "$INV_FILE" ]; then
+	# shellcheck disable=SC2016  # Das Muster ist absichtlich woertlich.
+	grep -oE '^\| `R[0-9]+\.[0-9]+[a-z]?`' "$INV_FILE" \
+		| tr -d '|` ' | LC_ALL=C sort -u > "$WORK/inv-file.txt"
+	record "R17.2 die veroeffentlichte Fallliste passt zum Quelltext" "" \
+		"$(diff "$WORK/inv-sorted.txt" "$WORK/inv-file.txt" | sed -n 's/^[<>] //p' | tr '\n' ' ')"
+else
+	record "R17.2 die veroeffentlichte Fallliste passt zum Quelltext" "" \
+		"reports/TESTFALL_INVENTAR.md fehlt"
+fi
+
+# Das Fallverzeichnis gehoert in die Rohdaten. Sonst ist der Lauf nicht
+# nachvollziehbar.
+{
+	printf '#\n# Fallverzeichnis (%s Faelle), aus dem Quelltext gelesen:\n' "$INV_COUNT"
+	printf '%s\n' "$INVENTORY" | sed 's/^/#   /'
+} >> "$OUTFILE"
 
 # ===========================================================================
 group "Ergebnis"

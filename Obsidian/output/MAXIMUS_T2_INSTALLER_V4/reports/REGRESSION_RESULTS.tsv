@@ -1,5 +1,5 @@
-# MAXIMUS_T2_INSTALLER V4.2.0 - Rohdaten der Regressionstests
-# zeitpunkt=2026-10-10T14:39:05Z
+# MAXIMUS_T2_INSTALLER V4.2.1 - Rohdaten der Regressionstests
+# zeitpunkt=2026-10-10T15:31:40Z
 # rechner_kernel=6.18.44-fc-v114
 # betriebssystem=24.04 noble
 # rootrechte=ja
@@ -217,3 +217,230 @@ R16 - Git-Anleitung (Sicherheitsbefund 4)	R16.4 kein 'git checkout' nach einem '
 R16 - Git-Anleitung (Sicherheitsbefund 4)	R16.5 der genannte Zweig stimmt	ja	ja	PASS
 R16 - Git-Anleitung (Sicherheitsbefund 4)	R16.6 die flache Variante ist dokumentiert	ja	ja	PASS
 R16 - Git-Anleitung (Sicherheitsbefund 4)	R16.7 das Gegenbeispiel steht in einem text-Block	ja	ja	PASS
+R18 - Echte Wiederherstellung (Nachweis statt Ankuendigung)	R18.1 der Mount-Namensraum ist aktiv	aktiv	aktiv	PASS
+R18 - Echte Wiederherstellung (Nachweis statt Ankuendigung)	R18.2 die Installation hat die Datei wirklich geaendert	ja	ja	PASS
+R18 - Echte Wiederherstellung (Nachweis statt Ankuendigung)	R18.3 der echte Rueckfall endet mit 0	0	0	PASS
+R18 - Echte Wiederherstellung (Nachweis statt Ankuendigung)	R18.4 /etc/default/grub stimmt Byte fuer Byte	ja	ja	PASS
+R18 - Echte Wiederherstellung (Nachweis statt Ankuendigung)	R18.5 /boot/grub/grub.cfg stimmt Byte fuer Byte	ja	ja	PASS
+R18 - Echte Wiederherstellung (Nachweis statt Ankuendigung)	R18.6 die neu angelegte Datei ist entfernt	ja	ja	PASS
+R18 - Echte Wiederherstellung (Nachweis statt Ankuendigung)	R18.7 beschaedigte Sicherung bricht mit 13 ab	13	13	PASS
+R18 - Echte Wiederherstellung (Nachweis statt Ankuendigung)	R18.8 beschaedigte Sicherung laesst die Konfiguration unberuehrt	nein	nein	PASS
+R18 - Echte Wiederherstellung (Nachweis statt Ankuendigung)	R18.9 beschaedigte Sicherung laesst die neue Datei liegen	nein	nein	PASS
+R18 - Echte Wiederherstellung (Nachweis statt Ankuendigung)	R18.10 das Wirtsystem bleibt unveraendert			PASS
+Schlussrechnung	R17.1 jeder Fall des Verzeichnisses ist erfasst	213	213	PASS
+Schlussrechnung	R17.2 die veroeffentlichte Fallliste passt zum Quelltext			PASS
+#
+# Fallverzeichnis (213 Faelle), aus dem Quelltext gelesen:
+#   R1.1 gueltige grub.cfg wird akzeptiert
+#   R1.2 nicht geschlossener menuentry wird erkannt
+#   R1.3 fehlerhaftes if wird erkannt
+#   R1.4 fehlende Datei wird gemeldet
+#   R1.5 Gegenprobe: 'bash -n' meldet Fehlalarm
+#   R1.6 Gegenprobe: 'bash -n' uebersieht den Fehler
+#   R1.7 kein Skript prueft grub.cfg mit 'bash -n'
+#   R1.8 install, preflight und rollback nutzen grub-script-check
+#   R2.1 gepinnte Konfiguration wird angelegt
+#   R2.1b die Pfadvariablen sind gesetzt
+#   R2.1c ohne zweites Argument gilt der feste Pfad
+#   R2.2 Quellenliste nennt nur file://
+#   R2.3 Konfiguration schaltet sourceparts ab
+#   R2.4 Konfiguration nutzt eigene Listen
+#   R2.5 Index wird gelesen
+#   R2.6 nur die lokale Quelle ist sichtbar
+#   R2.7 Gegenprobe: Netzquelle wird erkannt
+#   R2.8 Aufloesung gelingt ohne Netzzugang
+#   R2.9 Simulation nennt keine Netzadresse
+#   R2.10 Simulation entfernt kein Paket
+#   R2.11 Systemlisten bleiben unberuehrt
+#   R3.1 Leerzeichen wird kodiert
+#   R3.2 Prozentzeichen wird kodiert
+#   R3.3 Pfad ohne Sonderzeichen bleibt gleich
+#   R3.4 Quelle mit Leerzeichen im Pfad wird gelesen
+#   R3.5 Gegenprobe: ohne Kodierung scheitert die Quelle
+#   R3.6 keine Kommandosubstitution in einem case-Muster
+#   R3.7 Gegenprobe: die alte Form trifft jeden Pfad
+#   R3.8 die ANSI-C-Form trifft nur echte Umbrueche
+#   R3.9 die ANSI-C-Form erkennt einen echten Umbruch
+#   R4.1 fetch-packages kennt die Freigabeoption
+#   R4.2 Abweichung fuehrt zum Abbruch
+#   R4.3 kein unbedingtes Ueberschreiben der Liste
+#   R4.3b Uebernahme wird mit Herkunftsvermerk belegt
+#   R4.4 unverfaelschter Bestand wird bestaetigt
+#   R4.5 beschaedigte Paketdatei wird erkannt
+#   R4.6 fehlende Paketdatei wird erkannt
+#   R4.7 fehlende Pruefsummenliste wird erkannt
+#   R5.1 rollback nutzt kein apt-get autoremove
+#   R5.2 rollback nutzt kein Paketnamensmuster
+#   R5.3 rollback prueft die Sicherung
+#   R5.4 jede Dateiaenderung wird aufgezeichnet
+#   R5.5 jede Paketaenderung wird aufgezeichnet
+#   R5.6 Sicherung wird versiegelt
+#   R5.7 unveraenderte Sicherung wird bestaetigt
+#   R5.8 veraenderte Sicherung wird erkannt
+#   R5.9 Sicherung ohne Siegel wird erkannt
+#   R6.1 Simulation mit gueltiger Sicherung
+#   R6.2 Simulation aendert nichts
+#   R6.3 Sicherung wird als unverfaelscht gemeldet
+#   R6.4 veraenderte Sicherung bricht ab
+#   R6.5 veraenderte Sicherung nur mit Freigabe nutzbar
+#   R6.6 vorher vorhandenes Paket wird geschont
+#   R6.7 Ubuntu-Kernel in der Aufzeichnung bricht ab
+#   R6.8 ohne Aufzeichnung wird kein Paket entfernt
+#   R6.10 fehlende Pflichtdatei bricht ab
+#   R6.11 fehlende Pflichtdatei nur mit Freigabe
+#   R6.12 der Bericht nennt die fehlende Datei
+#   R6.13 leere Pflichtdatei bricht ab
+#   R6.14 ein gemeldeter Ausfall im MANIFEST bricht ab
+#   R6.15 Altbestand ohne MANIFEST laeuft bei zwei Dateien
+#   R6.16 der Bericht weist auf den Altbestand hin
+#   R6.17 Altbestand ohne grub.cfg bricht ab
+#   R6.18 fehlende Sicherung bricht ab
+#   R7.1 install.sh haelt den Fortschritt fest
+#   R7.2 mindestens acht Phasen sind erfasst
+#   R7.3 Unterbrechung wird erkannt und benannt
+#   R7.4 Rueckfall nach Unterbrechung laeuft
+#   R8.1 exfat speichert keine Rechte
+#   R8.2 vfat speichert keine Rechte
+#   R8.3 ntfs speichert keine Rechte
+#   R8.4 ext4 speichert Rechte
+#   R8.5 btrfs speichert Rechte
+#   R8.6 Dateisystem der Paketwurzel ist bestimmbar
+#   R8.7 deploy-to-t7 prueft die Rechtefrage
+#   R8.8 deploy-to-t7 prueft symbolische Verknuepfungen
+#   R8.9 Paket enthaelt keine symbolische Verknuepfung
+#   R8.10 jedes Skript ist ueber bash startbar
+#   R8.11 Anleitungen nennen den Aufruf ueber bash
+#   R9.1 fehlende Samsung T7 bricht ab
+#   R9.2 Auflistung allein schreibt nichts
+#   R9.3 deploy-to-t7 formatiert nicht
+#   R9.4 deploy-to-t7 nutzt kein rsync --delete
+#   R10.1 falsches Modell bricht ab
+#   R10.1b Modellsperre greift auch mit Vorpruefung
+#   R10.2 unbekannte Option bricht ab
+#   R10.3 Konfliktpaket in der Liste wird erkannt
+#   R10.4 install.sh fordert grub-script-check
+#   R10.5 install.sh schreibt nicht nach /etc/apt/sources.list.d
+#   R11.1 kein 'case \$?' direkt nach einem Funktionsaufruf
+#   R11.2 Gegenprobe: 'set -e' bricht vor dem case ab
+#   R11.3 die aufgefangene Form erreicht den Zweig
+#   R11.4 Zaehlfunktion liefert 0 bei fehlendem Verzeichnis
+#   R11.5 Zaehlfunktion zaehlt vorhandene Dateien
+#   R11.6 Sandkastenbetrieb wird bestimmt
+#   R11.7 Pin-Pruefung liest auch die Quellenliste
+#   R12.1 einfache Anfuehrungszeichen werden entfernt
+#   R12.2 doppelte Anfuehrungszeichen werden entfernt
+#   R12.3 kaufmaennisches Und wird maskiert
+#   R12.4 Wert mit Und landet unveraendert in der Datei
+#   R12.5 Wert mit Trennzeichen landet unveraendert in der Datei
+#   R12.6 Kodieren und Dekodieren ist umkehrbar
+#   R12.7 Dekodierung kennt mehr als nur das Leerzeichen
+#   R12.8 Dateipruefung nutzt die Dekodierung
+#   R12.9 rollback --backup ohne Wert meldet Code 2
+#   R12.10 die Meldung nennt die Option
+#   R12.11 deploy --target ohne Wert meldet Code 2
+#   R12.12 fetch --out ohne Wert meldet Code 2
+#   R12.13 verify --out ohne Wert meldet Code 2
+#   R12.14 Kernelschutz liegt nach der Freigabe
+#   R12.15 install.sh faengt einen zweiten Lauf ab
+#   R12.16 install.sh setzt den Vorgabeeintrag
+#   R12.17 rollback.sh setzt den Vorgabeeintrag
+#   R12.18 rollback.sh hebt einen offenen Teststart auf
+#   R12.19 verify.sh schreibt nicht auf die Vorlage
+#   R12.20 verify.sh prueft das Modell vor der Kopie
+#   R12.21 Tabellenzellen werden maskiert
+#   R12.22 Maskierung ersetzt das Trennzeichen
+#   R12.23 ACPI-BIOS-Meldungen sind ausgenommen
+#   R12.24 Gegenprobe: ACPI-Meldung zaehlt nicht
+#   R12.25 Gegenprobe: echter Fehler zaehlt
+#   R12.26 selftest ruft grub-entry.sh ueber bash auf
+#   R12.27 fetch-packages kodiert den Baupfad
+#   R12.28 preflight nennt seine Schreibziele im Kopf
+#   R13.1 ohne Sensor liefert Rueckgabe 1
+#   R13.2 ohne Sensor wird NICHTS ausgegeben
+#   R13.3 ohne Sensor sind 0 Quellen lesbar
+#   R13.4 ein Sensor mit 45 Grad wird gelesen
+#   R13.5 ein Sensor wird gezaehlt
+#   R13.6 Rueckgabe 0 bei gueltiger Messung
+#   R13.7 der hoechste von drei Sensoren gewinnt
+#   R13.8 drei Sensoren werden gezaehlt
+#   R13.9 unglaubwuerdige Werte werden verworfen
+#   R13.10 sie werden nicht mitgezaehlt
+#   R13.11 nur unglaubwuerdige Werte: Rueckgabe 1
+#   R13.12 nur unglaubwuerdige Werte: keine Ausgabe
+#   R13.13 Testnaht ohne MT2_SELFTEST unwirksam
+#   R13.14 Testnaht mit MT2_SELFTEST wirksam
+#   R13.15 60 Grad unter der Grenze: weiter
+#   R13.16 Spitze bleibt erhalten
+#   R13.17 Grenze erreicht: Abbruch
+#   R13.18 98 Grad: Abbruch
+#   R13.19 84 Grad knapp darunter: weiter
+#   R13.20 erster Messausfall: weiter
+#   R13.21 zweiter Messausfall: Abbruch
+#   R13.22 unsinniger Wert: Abbruch
+#   R13.23 max_temp_c kommt nicht mehr vor
+#   R13.24 verify.sh nutzt mt2_cpu_temp
+#   R13.25 Abbruchgrenze liegt bei 85 Grad
+#   R13.26 Option --thermal-test vorhanden
+#   R13.27 Lasttest verlangt den Dienst t2fanrd
+#   R13.28 Lasttest verlangt eine gesonderte Freigabe
+#   R13.29 Ruhetemperaturgrenze ist gesetzt
+#   R13.30 Standardabnahme: CPU bleibt NOT_TESTED
+#   R13.31 Standardabnahme startet keinen Lasttest
+#   R13.32 ohne Messung ist der Lasttest gesperrt
+#   R13.33 Sensor vorhanden, Luefter fehlt: gesperrt
+#   R13.34 Sensor wird als PASS gemeldet
+#   R13.35 --thermal-seconds oberhalb der Grenze: Code 2
+#   R13.36 --thermal-seconds unterhalb der Grenze: Code 2
+#   R14.1 unveraenderter Baum: gleich
+#   R14.2 unveraenderter Baum: keine Aenderungsliste
+#   R14.3 neue Datei wird erkannt
+#   R14.4 die neue Datei steht in der Liste
+#   R14.5 geaenderte Groesse wird erkannt
+#   R14.6 fluechtiger Pfad zaehlt nicht als Aenderung
+#   R14.7 fluechtiger Pfad wird gezaehlt
+#   R14.8 echte Aenderung wird nicht gefiltert
+#   R14.9 mt2_apt_pin_create nimmt ein Basisverzeichnis
+#   R14.10 install.sh nimmt eine Momentaufnahme vor dem Dry-Run
+#   R14.11 install.sh vergleicht nach dem Dry-Run
+#   R14.12 install.sh pinnt im Dry-Run in das Arbeitsverzeichnis
+#   R14.13 preflight.sh pinnt in das Arbeitsverzeichnis
+#   R14.14 rollback.sh raeumt die festen Pfade
+#   R14.16 der Pin liegt im uebergebenen Verzeichnis
+#   R14.15 der feste Pfad bleibt unberuehrt
+#   R14.17 auch die Paketlisten liegen dort
+#   R14.18 mt2_apt ohne Pin bricht laut ab
+#   R14.19 die Fehlermeldung nennt mt2_apt_pin_create
+#   R14.20 rollback.sh raeumt auch das Protokollverzeichnis
+#   R14.21 rollback.sh entfernt das Verzeichnis nur wenn es leer ist
+#   R15.1 vollstaendige Sicherung wird bestaetigt
+#   R15.2 fehlende Pflichtdatei wird erkannt
+#   R15.3 leere Pflichtdatei wird erkannt
+#   R15.4 abweichende Kopie wird erkannt
+#   R15.5 nach der Korrektur wieder bestaetigt
+#   R15.6 Gegenprobe: Siegel gilt trotz fehlender Pflichtdatei
+#   R15.7 die Vollstaendigkeitspruefung schlaegt dennoch an
+#   R15.8 kein ignorierter Kopierfehler im Sicherungsschritt
+#   R15.9 install.sh kennt Pflichtdateien
+#   R15.10 install.sh kennt Wahldateien
+#   R15.11 eine fehlende Pflichtquelle stoppt die Installation
+#   R15.12 ein Kopierfehler stoppt die Installation
+#   R15.13 MANIFEST wird geschrieben
+#   R15.14 Vollstaendigkeit wird VOR dem Siegeln geprueft
+#   R15.15 rollback.sh liest das MANIFEST
+#   R16.1 README nennt den Zweig beim Klonen
+#   R16.2 README warnt vor der falschen Reihenfolge
+#   R16.3 BUILD_REPORT nennt den Zweig beim Klonen
+#   R16.4 kein 'git checkout' nach einem 'cd' in einem Codeblock
+#   R16.5 der genannte Zweig stimmt
+#   R16.6 die flache Variante ist dokumentiert
+#   R16.7 das Gegenbeispiel steht in einem text-Block
+#   R18.1 der Mount-Namensraum ist aktiv
+#   R18.2 die Installation hat die Datei wirklich geaendert
+#   R18.3 der echte Rueckfall endet mit 0
+#   R18.4 /etc/default/grub stimmt Byte fuer Byte
+#   R18.5 /boot/grub/grub.cfg stimmt Byte fuer Byte
+#   R18.6 die neu angelegte Datei ist entfernt
+#   R18.7 beschaedigte Sicherung bricht mit 13 ab
+#   R18.8 beschaedigte Sicherung laesst die Konfiguration unberuehrt
+#   R18.9 beschaedigte Sicherung laesst die neue Datei liegen
+#   R18.10 das Wirtsystem bleibt unveraendert

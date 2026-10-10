@@ -1,7 +1,7 @@
 {
   "schema": "maximus-t2-installer/1",
   "name": "MAXIMUS_T2_INSTALLER_V4",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "created": "2026-10-10",
   "language": "de",
   "target": {
@@ -524,9 +524,9 @@
   "tests": {
     "regression": {
       "script": "scripts/regression.sh",
-      "groups": 16,
-      "cases": 203,
-      "passed": 203,
+      "groups": 18,
+      "cases": 215,
+      "passed": 215,
       "failed": 0,
       "skipped": 0,
       "rate_percent": 100.0,
@@ -594,6 +594,21 @@
           "cases": 203,
           "passed": 203,
           "rate_percent": 100.0
+        },
+        {
+          "run": 10,
+          "version": "4.2.1",
+          "cases": 203,
+          "passed": 202,
+          "rate_percent": 99.5,
+          "note": "Die neue Schlussrechnung fand den Fall R10.1b ausserhalb des Auswahlmusters."
+        },
+        {
+          "run": 11,
+          "version": "4.2.1",
+          "cases": 215,
+          "passed": 215,
+          "rate_percent": 100.0
         }
       ],
       "preconditions": [
@@ -603,12 +618,13 @@
         "shellcheck"
       ],
       "without_preconditions": {
-        "cases": 158,
-        "passed": 149,
+        "cases": 214,
+        "passed": 150,
         "failed": 0,
-        "skipped": 9,
-        "evaluated": 149,
-        "rate_percent": 100.0
+        "skipped": 64,
+        "evaluated": 150,
+        "rate_percent": 100.0,
+        "note": "149 ausgefuehrte Faelle + 64 uebersprungene Faelle = 213. Dazu 1 Zeile der Schlussrechnung."
       },
       "groups_detail": {
         "R1": 8,
@@ -626,25 +642,44 @@
         "R13": 36,
         "R14": 21,
         "R15": 15,
-        "R16": 7
+        "R16": 7,
+        "R18": 10,
+        "R17 (Schlussrechnung, zaehlt nicht mit)": 2
       },
-      "v41_cases_preserved": 114
+      "v41_cases_preserved": 114,
+      "case_inventory": {
+        "file": "reports/TESTFALL_INVENTAR.md",
+        "generator": "scripts/make-inventory.sh",
+        "cases": 213,
+        "groups": 17,
+        "note": "Gruppe R17 fuehrt die Schlussrechnung mit 2 Zeilen und zaehlt nicht mit. 213 + 2 = 215 Zeilen."
+      },
+      "reconciliation": {
+        "enforced": true,
+        "cases": "R17.1 und R17.2",
+        "rule": "bestanden + fehler + uebersprungen muss gleich der Zahl im Fallverzeichnis sein",
+        "full_run": "213 + 0 + 0 = 213",
+        "restricted_run": "149 + 0 + 64 = 213"
+      }
     },
     "selftest": {
       "script": "scripts/selftest.sh",
-      "groups": 16,
-      "cases_with_payload": 138,
-      "passed_with_payload": 138,
-      "cases_without_payload": 138,
-      "passed_without_payload": 137,
-      "skipped_without_payload": 1,
-      "new_group": "Test 12c: V4.2-Korrekturen vorhanden"
+      "groups": 17,
+      "cases_with_payload": 155,
+      "passed_with_payload": 155,
+      "cases_without_payload": 143,
+      "passed_without_payload": 141,
+      "skipped_without_payload": 2,
+      "new_groups": [
+        "Test 12c: V4.2-Korrekturen vorhanden",
+        "Test 12d: Nachweisbarkeit der Tests (4.2.1)"
+      ]
     },
     "shellcheck": {
       "version": "0.9.0",
-      "scripts": 11,
+      "scripts": 13,
       "findings": 0,
-      "suppressions_sc2016": 19
+      "suppressions_sc2016": 23
     }
   },
   "apt_pinning": {
@@ -798,6 +833,84 @@
       "/var/backups/maximus-t2"
     ],
     "volatile_paths_excluded": 9,
-    "proof": "Fingerabdruck vor und nach dem Lauf, zusaetzlich Dateizaehlung unter /var/lib/maximus-t2/apt"
+    "proof": "Fingerabdruck vor und nach dem Lauf, zusaetzlich Dateizaehlung unter /var/lib/maximus-t2/apt",
+    "proof_limits": "Der Fingerabdruck deckt vier Pfade ab. Er belegt keine Schreibfreiheit im gesamten System."
+  },
+  "v421_fixes": [
+    {
+      "id": "P1",
+      "schwere": "MITTEL",
+      "herkunft": "Pruefung des Berichts V4.2.0",
+      "bereich": "Nachvollziehbarkeit der Testzahlen",
+      "befund": "skip zaehlte EINEN Eintrag je Bereich, nicht einen je Fall. Der eingeschraenkte Lauf meldete 158 statt 203 Faelle. 45 Faelle waren weder als bestanden noch als uebersprungen nachlesbar. Die Bereichsangaben waren zusaetzlich veraltet (R2.1-R2.8 nannte 8 Faelle, die Gruppe fuehrte 13).",
+      "korrektur": "Das Fallverzeichnis entsteht aus dem Quelltext. skip waehlt die Kennungen daraus. Jeder uebersprungene Fall erhaelt eine eigene Zeile. Gruppe R17 gleicht Verzeichnis und Lauf bei jedem Lauf ab. Neu: reports/TESTFALL_INVENTAR.md und scripts/make-inventory.sh. Die Rechnung fand sofort den Fall R10.1b, der in keinem Lauf nachlesbar war.",
+      "tests": "R17.1, R17.2"
+    },
+    {
+      "id": "P2",
+      "schwere": "NIEDRIG",
+      "herkunft": "Pruefung des Berichts V4.2.0",
+      "bereich": "Formulierung REPAIR_REGRESSION",
+      "befund": "Die Aussage \"keine Qualitaetsverschlechterung\" galt dem ganzen Vorhaben. Belegt war sie nur fuer die beschriebenen Tests.",
+      "korrektur": "Die Aussage traegt jetzt ihren Pruefumfang. Installation, Sensorverhalten, Luefterregelung am Geraet und Dauerbetrieb sind ausdruecklich nicht abgedeckt.",
+      "tests": "keine, Dokumentation"
+    },
+    {
+      "id": "P3",
+      "schwere": "MITTEL",
+      "herkunft": "Pruefung des Berichts V4.2.0",
+      "bereich": "Wiederherstellung nicht nachgewiesen",
+      "befund": "Die Sicherungspruefung erkannte fehlende und abweichende Dateien. Ein erfolgreich DURCHGEFUEHRTER Rueckfall war nicht bewiesen. Der Nachweis der Schreibfreiheit deckt nur vier Pfade ab.",
+      "korrektur": "Neue Gruppe R18 fuehrt einen echten Rueckfall in einem eigenen Mount-Namensraum aus. Gemessen: rueckfall_rc=0, grub_zurueck=ja, grubcfg_zurueck=ja, neue_datei_entfernt=ja. Gegenprobe mit beschaedigter Sicherung: rueckfall_rc=13, keine Datei angefasst. R18.10 weist nach, dass das Wirtsystem unveraendert bleibt. Die Grenze des Schreibfreiheitsnachweises steht jetzt im Bericht.",
+      "tests": "R18.1-R18.10"
+    }
+  ],
+  "restore_proof": {
+    "script": "scripts/tests/restore-probe.sh",
+    "isolation": "eigener Mount-Namensraum, mount --make-rprivate",
+    "bound_paths": [
+      "/etc/default",
+      "/boot",
+      "/etc/modules-load.d",
+      "/var/lib/maximus-t2",
+      "/var/backups/maximus-t2",
+      "/var/log/maximus-t2"
+    ],
+    "real_rollback": true,
+    "measured_valid_backup": {
+      "rueckfall_rc": 0,
+      "grub_zurueck": "ja",
+      "grubcfg_zurueck": "ja",
+      "neue_datei_entfernt": "ja"
+    },
+    "measured_broken_backup": {
+      "rueckfall_rc": 13,
+      "grub_zurueck": "nein",
+      "grubcfg_zurueck": "nein",
+      "neue_datei_entfernt": "nein"
+    },
+    "host_unchanged": true,
+    "not_covered": [
+      "update-grub",
+      "update-initramfs",
+      "Bootverhalten",
+      "Verhalten auf dem MacBookPro16,1"
+    ]
+  },
+  "repair_regression": {
+    "verdict": "in den beschriebenen Tests keine",
+    "scope": [
+      "215 Regressionstests",
+      "155 Faelle der Eigenpruefung mit Nutzlast",
+      "ShellCheck ueber 11 Skripte",
+      "Wiederherstellungsprobe im Mount-Namensraum"
+    ],
+    "not_covered": [
+      "Installation auf dem MacBook",
+      "Temperatursensoren am Geraet",
+      "Luefterregelung am Geraet",
+      "Dauerbetrieb"
+    ],
+    "note": "Eine Verschlechterung ist in den nicht abgedeckten Bereichen weder festgestellt noch ausgeschlossen."
   }
 }

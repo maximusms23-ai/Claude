@@ -27,7 +27,7 @@ readonly RC_ABORT=20          # Abbruch durch Benutzer
 # ---------------------------------------------------------------------------
 # Feste Pfade
 # ---------------------------------------------------------------------------
-readonly MT2_VERSION="4.2.0"
+readonly MT2_VERSION="4.2.1"
 readonly MT2_BACKUP_ROOT="/var/backups/maximus-t2"
 readonly MT2_STATE_DIR="/var/lib/maximus-t2"
 readonly MT2_LOG_DIR="/var/log/maximus-t2"

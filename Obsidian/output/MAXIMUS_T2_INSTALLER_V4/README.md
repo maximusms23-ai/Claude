@@ -9,10 +9,11 @@ tags: [maximus, t2linux, macbookpro16-1, offline-installer]
 
 Installationspaket für Apple MacBookPro16,1 (2019) unter Ubuntu 24.04.5 LTS.
 
-Fassung **4.2.0** vom 2026-10-10.
+Fassung **4.2.1** vom 2026-10-10.
 Die Fassung 4.2 behebt vier gemeldete Sicherheitsbefunde und vier Fehler
-aus dem Code-Review der Korrekturen. Die Einzelheiten stehen in
-`reports/RELEASE_V4_2.md`.
+aus dem Code-Review der Korrekturen. Die Fassung 4.2.1 schliesst drei
+Lücken in den Nachweisen. Die Einzelheiten stehen in
+`reports/RELEASE_V4_2.md`, die drei Lücken in Abschnitt 11.
 Die Fassung 4.1 behob fünf gemeldete und vier selbst gefundene Fehler
 der Fassung 4.0. Die Einzelheiten stehen in `reports/RELEASE_V4_1.md`.
 
@@ -236,13 +237,20 @@ sudo bash scripts/rollback.sh
 | Skript | Läuft auf | Zweck | Simulation |
 | --- | --- | --- | --- |
 | `scripts/fetch-packages.sh` | Baurechner | Paketnutzlast herstellen | — |
-| `scripts/selftest.sh` | überall | Paket prüfen, 16 Testgruppen | ändert nie etwas |
-| `scripts/regression.sh` | überall | 203 Regressionstests mit Rohdatentabelle | ändert nie etwas |
+| `scripts/selftest.sh` | überall | Paket prüfen, 17 Testgruppen | ändert nie etwas |
+| `scripts/regression.sh` | überall | 213 Regressionstests mit Rohdatentabelle | ändert nie etwas |
+| `scripts/make-inventory.sh` | überall | Fallliste aus dem Quelltext erzeugen | schreibt nur in `reports/` |
 | `scripts/deploy-to-t7.sh` | Baurechner | auf die Samsung T7 übertragen | `--dry-run` |
 | `scripts/preflight.sh` | MacBook | System und Hardware prüfen | ändert nie etwas |
 | `scripts/install.sh` | MacBook | installieren | `--dry-run` |
 | `scripts/verify.sh` | MacBook | Hardware abnehmen | `--non-interactive`, `--thermal-test` |
 | `scripts/rollback.sh` | MacBook | zurücknehmen | `--dry-run` |
+
+Proben ohne eigenen Start:
+
+| Datei | Inhalt |
+| --- | --- |
+| `scripts/tests/restore-probe.sh` | echter Rückfall in einem eigenen Mount-Namensraum, von `regression.sh` gerufen |
 
 Hilfsbibliotheken ohne eigenen Start:
 

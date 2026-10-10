@@ -1,0 +1,131 @@
+{
+  "schema": "maximus-t2-neuinstall/1",
+  "name": "MAXIMUS_T2_NEUINSTALL_V1",
+  "version": "1.0.0",
+  "created": "2026-10-10",
+  "language": "de",
+  "zweck": "Startfaehiges Medium fuer eine vollstaendige Ubuntu-Neuinstallation auf einem Apple-Mac mit T2-Chip.",
+  "basis": {
+    "projekt": "t2linux / T2-Ubuntu",
+    "repository": "https://github.com/t2linux/T2-Ubuntu",
+    "tag": "v7.1.8-1",
+    "zweig": "LTS",
+    "abbild": "ubuntu-24.04-7.1.8-t2-noble.iso",
+    "bytes": 2461433856,
+    "sha256": "5792a22aaca9a18822f3f8e6b8046e7867cc3f02052cf4ac38be55ed22aa1241",
+    "sha256_quelle": "sha256-ubuntu-24.04 aus dem Release des Projekts",
+    "pruefung": "BESTAETIGT: heruntergeladene Datei und veroeffentlichte Pruefsumme sind gleich",
+    "begruendung": "Aktuelle Fassung des Projekts fuer Ubuntu 24.04 LTS. Die T2-Treiber liegen im Abbild. Eingabegeraete und Datentraeger arbeiten damit schon beim Start, ohne externe Tastatur."
+  },
+  "betriebssystem": {
+    "name": "Ubuntu",
+    "version": "24.04.5 LTS",
+    "codename": "noble",
+    "arch": "amd64",
+    "quelle": "README.diskdefines im Abbild"
+  },
+  "kernel": {
+    "t2": "linux-image-7.1.8-1-t2-noble (7.1.8-1)",
+    "metapaket": "linux-t2 7.1.8-1-noble",
+    "rueckfall": "linux-image-6.8.0-138-generic (6.8.0-138.138)",
+    "quelle": "casper/filesystem.manifest im Abbild",
+    "laufend_gemessen": "7.1.8-1-t2-noble im Starttest",
+    "hinweis": "Das Projekt T2-Debian-and-Ubuntu-Kernel pflegt diesen Kernel. Die Paketquelle wird im Zielsystem eingetragen, damit Updates die T2-Treiber nicht verlieren."
+  },
+  "installer": {
+    "programm": "ubiquity",
+    "version": "24.04.5",
+    "zusatz": [
+      "ubiquity-casper 1.498",
+      "ubiquity-frontend-gtk 24.04.5"
+    ],
+    "automatisierung": "debian-installer-Preseed",
+    "frontend_unbeaufsichtigt": "noninteractive",
+    "autoinstall_nocloud": "NICHT ANWENDBAR",
+    "begruendung": "Autoinstall und NoCloud gehoeren zu subiquity. Dieses Abbild enthaelt ubiquity. Nachgewiesen in casper/filesystem.manifest.",
+    "nachweis_laden": "Im Starttest meldete casper 'Loading preseed file' und die debconf-Datenbank des Live-Systems trug danach die Werte der Preseed."
+  },
+  "abbild_ausgabe": {
+    "datei": "maximus-t2-neuinstall-v1.iso",
+    "format": "Hybrid-ISO mit MBR, GPT und Apple-Partition-Map",
+    "format_begruendung": "Die Apple-Partition-Map macht das Medium im Mac-Startmanager sichtbar. Das Projekt t2linux nutzt dieses Format auf echten T2-Macs. Ein selbst erfundenes Layout waere ohne Zugriff auf das Zielgeraet nicht pruefbar.",
+    "volid": "MAXIMUS_T2",
+    "bytes": 2461433856,
+    "sha256": "6a166ba71ed05d91e8c5257bfe0a6182e91a217eb68ab1ff66d17989f89f1d0e"
+  },
+  "automatisch_eingerichtet": {
+    "sprache": "de_DE.UTF-8",
+    "tastatur": "de (pc105)",
+    "zeitzone": "Europe/Berlin",
+    "uhr": "UTC",
+    "kernelparameter": "pm_async=off intel_iommu=on iommu=pt pcie_ports=native",
+    "initramfs_module": [
+      "t2bce_dma",
+      "t2bce_core",
+      "t2bce_vhci"
+    ],
+    "dienste": [
+      "t2fanrd",
+      "tiny-dfr"
+    ],
+    "benutzer": "wird einmal lokal abgefragt",
+    "passwort": "KEIN fest eingebautes Passwort"
+  },
+  "sicherheitsregeln": [
+    "Das laufende Installationsmedium ist niemals Ziel.",
+    "Es wird keine Platte nach Groesse oder Nummer gewaehlt.",
+    "Nur eine stabile Kennung unter /dev/disk/by-id gilt als Ziel.",
+    "Die Kennung wird unmittelbar vor dem Schreiben erneut geprueft.",
+    "Bei unklarer Zuordnung haelt der Assistent an und waehlt keinen Ersatz.",
+    "Liegt macOS auf dem Ziel, verlangt Betriebsart 1 eine eigene Freigabe.",
+    "Der Vorgabeeintrag im Startmenue ist das Live-System, nicht die Installation.",
+    "Eine fertige Installation auf dem Ziel wird erkannt und verlangt eine zweite Freigabe.",
+    "Die Installation erzeugt keine CPU-Last.",
+    "Der erste Systemstart erzeugt keine CPU-Last.",
+    "Ein fehlender Temperaturwert gilt niemals als 0 Grad Celsius.",
+    "Ein laufender Luefter allein gilt nicht als funktionierende Regelung."
+  ],
+  "status": {
+    "ABBILD_GEBAUT": true,
+    "EFI_START_GEPRUEFT": true,
+    "AUTOMATISIERUNG_GEPRUEFT": true,
+    "T7_VORBEREITET": false,
+    "INSTALLATION_AM_MAC_BESTANDEN": false,
+    "HARDWARE_AM_GERAET_GEPRUEFT": false
+  },
+  "t7": {
+    "beschrieben": false,
+    "grund": "Diese Bauumgebung ist ein Container ohne Durchgriff auf Datentraeger. lsblk zeigt nur virtio-Geraete, es gibt kein /dev/sd* und kein /dev/nvme*, lsusb fehlt und /sys/class/dmi/id/product_name ist nicht lesbar. Eine Samsung T7 ist nicht sichtbar.",
+    "naechster_schritt": "build/04-write-to-t7.sh auf einem Rechner mit echtem Zugriff ausfuehren.",
+    "skript": "build/04-write-to-t7.sh",
+    "zusicherungen": [
+      "erkennt ueber Modell, Seriennummer und stabile Kennung",
+      "nimmt keinen Geraetenamen an",
+      "zeigt den Loeschumfang vor dem Schreiben",
+      "prueft die Kennung erneut unmittelbar vor dem Schreiben",
+      "liest nach dem Schreiben zurueck und vergleicht Byte fuer Byte",
+      "prueft die Partitionsstruktur nach dem Schreiben"
+    ]
+  },
+  "zielgeraet": {
+    "dokumentiert": "MacBookPro16,1 (Intel Core i9, Apple T2)",
+    "verifiziert": false,
+    "grund": "Die Modellkennung laesst sich nur am Geraet selbst lesen. In der Bauumgebung ist /sys/class/dmi/id/product_name nicht lesbar.",
+    "pruefung_zur_laufzeit": "Der Funktionsbericht liest product_name und meldet eine Abweichung von MacBookPro16,1.",
+    "hinweis": "Mac Pro (MacPro7,1), MacBook Pro und Mac mini sind verschiedene Geraete. Das Projekt meldet fuer MacPro7,1 eigene Probleme mit dem PCIe-Adressraum."
+  },
+  "herkunft_bausteine": {
+    "repository": "https://github.com/maximusms23-ai/Claude",
+    "zweig": "claude/maximus-strata-validation-c44vzz",
+    "berichteter_commit": "9fd960f",
+    "geprueft": "Der Commit 9fd960f existiert. Er ist nicht mehr die Spitze des Zweigs; die Spitze ist 6d42e3a (Fassung V4.2.1).",
+    "uebernommen": [
+      "Signaturschluessel der T2-Paketquelle mit Fingerabdruck",
+      "Vertrauenskette Schluessel, InRelease, Packages, Pruefsumme je Paket",
+      "Temperaturregel: fehlender Wert ist nie 0 Grad",
+      "Luefterregel: ein drehender Luefter beweist keine Regelung",
+      "Freigabe ueber eine stabile Kennung statt ueber ein blosses Ja",
+      "Doppelte Sperre fuer die Testnaht"
+    ]
+  }
+}

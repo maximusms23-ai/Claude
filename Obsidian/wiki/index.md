@@ -13,6 +13,7 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-10 | [[MAXIMUS T2 Neuinstallation]] | Neu erstellt (startfaehiges Medium, ubiquity-Preseed nachgewiesen, Neuinstallation im Prueflauf) |
 | 2026-10-10 | [[MAXIMUS T2 Installer]] | Fassung 4.2.1: Testbuchhaltung berichtigt, echte Wiederherstellung nachgewiesen (R18), 213 Faelle mit Quellzeile |
 | 2026-10-10 | [[MAXIMUS T2 Installer]] | Fassung 4.2: vier Sicherheitsbefunde und vier Review-Fehler behoben |
 | 2026-10-10 | [[T2Linux]] | Abschnitt "Waerme und Luefterregelung" ergaenzt (98 Grad Celsius, `t2fanrd`) |
@@ -61,13 +62,14 @@ tags:
 - Themen: 4
 - Konzepte: 5
 - Personen: 1
-- Projekte: 4
+- Projekte: 5
 - Quellen: 6
 
 ## Generierte Artefakte
 
 | Artefakt | Pfad | Status |
 |---|---|---|
+| MAXIMUS T2 Neuinstallation V1 | `output/MAXIMUS_T2_NEUINSTALL_V1/` | Abbild gebaut und gestartet, T7 nicht beschrieben |
 | MAXIMUS T2 Installer V4 | `output/MAXIMUS_T2_INSTALLER_V4/` | Fassung 4.2.1, SOURCE_READY und PACKAGE_READY |
 
 ## Navigation

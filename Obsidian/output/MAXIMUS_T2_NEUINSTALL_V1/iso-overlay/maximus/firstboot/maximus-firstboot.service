@@ -1,0 +1,20 @@
+[Unit]
+Description=MAXIMUS T2 Funktionsbericht nach dem ersten Start
+After=multi-user.target network-online.target bluetooth.service t2fanrd.service
+Wants=multi-user.target
+ConditionPathExists=!/var/lib/maximus-t2/funktionsbericht-fertig
+
+[Service]
+Type=oneshot
+RemainAfterExit=no
+# Der Bericht erzeugt keine Last. Er darf den Start nicht blockieren.
+TimeoutStartSec=300
+ExecStartPre=/bin/sh -c 'sleep 20'
+ExecStart=/bin/bash /opt/maximus/firstboot/report.sh --out /var/log/maximus-funktionsbericht.md
+ExecStartPost=/bin/sh -c 'mkdir -p /var/lib/maximus-t2 && date -u +%%Y-%%m-%%dT%%H:%%M:%%SZ > /var/lib/maximus-t2/funktionsbericht-fertig'
+SuccessExitStatus=0 19
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target

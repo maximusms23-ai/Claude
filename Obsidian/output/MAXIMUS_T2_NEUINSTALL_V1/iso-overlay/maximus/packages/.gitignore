@@ -1,0 +1,4 @@
+# Die Paketdateien werden von build/02-fetch-payload.sh erzeugt.
+# Sie gehoeren nicht in das Repositorium.
+*.deb
+!SHA256SUMS

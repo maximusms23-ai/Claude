@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MAXIMUS_T2_INSTALLER V4.1 - Paket auf die Samsung T7 uebertragen
+# MAXIMUS_T2_INSTALLER V4.2 - Paket auf die Samsung T7 uebertragen
 #
 # Ergebnis: Die Samsung T7 enthaelt danach den Ordner MAXIMUS_T2_INSTALLER_V4
 # mit dem geprueften Installationspaket.

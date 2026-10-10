@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# MAXIMUS_T2_INSTALLER V4.1 - Schritt 1: System und Hardware pruefen
+# MAXIMUS_T2_INSTALLER V4.2 - Schritt 1: System und Hardware pruefen
 #
 # Ergebnis: Das Skript meldet, ob das Zielgeraet die Installation zulaesst.
 #
 # Es aendert KEINE Systemdatei und KEINE Systemeinstellung.
-# Es legt mit Rootrechten zwei eigene Arbeitsbereiche an:
-#   /var/lib/maximus-t2/apt   gepinnte Paketquelle fuer die Offline-Pruefung
-#   ein temporaeres Verzeichnis, das danach geloescht wird
+# V4.2: Es schreibt ausschliesslich in ein temporaeres Verzeichnis.
+# Die EXIT-Falle loescht dieses Verzeichnis. Danach bleibt nichts zurueck.
+# Fassung V4.1 hinterliess 6 Dateien und 312 KB unter /var/lib/maximus-t2.
 # Ohne Rootrechte entfaellt die Offline-Pruefung.
 #
 # Aufruf:  sudo bash preflight.sh [--quick] [--no-color]
@@ -268,8 +268,9 @@ else
 	elif [ "$(id -u)" -ne 0 ]; then
 		check_warn "Ohne Rootrechte ist die Offline-Pruefung nicht moeglich. Starte: sudo bash $0"
 	else
-		if mt2_apt_pin_create "$PKG_DIR"; then
-			check_pass "Die gepinnte Paketverwaltung ist angelegt (Sandkasten: $MT2_APT_SANDBOX)."
+		# V4.2: Die Paketverwaltung entsteht im temporaeren Verzeichnis.
+		if mt2_apt_pin_create "$PKG_DIR" "$TMPDIR_MT2/apt"; then
+			check_pass "Die gepinnte Paketverwaltung ist angelegt (Sandkasten: $MT2_APT_SANDBOX, Ablage: temporaer)."
 		else
 			check_fail "Die gepinnte Paketverwaltung liess sich nicht anlegen."
 		fi
@@ -402,6 +403,18 @@ fi
 
 FANS="$(mt2_count_files /sys/class/hwmon -name 'fan*_input')"
 log_info "Gefundene Luefterwerte: $FANS"
+
+# ---------------------------------------------------------------------------
+log_step "Schreibfreiheit nachweisen"
+# ---------------------------------------------------------------------------
+# V4.2: Die Vorpruefung belegt, dass sie keine dauerhafte Spur hinterlaesst.
+LEFT="$(mt2_count_files "$MT2_APT_DIR" -mindepth 1)"
+if [ "$LEFT" -eq 0 ]; then
+	check_pass "Unter $MT2_APT_DIR liegt keine Datei. Die Vorpruefung war schreibfrei."
+else
+	check_fail "Unter $MT2_APT_DIR liegen $LEFT Dateien. Die Vorpruefung war nicht schreibfrei."
+	find "$MT2_APT_DIR" -mindepth 1 2>/dev/null | head -8 | sed 's/^/         /'
+fi
 
 # ---------------------------------------------------------------------------
 log_step "Ergebnis"

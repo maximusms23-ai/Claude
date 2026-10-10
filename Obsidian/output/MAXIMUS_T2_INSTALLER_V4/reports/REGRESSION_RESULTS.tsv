@@ -1,11 +1,11 @@
-# MAXIMUS_T2_INSTALLER V4.1.0 - Rohdaten der Regressionstests
-# zeitpunkt=2026-10-10T12:19:18Z
+# MAXIMUS_T2_INSTALLER V4.2.0 - Rohdaten der Regressionstests
+# zeitpunkt=2026-10-10T14:39:05Z
 # rechner_kernel=6.18.44-fc-v114
 # betriebssystem=24.04 noble
 # rootrechte=ja
 # grub_script_check=/tmp/claude-0/-home-user-Claude/e832b6b7-4ec8-519f-acfe-32a4145b84c0/scratchpad/build/tools/grub/usr/bin/grub-script-check
 # shellcheck=/tmp/claude-0/-home-user-Claude/e832b6b7-4ec8-519f-acfe-32a4145b84c0/scratchpad/build/tools/sc/usr/bin/shellcheck
-# paketquelle=/tmp/claude-0/-home-user-Claude/e832b6b7-4ec8-519f-acfe-32a4145b84c0/scratchpad/stage/packages
+# paketquelle=/tmp/claude-0/-home-user-Claude/e832b6b7-4ec8-519f-acfe-32a4145b84c0/scratchpad/build/payload/packages
 # paketdateien=485
 # paketindex=vorhanden
 #
@@ -23,6 +23,8 @@ R1 - GRUB-Syntaxpruefung (Fehler 1)	R1.6 Gegenprobe: 'bash -n' uebersieht den Fe
 R1 - GRUB-Syntaxpruefung (Fehler 1)	R1.7 kein Skript prueft grub.cfg mit 'bash -n'	ja	ja	PASS
 R1 - GRUB-Syntaxpruefung (Fehler 1)	R1.8 install, preflight und rollback nutzen grub-script-check	ja	ja	PASS
 R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.1 gepinnte Konfiguration wird angelegt	0	0	PASS
+R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.1b die Pfadvariablen sind gesetzt	ja	ja	PASS
+R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.1c ohne zweites Argument gilt der feste Pfad	/var/lib/maximus-t2/apt	/var/lib/maximus-t2/apt	PASS
 R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.2 Quellenliste nennt nur file://	ja	ja	PASS
 R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.3 Konfiguration schaltet sourceparts ab	ja	ja	PASS
 R2 - Gepinnte Offline-Paketquelle (Fehler 2)	R2.4 Konfiguration nutzt eigene Listen	ja	ja	PASS
@@ -67,7 +69,15 @@ R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.5 veraenderte Sicherung n
 R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.6 vorher vorhandenes Paket wird geschont	ja	ja	PASS
 R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.7 Ubuntu-Kernel in der Aufzeichnung bricht ab	17	17	PASS
 R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.8 ohne Aufzeichnung wird kein Paket entfernt	ja	ja	PASS
-R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.9 fehlende Sicherung bricht ab	17	17	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.10 fehlende Pflichtdatei bricht ab	13	13	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.11 fehlende Pflichtdatei nur mit Freigabe	0	0	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.12 der Bericht nennt die fehlende Datei	ja	ja	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.13 leere Pflichtdatei bricht ab	13	13	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.14 ein gemeldeter Ausfall im MANIFEST bricht ab	13	13	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.15 Altbestand ohne MANIFEST laeuft bei zwei Dateien	0	0	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.16 der Bericht weist auf den Altbestand hin	ja	ja	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.17 Altbestand ohne grub.cfg bricht ab	13	13	PASS
+R6 - Rueckfall gegen vorhandene Systemkonfiguration	R6.18 fehlende Sicherung bricht ab	17	17	PASS
 R7 - Unterbrochene Installation	R7.1 install.sh haelt den Fortschritt fest	ja	ja	PASS
 R7 - Unterbrochene Installation	R7.2 mindestens acht Phasen sind erfasst	ja	ja	PASS
 R7 - Unterbrochene Installation	R7.3 Unterbrechung wird erkannt und benannt	ja	ja	PASS
@@ -128,3 +138,82 @@ R12 - Befunde des unabhaengigen Code-Reviews	R12.25 Gegenprobe: echter Fehler za
 R12 - Befunde des unabhaengigen Code-Reviews	R12.26 selftest ruft grub-entry.sh ueber bash auf	ja	ja	PASS
 R12 - Befunde des unabhaengigen Code-Reviews	R12.27 fetch-packages kodiert den Baupfad	ja	ja	PASS
 R12 - Befunde des unabhaengigen Code-Reviews	R12.28 preflight nennt seine Schreibziele im Kopf	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.1 ohne Sensor liefert Rueckgabe 1	1	1	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.2 ohne Sensor wird NICHTS ausgegeben			PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.3 ohne Sensor sind 0 Quellen lesbar	0	0	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.4 ein Sensor mit 45 Grad wird gelesen	45	45	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.5 ein Sensor wird gezaehlt	1	1	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.6 Rueckgabe 0 bei gueltiger Messung	0	0	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.7 der hoechste von drei Sensoren gewinnt	61	61	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.8 drei Sensoren werden gezaehlt	3	3	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.9 unglaubwuerdige Werte werden verworfen	61	61	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.10 sie werden nicht mitgezaehlt	3	3	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.11 nur unglaubwuerdige Werte: Rueckgabe 1	1	1	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.12 nur unglaubwuerdige Werte: keine Ausgabe			PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.13 Testnaht ohne MT2_SELFTEST unwirksam	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.14 Testnaht mit MT2_SELFTEST wirksam	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.15 60 Grad unter der Grenze: weiter	weiter 60 0	weiter 60 0	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.16 Spitze bleibt erhalten	weiter 55 0	weiter 55 0	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.17 Grenze erreicht: Abbruch	abbruch_temperatur 85 0	abbruch_temperatur 85 0	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.18 98 Grad: Abbruch	abbruch_temperatur 98 0	abbruch_temperatur 98 0	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.19 84 Grad knapp darunter: weiter	weiter 84 0	weiter 84 0	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.20 erster Messausfall: weiter	weiter 70 1	weiter 70 1	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.21 zweiter Messausfall: Abbruch	abbruch_sensor 70 2	abbruch_sensor 70 2	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.22 unsinniger Wert: Abbruch	abbruch_sensor 70 2	abbruch_sensor 70 2	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.23 max_temp_c kommt nicht mehr vor	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.24 verify.sh nutzt mt2_cpu_temp	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.25 Abbruchgrenze liegt bei 85 Grad	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.26 Option --thermal-test vorhanden	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.27 Lasttest verlangt den Dienst t2fanrd	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.28 Lasttest verlangt eine gesonderte Freigabe	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.29 Ruhetemperaturgrenze ist gesetzt	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.30 Standardabnahme: CPU bleibt NOT_TESTED	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.31 Standardabnahme startet keinen Lasttest	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.32 ohne Messung ist der Lasttest gesperrt	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.33 Sensor vorhanden, Luefter fehlt: gesperrt	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.34 Sensor wird als PASS gemeldet	ja	ja	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.35 --thermal-seconds oberhalb der Grenze: Code 2	2	2	PASS
+R13 - Temperaturueberwachung (Sicherheitsbefund 1)	R13.36 --thermal-seconds unterhalb der Grenze: Code 2	2	2	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.1 unveraenderter Baum: gleich	0	0	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.2 unveraenderter Baum: keine Aenderungsliste			PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.3 neue Datei wird erkannt	1	1	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.4 die neue Datei steht in der Liste	ja	ja	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.5 geaenderte Groesse wird erkannt	ja	ja	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.6 fluechtiger Pfad zaehlt nicht als Aenderung			PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.7 fluechtiger Pfad wird gezaehlt	1	1	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.8 echte Aenderung wird nicht gefiltert	/etc/default/grub	/etc/default/grub	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.9 mt2_apt_pin_create nimmt ein Basisverzeichnis	ja	ja	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.10 install.sh nimmt eine Momentaufnahme vor dem Dry-Run	ja	ja	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.11 install.sh vergleicht nach dem Dry-Run	ja	ja	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.12 install.sh pinnt im Dry-Run in das Arbeitsverzeichnis	ja	ja	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.13 preflight.sh pinnt in das Arbeitsverzeichnis	ja	ja	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.14 rollback.sh raeumt die festen Pfade	ja	ja	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.16 der Pin liegt im uebergebenen Verzeichnis	ja	ja	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.15 der feste Pfad bleibt unberuehrt	0	0	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.17 auch die Paketlisten liegen dort	ja	ja	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.18 mt2_apt ohne Pin bricht laut ab	14	14	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.19 die Fehlermeldung nennt mt2_apt_pin_create	ja	ja	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.20 rollback.sh raeumt auch das Protokollverzeichnis	ja	ja	PASS
+R14 - Schreibfreiheit von Pruefung und Dry-Run (Sicherheitsbefund 2)	R14.21 rollback.sh entfernt das Verzeichnis nur wenn es leer ist	ja	ja	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.1 vollstaendige Sicherung wird bestaetigt	0	0	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.2 fehlende Pflichtdatei wird erkannt	1	1	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.3 leere Pflichtdatei wird erkannt	1	1	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.4 abweichende Kopie wird erkannt	1	1	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.5 nach der Korrektur wieder bestaetigt	0	0	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.6 Gegenprobe: Siegel gilt trotz fehlender Pflichtdatei	0	0	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.7 die Vollstaendigkeitspruefung schlaegt dennoch an	1	1	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.8 kein ignorierter Kopierfehler im Sicherungsschritt	0	0	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.9 install.sh kennt Pflichtdateien	ja	ja	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.10 install.sh kennt Wahldateien	ja	ja	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.11 eine fehlende Pflichtquelle stoppt die Installation	ja	ja	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.12 ein Kopierfehler stoppt die Installation	ja	ja	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.13 MANIFEST wird geschrieben	ja	ja	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.14 Vollstaendigkeit wird VOR dem Siegeln geprueft	ja	ja	PASS
+R15 - Vollstaendige Sicherungen (Sicherheitsbefund 3)	R15.15 rollback.sh liest das MANIFEST	ja	ja	PASS
+R16 - Git-Anleitung (Sicherheitsbefund 4)	R16.1 README nennt den Zweig beim Klonen	ja	ja	PASS
+R16 - Git-Anleitung (Sicherheitsbefund 4)	R16.2 README warnt vor der falschen Reihenfolge	ja	ja	PASS
+R16 - Git-Anleitung (Sicherheitsbefund 4)	R16.3 BUILD_REPORT nennt den Zweig beim Klonen	ja	ja	PASS
+R16 - Git-Anleitung (Sicherheitsbefund 4)	R16.4 kein 'git checkout' nach einem 'cd' in einem Codeblock	0	0	PASS
+R16 - Git-Anleitung (Sicherheitsbefund 4)	R16.5 der genannte Zweig stimmt	ja	ja	PASS
+R16 - Git-Anleitung (Sicherheitsbefund 4)	R16.6 die flache Variante ist dokumentiert	ja	ja	PASS
+R16 - Git-Anleitung (Sicherheitsbefund 4)	R16.7 das Gegenbeispiel steht in einem text-Block	ja	ja	PASS

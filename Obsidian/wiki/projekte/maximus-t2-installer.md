@@ -15,8 +15,11 @@ tags:
 # MAXIMUS T2 Installer
 
 Offline-Installationspaket fuer Apple MacBookPro16,1 unter Ubuntu 24.04.5 LTS.
-Fassung **4.1.0** vom 2026-10-10.
-Die Fassung 4.1 behebt funf gemeldete, zwei selbst gefundene und
+Fassung **4.2.0** vom 2026-10-10.
+Die Fassung 4.2 behebt vier gemeldete Sicherheitsbefunde und vier Fehler
+aus dem Code-Review der Korrekturen.
+Einzelheiten: `reports/RELEASE_V4_2.md`.
+Die Fassung 4.1 behob funf gemeldete, zwei selbst gefundene und
 siebzehn im Code-Review gefundene Fehler der Fassung 4.0.
 Einzelheiten: `reports/RELEASE_V4_1.md`.
 
@@ -33,8 +36,8 @@ Es laedt alle Pakete vorab, damit die Installation ohne Netz laeuft.
 
 | Status | Wert | Nachweis |
 | --- | --- | --- |
-| SOURCE_READY | erteilt | `reports/RELEASE_V4_1.md`, Abschnitt 2 |
-| PACKAGE_READY | erteilt | `reports/RELEASE_V4_1.md`, Abschnitt 6 |
+| SOURCE_READY | erteilt | `reports/RELEASE_V4_2.md`, Abschnitt 1 |
+| PACKAGE_READY | erteilt | `reports/RELEASE_V4_2.md`, Abschnitt 5 |
 | INSTALLATION_READY | nicht erteilt | Vorpruefung am Zielgeraet fehlt |
 | HARDWARE_READY | nicht erteilt | Hardwaretest fehlt |
 | MAXIMUS_WORKER_READY | nicht erteilt | Dauerbetriebsnachweis fehlt |
@@ -70,12 +73,12 @@ exFAT speichert keine Unix-Rechte. Das Ausfuehrungsbit geht verloren.
 | Skript | Laeuft auf | Zweck |
 | --- | --- | --- |
 | `fetch-packages.sh` | Baurechner | Paketnutzlast herstellen |
-| `selftest.sh` | ueberall | 14 Testgruppen, 118 Tests |
-| `regression.sh` | ueberall | 12 Gruppen, 114 Regressionstests |
+| `selftest.sh` | ueberall | 16 Testgruppen, 138 Tests |
+| `regression.sh` | ueberall | 16 Gruppen, 203 Regressionstests |
 | `deploy-to-t7.sh` | Baurechner | auf die Samsung T7 uebertragen |
 | `preflight.sh` | MacBook | System und Hardware pruefen |
 | `install.sh` | MacBook | installieren, mit Simulationsbetrieb |
-| `verify.sh` | MacBook | Hardware abnehmen |
+| `verify.sh` | MacBook | Hardware abnehmen, Lasttest nur mit `--thermal-test` |
 | `rollback.sh` | MacBook | Aenderungen zuruecknehmen |
 
 ## Korrekturen der Fassung 4.1
@@ -90,6 +93,40 @@ exFAT speichert keine Unix-Rechte. Das Ausfuehrungsbit geht verloren.
 | exFAT | nur eine Warnung | Erkennung, Pruefung am Ziel, Startblatt |
 | Pfade mit Leerzeichen | brachen die Paketquelle | werden kodiert |
 | Bootvorgabe | unbestimmt | ausdruecklich gesetzt |
+
+## Korrekturen der Fassung 4.2
+
+Ein Sicherheits-Review fand vier Fehler. Alle vier sind bestaetigt.
+
+| Schwere | Bereich | Fehler in 4.1 | Korrektur |
+| --- | --- | --- | --- |
+| KRITISCH | Temperaturueberwachung | `max_temp_c` gab ohne Sensor den Wert 0 aus. Der CPU-Lasttest lief ohne Abbruchsicherung. | Der Lasttest hat fuenf Sperren. Er laeuft nur mit `--thermal-test` und gesonderter Freigabe. |
+| HOCH | Simulation | Die Vorpruefung und der Dry-Run schrieben nach `/var/lib/maximus-t2`. Gemessen: 12 Pfade. | Die Paketverwaltung liegt im temporaeren Verzeichnis. Gemessen: 0 Pfade. |
+| HOCH | Sicherung | 16 Befehle ignorierten Kopierfehler. | Pflicht- und Wahldateien getrennt. Pruefung Byte fuer Byte vor dem Siegeln. |
+| MITTEL | Git-Anleitung | Der Klonbefehl landete auf `main`. Dort fehlt `Obsidian/output/`. | `git clone --branch` mit dem Entwicklungszweig. |
+
+Das Code-Review der Korrekturen fand vier weitere Fehler:
+`pipefail` verfaelschte eine Zaehlung, `mt2_apt` haette ohne Pin die
+Systemquellen genutzt, zwei Sensoraufrufe konnten zwei Werte liefern,
+und der Rueckfall liess ein Protokollverzeichnis liegen.
+
+### Temperaturregel
+
+Das Geraet erreichte im Audit **98 Grad Celsius**.
+Daraus folgt die Regel fuer den CPU-Lasttest:
+
+| Merkmal | Wert |
+| --- | --- |
+| Lasttest in der Standardabnahme | laeuft nicht |
+| Option | `--thermal-test` |
+| Abbruchgrenze | 85 Grad Celsius |
+| Hoechste Ruhetemperatur | 70 Grad Celsius |
+| Messabstand | 1 Sekunde |
+| Abbruch bei Sensorausfall | nach zwei Ausfaellen |
+| Weitere Bedingungen | drehender Luefter, aktiver Dienst `t2fanrd`, Benutzerfreigabe |
+
+Ohne Lasttest erhalten die Prueffelder CPU und Luefterregelung
+`NOT_TESTED`. Ein nicht getestetes Geraet erhaelt niemals `PASS`.
 
 Siehe [[t2bce]] und [[T2Linux]] fuer die Hardwareseite.
 
@@ -106,6 +143,10 @@ Siehe [[t2bce]] und [[T2Linux]] fuer die Hardwareseite.
 9. Es wird kein Eintrag in `/etc/apt/sources.list.d` abgelegt.
 10. Es wird kein `apt-get autoremove` ausgefuehrt.
 11. Bei der Installation wird kein Paket aus dem Netz geladen.
+12. Die Vorpruefung und die Simulation aendern keine Systemdatei.
+13. Ohne vollstaendige Sicherung beginnt keine Installation.
+14. Ohne gueltige Temperaturmessung laeuft kein Lasttest.
+15. Ohne nachgewiesene Luefterregelung laeuft kein Lasttest.
 
 ## Offene Punkte
 
@@ -113,7 +154,8 @@ Siehe [[t2bce]] und [[T2Linux]] fuer die Hardwareseite.
 | --- | --- |
 | Paket liegt nicht auf der Samsung T7 | `deploy-to-t7.sh` auf dem RTX-Rechner ausfuehren |
 | Installation nicht erfolgt | `preflight.sh` und `install.sh --dry-run` auf dem MacBook |
-| Hardwaretest fehlt | `verify.sh` nach dem Teststart |
+| Hardwaretest fehlt | `verify.sh` nach dem Teststart, ohne Lasttest |
+| Luefterregelung unbewertet | erst danach `verify.sh --thermal-test` |
 | WLAN-Firmware fehlt | `get-apple-firmware`, Methode 5 |
 | Kein Live-USB-Rettungsmedium | Startmedium erstellen, sobald das Geraet laeuft |
 

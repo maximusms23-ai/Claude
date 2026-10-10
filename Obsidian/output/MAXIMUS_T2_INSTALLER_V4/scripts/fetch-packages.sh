@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MAXIMUS_T2_INSTALLER V4.1 - Paketbestand auf dem Baurechner herstellen
+# MAXIMUS_T2_INSTALLER V4.2 - Paketbestand auf dem Baurechner herstellen
 #
 # Ergebnis: Das Verzeichnis packages/ enthaelt danach alle Paketdateien,
 # einen Paketindex und eine Pruefsummenliste. Die Installation auf dem

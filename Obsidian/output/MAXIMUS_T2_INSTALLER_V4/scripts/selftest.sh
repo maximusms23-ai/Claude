@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MAXIMUS_T2_INSTALLER V4.1 - Eigenpruefung des Installationspakets
+# MAXIMUS_T2_INSTALLER V4.2 - Eigenpruefung des Installationspakets
 #
 # Ergebnis: Das Skript prueft Struktur, Skripte, Listen und Pruefsummen.
 # Es benoetigt keine Rootrechte. Es benoetigt keine T2-Hardware.
@@ -77,6 +77,8 @@ scripts/deploy-to-t7.sh
 scripts/selftest.sh
 scripts/regression.sh
 reports/RELEASE_V4_1.md
+reports/RELEASE_V4_2.md
+reports/REGRESSION_RESULTS.tsv
 "
 for f in $REQUIRED_FILES; do
 	if [ -f "$ROOT/$f" ]; then t_pass "vorhanden: $f"; else t_fail "fehlt: $f"; fi
@@ -467,6 +469,121 @@ if [ "$LINK_COUNT" -eq 0 ]; then
 	t_pass "Das Paket enthaelt keine symbolische Verknuepfung (wichtig fuer exFAT)."
 else
 	t_fail "Das Paket enthaelt $LINK_COUNT symbolische Verknuepfungen. exFAT kann sie nicht speichern."
+fi
+
+# ---------------------------------------------------------------------------
+log_step "Test 12c: V4.2-Korrekturen vorhanden"
+# ---------------------------------------------------------------------------
+# Diese Pruefungen verhindern einen Rueckfall in die vier Sicherheitsbefunde.
+
+# Befund 1: Temperaturueberwachung
+# Nur echte Aufrufe zaehlen. Der Kommentar nennt den alten Namen absichtlich.
+if grep -vE '^[[:space:]]*#' "$ROOT/scripts/verify.sh" | grep -q 'max_temp_c'; then
+	t_fail "verify.sh nutzt noch 'max_temp_c'. Diese Funktion liefert 0 ohne Messwert."
+else
+	t_pass "verify.sh nutzt 'max_temp_c' nicht mehr."
+fi
+if grep -q 'readonly TEMP_ABORT=85' "$ROOT/scripts/verify.sh"; then
+	t_pass "verify.sh bricht bei 85 Grad Celsius ab."
+else
+	t_fail "verify.sh kennt die Abbruchschwelle von 85 Grad Celsius nicht."
+fi
+if grep -q -- '--thermal-test' "$ROOT/scripts/verify.sh"; then
+	t_pass "Der Lasttest braucht die Option '--thermal-test'."
+else
+	t_fail "verify.sh kennt die Option '--thermal-test' nicht."
+fi
+if grep -q 'RUN_THERMAL=0' "$ROOT/scripts/verify.sh"; then
+	t_pass "Die Standardabnahme fuehrt keinen Lasttest aus."
+else
+	t_fail "Die Standardabnahme koennte einen Lasttest ausfuehren."
+fi
+if grep -q 'mt2_thermal_step' "$ROOT/scripts/verify.sh" \
+	&& grep -q '^mt2_thermal_step()' "$ROOT/scripts/lib/common.sh"; then
+	t_pass "Der Lasttest bewertet jeden Messschritt einzeln."
+else
+	t_fail "Der Lasttest bewertet die Messschritte nicht einzeln."
+fi
+if grep -q 'FAN_STRICT_OK' "$ROOT/scripts/verify.sh"; then
+	t_pass "Der Lasttest verlangt eine belegte Luefterregelung."
+else
+	t_fail "Der Lasttest prueft die Luefterregelung nicht streng."
+fi
+if awk '/^mt2_temp_sources\(\)/,/^}/' "$ROOT/scripts/lib/common.sh" \
+	| grep -q 'MT2_SELFTEST'; then
+	t_pass "Die Testnaht wirkt nur mit MT2_SELFTEST=1."
+else
+	t_fail "Die Testnaht hat keine doppelte Sperre."
+fi
+
+# Befund 2: Schreibfreiheit der Vorpruefung und der Simulation
+# shellcheck disable=SC2016  # Das Muster ist absichtlich woertlich.
+if awk '/^mt2_apt_pin_create\(\)/,/^}/' "$ROOT/scripts/lib/common.sh" \
+	| grep -q 'base="${2:-'; then
+	t_pass "mt2_apt_pin_create nimmt ein eigenes Basisverzeichnis."
+else
+	t_fail "mt2_apt_pin_create schreibt immer in den festen Pfad."
+fi
+# shellcheck disable=SC2016  # Das Muster ist absichtlich woertlich.
+if grep -q 'mt2_apt_pin_create "$PKG_DIR" "$TMPDIR_MT2/apt"' "$ROOT/scripts/preflight.sh"; then
+	t_pass "preflight.sh pinnt in ein temporaeres Verzeichnis."
+else
+	t_fail "preflight.sh pinnt in den festen Pfad."
+fi
+if grep -q 'fp-before.txt' "$ROOT/scripts/install.sh" \
+	&& grep -q 'fp-after.txt' "$ROOT/scripts/install.sh"; then
+	t_pass "install.sh vergleicht das Dateisystem vor und nach der Simulation."
+else
+	t_fail "install.sh vergleicht das Dateisystem nicht."
+fi
+if grep -q 'mt2_fs_fingerprint' "$ROOT/scripts/lib/common.sh"; then
+	t_pass "Die Bibliothek kennt den Dateisystem-Fingerabdruck."
+else
+	t_fail "Die Bibliothek kennt keinen Dateisystem-Fingerabdruck."
+fi
+
+# Befund 3: Vollstaendige Sicherungen
+BAK_IGNORED="$(awk '/log_step "Boot-Konfiguration sichern"/,/last-backup/' \
+	"$ROOT/scripts/install.sh" | grep -c '|| true')"
+if [ "$BAK_IGNORED" -eq 0 ]; then
+	t_pass "Der Sicherungsschritt ignoriert keinen Kopierfehler."
+else
+	t_fail "Der Sicherungsschritt ignoriert $BAK_IGNORED Kopierfehler."
+fi
+if grep -q 'MT2_BACKUP_REQUIRED' "$ROOT/scripts/install.sh" \
+	&& grep -q 'MT2_BACKUP_OPTIONAL' "$ROOT/scripts/install.sh"; then
+	t_pass "install.sh unterscheidet Pflichtdateien und Wahldateien."
+else
+	t_fail "install.sh unterscheidet die Dateiarten nicht."
+fi
+if grep -q 'BACKUP_DIR/MANIFEST' "$ROOT/scripts/install.sh"; then
+	t_pass "install.sh fuehrt ein MANIFEST der Sicherung."
+else
+	t_fail "install.sh fuehrt kein MANIFEST."
+fi
+CHK_LINE="$(grep -n 'mt2_backup_check_complete' "$ROOT/scripts/install.sh" | head -1 | cut -d: -f1)"
+SEAL_LINE="$(grep -n 'mt2_backup_seal' "$ROOT/scripts/install.sh" | head -1 | cut -d: -f1)"
+if [ -n "$CHK_LINE" ] && [ -n "$SEAL_LINE" ] && [ "$CHK_LINE" -lt "$SEAL_LINE" ]; then
+	t_pass "Die Vollstaendigkeit wird vor dem Siegeln geprueft."
+else
+	t_fail "Die Vollstaendigkeit wird nicht vor dem Siegeln geprueft."
+fi
+if grep -q 'MANIFEST' "$ROOT/scripts/rollback.sh"; then
+	t_pass "rollback.sh liest das MANIFEST der Sicherung."
+else
+	t_fail "rollback.sh liest das MANIFEST nicht."
+fi
+
+# Befund 4: Git-Anleitung
+if grep -q 'git clone --branch' "$ROOT/README.md"; then
+	t_pass "Die README nennt den Zweig beim Klonen."
+else
+	t_fail "Die README nennt den Zweig nicht beim Klonen."
+fi
+if grep -q 'git clone --branch' "$ROOT/reports/BUILD_REPORT.md"; then
+	t_pass "Der Baubericht nennt den Zweig beim Klonen."
+else
+	t_fail "Der Baubericht nennt den Zweig nicht beim Klonen."
 fi
 
 # ---------------------------------------------------------------------------

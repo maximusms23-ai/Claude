@@ -9,9 +9,19 @@ tags: [maximus, t2linux, macbookpro16-1, offline-installer]
 
 Installationspaket für Apple MacBookPro16,1 (2019) unter Ubuntu 24.04.5 LTS.
 
-Fassung **4.1.0** vom 2026-10-10.
-Die Fassung 4.1 behebt fünf gemeldete und vier selbst gefundene Fehler
+Fassung **4.2.0** vom 2026-10-10.
+Die Fassung 4.2 behebt vier gemeldete Sicherheitsbefunde und vier Fehler
+aus dem Code-Review der Korrekturen. Die Einzelheiten stehen in
+`reports/RELEASE_V4_2.md`.
+Die Fassung 4.1 behob fünf gemeldete und vier selbst gefundene Fehler
 der Fassung 4.0. Die Einzelheiten stehen in `reports/RELEASE_V4_1.md`.
+
+**Wichtig zur Hardware-Abnahme:** `scripts/verify.sh` führt in der
+Standardabnahme **keinen** CPU-Lasttest aus.
+Das Prüffeld CPU erhält dann `NOT_TESTED`.
+Der Lasttest verlangt die Option `--thermal-test`, eine gültige
+Temperaturmessung, eine nachgewiesene Lüfterregelung und eine gesonderte
+Freigabe. Grund: Dieses Gerät erreichte im Audit 98 Grad Celsius.
 
 ## 1. Ergebnis zuerst
 
@@ -85,9 +95,47 @@ Das ist kein Fehler. `deploy-to-t7.sh` erkennt die Lage und schreibt
 
 ## 5. Ablauf
 
+### 5.0 Paket beschaffen
+
+Das Paket liegt nur auf dem Entwicklungszweig.
+Der Standardzweig `main` enthält `Obsidian/output/` **nicht**.
+
+Deshalb muss der Zweig **beim Klonen** aktiv werden, nicht danach:
+
+```bash
+# Der Zweig ist schon beim Klonen aktiv. Nur dort gibt es das Verzeichnis.
+git clone --branch claude/maximus-strata-validation-c44vzz \
+  https://github.com/maximusms23-ai/Claude maximus-claude
+
+cd maximus-claude/Obsidian/output/MAXIMUS_T2_INSTALLER_V4
+
+# Gegenprobe, zwei Zeilen:
+git branch --show-current     # muss den Zweig nennen
+ls scripts/install.sh         # muss die Datei nennen
+```
+
+Sparsamer, wenn du die Vorgeschichte nicht brauchst (1,7 MB statt 2,0 MB):
+
+```bash
+git clone --depth 1 --branch claude/maximus-strata-validation-c44vzz \
+  https://github.com/maximusms23-ai/Claude maximus-claude
+```
+
+**Falsch ist diese Reihenfolge.** Fuehre sie nicht aus:
+
+```text
+git clone <url>                                  # landet auf main
+cd Claude/Obsidian/output/MAXIMUS_T2_INSTALLER_V4  # scheitert: gibt es auf main nicht
+git checkout <zweig>                             # wird nie erreicht
+```
+
+Im leeren Arbeitsverzeichnis geprüft: Die falsche Reihenfolge scheitert
+beim `cd`. Die beiden richtigen Varianten gelingen.
+
 ### 5.1 Auf dem Baurechner
 
 Voraussetzung: Ubuntu 24.04 (noble) für amd64, echt oder im Container.
+Du stehst im Paketverzeichnis aus Abschnitt 5.0.
 
 ```bash
 # 1. Paketnutzlast herstellen (etwa 472 MB)
@@ -125,8 +173,12 @@ sudo bash scripts/install.sh
 # 5. Neu starten. Der Teststart geht EINMALIG in den T2-Kernel.
 sudo reboot
 
-# 6. Hardware abnehmen
+# 6. Hardware abnehmen. Ohne CPU-Lasttest.
 sudo bash scripts/verify.sh
+
+# 6b. Erst nach Bewertung der Luefterregelung: CPU unter Last pruefen.
+#     Das Skript fragt vorher nach einer gesonderten Freigabe.
+sudo bash scripts/verify.sh --thermal-test
 
 # 7. WLAN-Firmware nachholen, siehe firmware/README.md
 sudo get-apple-firmware
@@ -184,12 +236,12 @@ sudo bash scripts/rollback.sh
 | Skript | Läuft auf | Zweck | Simulation |
 | --- | --- | --- | --- |
 | `scripts/fetch-packages.sh` | Baurechner | Paketnutzlast herstellen | — |
-| `scripts/selftest.sh` | überall | Paket prüfen, 15 Testgruppen | ändert nie etwas |
-| `scripts/regression.sh` | überall | 86 Regressionstests mit Rohdatentabelle | ändert nie etwas |
+| `scripts/selftest.sh` | überall | Paket prüfen, 16 Testgruppen | ändert nie etwas |
+| `scripts/regression.sh` | überall | 203 Regressionstests mit Rohdatentabelle | ändert nie etwas |
 | `scripts/deploy-to-t7.sh` | Baurechner | auf die Samsung T7 übertragen | `--dry-run` |
 | `scripts/preflight.sh` | MacBook | System und Hardware prüfen | ändert nie etwas |
 | `scripts/install.sh` | MacBook | installieren | `--dry-run` |
-| `scripts/verify.sh` | MacBook | Hardware abnehmen | `--non-interactive` |
+| `scripts/verify.sh` | MacBook | Hardware abnehmen | `--non-interactive`, `--thermal-test` |
 | `scripts/rollback.sh` | MacBook | zurücknehmen | `--dry-run` |
 
 Hilfsbibliotheken ohne eigenen Start:

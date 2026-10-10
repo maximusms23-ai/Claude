@@ -1,7 +1,7 @@
 {
   "schema": "maximus-t2-installer/1",
   "name": "MAXIMUS_T2_INSTALLER_V4",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "created": "2026-10-10",
   "language": "de",
   "target": {
@@ -428,8 +428,8 @@
     "6": "Ein benoetigtes Programm fehlt, zum Beispiel grub-script-check"
   },
   "based_on": {
-    "version": "4.0.0",
-    "commit": "d50803c"
+    "version": "4.1.0",
+    "commit": "7d23e48"
   },
   "v41_fixes": [
     {
@@ -524,9 +524,9 @@
   "tests": {
     "regression": {
       "script": "scripts/regression.sh",
-      "groups": 12,
-      "cases": 114,
-      "passed": 114,
+      "groups": 16,
+      "cases": 203,
+      "passed": 203,
       "failed": 0,
       "skipped": 0,
       "rate_percent": 100.0,
@@ -534,32 +534,65 @@
       "rate_history": [
         {
           "run": 1,
+          "version": "4.1.0",
           "cases": 73,
           "passed": 61,
           "rate_percent": 83.6
         },
         {
           "run": 2,
+          "version": "4.1.0",
           "cases": 75,
           "passed": 69,
           "rate_percent": 92.0
         },
         {
           "run": 3,
+          "version": "4.1.0",
           "cases": 75,
           "passed": 74,
           "rate_percent": 98.7
         },
         {
           "run": 4,
+          "version": "4.1.0",
           "cases": 86,
           "passed": 86,
           "rate_percent": 100.0
         },
         {
           "run": 5,
+          "version": "4.1.0",
           "cases": 114,
           "passed": 114,
+          "rate_percent": 100.0
+        },
+        {
+          "run": 6,
+          "version": "4.2.0",
+          "cases": 188,
+          "passed": 177,
+          "rate_percent": 94.1
+        },
+        {
+          "run": 7,
+          "version": "4.2.0",
+          "cases": 199,
+          "passed": 199,
+          "rate_percent": 100.0
+        },
+        {
+          "run": 8,
+          "version": "4.2.0",
+          "cases": 203,
+          "passed": 202,
+          "rate_percent": 99.5
+        },
+        {
+          "run": 9,
+          "version": "4.2.0",
+          "cases": 203,
+          "passed": 203,
           "rate_percent": 100.0
         }
       ],
@@ -568,28 +601,57 @@
         "grub-script-check",
         "Paketindex in packages/",
         "shellcheck"
-      ]
+      ],
+      "without_preconditions": {
+        "cases": 158,
+        "passed": 149,
+        "failed": 0,
+        "skipped": 9,
+        "evaluated": 149,
+        "rate_percent": 100.0
+      },
+      "groups_detail": {
+        "R1": 8,
+        "R2": 13,
+        "R3": 9,
+        "R4": 8,
+        "R5": 9,
+        "R6": 17,
+        "R7": 4,
+        "R8": 11,
+        "R9": 4,
+        "R10": 6,
+        "R11": 7,
+        "R12": 28,
+        "R13": 36,
+        "R14": 21,
+        "R15": 15,
+        "R16": 7
+      },
+      "v41_cases_preserved": 114
     },
     "selftest": {
       "script": "scripts/selftest.sh",
-      "groups": 14,
-      "cases_with_payload": 118,
-      "passed_with_payload": 118,
-      "cases_without_payload": 118,
-      "passed_without_payload": 117,
-      "skipped_without_payload": 1
+      "groups": 16,
+      "cases_with_payload": 138,
+      "passed_with_payload": 138,
+      "cases_without_payload": 138,
+      "passed_without_payload": 137,
+      "skipped_without_payload": 1,
+      "new_group": "Test 12c: V4.2-Korrekturen vorhanden"
     },
     "shellcheck": {
       "version": "0.9.0",
       "scripts": 11,
-      "findings": 0
+      "findings": 0,
+      "suppressions_sc2016": 19
     }
   },
   "apt_pinning": {
     "sourcelist": "/var/lib/maximus-t2/apt/offline.list",
     "sourceparts": "/dev/null",
     "lists": "/var/lib/maximus-t2/apt/lists",
-    "note": "Simulation und Installation nutzen dieselbe Quelle. Es gibt keine Netzquelle. Die Systemlisten bleiben unberuehrt."
+    "note": "Simulation und Installation nutzen dieselbe Quelle. Es gibt keine Netzquelle. Die Systemlisten bleiben unberuehrt. V4.2: Die Pfade sind nicht mehr fest. mt2_apt_pin_create setzt sie. mt2_apt bricht ohne gesetzten Pin mit Code 14 ab."
   },
   "recorded_state": {
     "dir": "/var/lib/maximus-t2",
@@ -606,5 +668,136 @@
       "test-boot-entry"
     ],
     "note": "rollback.sh nimmt ausschliesslich diese aufgezeichneten Aenderungen zurueck."
+  },
+  "v42_fixes": [
+    {
+      "id": "S1",
+      "schwere": "KRITISCH",
+      "herkunft": "gemeldet",
+      "bereich": "Temperaturueberwachung",
+      "befund": "max_temp_c in verify.sh gab bei fehlendem Sensor 0 aus, Rueckgabe 0. Gemessen: ausgabe='0' rc=0. Die Sperre TEMP_IDLE -ge 80 griff nie. Die Abbruchsicherung verglich 0 mit 90. FAN_OK war schon wahr, wenn ein Luefter irgendeinen Wert ueber 0 lieferte.",
+      "korrektur": "max_temp_c entfaellt. mt2_cpu_temp gibt bei fehlendem Sensor nichts aus und liefert 1. Der Lasttest hat fuenf Sperren: --thermal-test, gueltige Messung, FAN_STRICT_OK (drehender Luefter UND aktiver Dienst t2fanrd), Ruhetemperatur unter 70 Grad, gesonderte Freigabe. mt2_thermal_step bricht bei 85 Grad, nach zwei Messausfaellen und bei unsinnigen Werten ab. Die Standardabnahme fuehrt keinen Lasttest aus; CPU erhaelt NOT_TESTED.",
+      "tests": "R13.1-R13.36"
+    },
+    {
+      "id": "S2",
+      "schwere": "HOCH",
+      "herkunft": "gemeldet",
+      "bereich": "Schreibfreiheit der Simulation",
+      "befund": "mt2_apt_pin_create schrieb immer nach /var/lib/maximus-t2/apt. Vorpruefung und Dry-Run riefen es vor jeder Freigabe auf. Gemessen: 12 Pfade (6 Dateien, 6 Verzeichnisse) nach einem Lauf der Vorpruefung.",
+      "korrektur": "Die Funktion nimmt ein Basisverzeichnis als zweites Argument. preflight.sh und install.sh --dry-run nutzen ein temporaeres Verzeichnis mit EXIT-Falle. Beide weisen die Schreibfreiheit nach: Dateizaehlung und Dateisystem-Fingerabdruck vor und nach dem Lauf. Gemessen danach: 0 Pfade.",
+      "tests": "R14.1-R14.21"
+    },
+    {
+      "id": "S3",
+      "schwere": "HOCH",
+      "herkunft": "gemeldet",
+      "bereich": "Vollstaendige Sicherungen",
+      "befund": "Gemessen: 16 Befehle im Sicherungsschritt endeten auf || true, davon 12 Kopierbefehle. Eine fehlgeschlagene Kopie von /etc/default/grub blieb unbemerkt. Das Siegel beweist nur Selbstkonsistenz; Gegenprobe R15.6/R15.7: mt2_backup_verify=0 bei fehlender Pflichtdatei, mt2_backup_check_complete=1.",
+      "korrektur": "Pflicht- und Wahldateien getrennt. Eine vorhandene Quelle MUSS kopiert werden; nur eine fehlende Wahlquelle darf uebersprungen werden. MANIFEST je Sicherung. mt2_backup_check_complete vergleicht Byte fuer Byte VOR dem Siegeln. rollback.sh liest das MANIFEST und bricht mit Code 13 ab. Gemessen danach: 0 ignorierte Kopierfehler.",
+      "tests": "R6.10-R6.17, R15.1-R15.15"
+    },
+    {
+      "id": "S4",
+      "schwere": "MITTEL",
+      "herkunft": "gemeldet, Dateiangabe berichtigt",
+      "bereich": "Git-Anleitung",
+      "befund": "Der Klonbefehl ohne --branch landet auf main. Dort gibt es Obsidian/output/ nicht, der folgende 'cd' scheitert. Gemessen im leeren Arbeitsverzeichnis: rc=1. Berichtigung: Der Block stand in reports/BUILD_REPORT.md Zeile 220, nicht in README.md. Die README der Fassung V4.1 enthielt keinen Git-Befehl.",
+      "korrektur": "git clone --branch claude/maximus-strata-validation-c44vzz. Neuer README-Abschnitt 5.0 mit beiden richtigen Varianten, einer Gegenprobe und dem Gegenbeispiel in einem text-Block. BUILD_REPORT.md berichtigt. Im leeren Arbeitsverzeichnis geprueft.",
+      "tests": "R16.1-R16.7"
+    },
+    {
+      "id": "S5",
+      "schwere": "MITTEL",
+      "herkunft": "Code-Review der eigenen Korrekturen",
+      "bereich": "pipefail",
+      "befund": "mt2_fs_fingerprint_volatile_count nutzte diff in einer Pipeline. diff liefert 1 bei einem Unterschied. Mit pipefail schlug die Pipeline fehl und die Funktion gab zwei Zeilen aus.",
+      "korrektur": "{ diff ... || true; } und || n=0.",
+      "tests": "R14.5-R14.8"
+    },
+    {
+      "id": "S6",
+      "schwere": "HOCH",
+      "herkunft": "Code-Review der eigenen Korrekturen",
+      "bereich": "mt2_apt ohne Pin",
+      "befund": "Die Pfadvariablen sind nicht mehr readonly. Ein Aufruf von mt2_apt vor mt2_apt_pin_create haette APT_CONFIG='' gesetzt. apt-get haette die Systemquellen gelesen. Das war der Fehler 2 der Fassung V4.0.",
+      "korrektur": "mt2_apt prueft die Konfiguration und bricht mit Code 14 ab. Die Meldung nennt mt2_apt_pin_create.",
+      "tests": "R14.18, R14.19"
+    },
+    {
+      "id": "S7",
+      "schwere": "NIEDRIG",
+      "herkunft": "Code-Review der eigenen Korrekturen",
+      "bereich": "doppelte Sensormessung",
+      "befund": "verify.sh rief mt2_cpu_temp zweimal auf: einmal zur Probe, einmal fuer den Wert. Die gepruefte Messung war nicht die verwendete Messung.",
+      "korrektur": "Ein einziger Aufruf mit TEMP_IDLE=\"$(mt2_cpu_temp)\" || TEMP_IDLE=''.",
+      "tests": "R13.24, R13.34"
+    },
+    {
+      "id": "S8",
+      "schwere": "NIEDRIG",
+      "herkunft": "Code-Review der eigenen Korrekturen",
+      "bereich": "Rueckfall liess log/ liegen",
+      "befund": "rollback.sh kuendigte an, die Paketquelle unter /var/lib/maximus-t2/apt zu entfernen, liess aber log/ liegen.",
+      "korrektur": "log/ wird mit entfernt. rmdir entfernt das Verzeichnis nur, wenn es leer ist. Fremde Dateien bleiben und werden benannt.",
+      "tests": "R14.20, R14.21"
+    }
+  ],
+  "thermal_policy": {
+    "load_test_in_standard_acceptance": false,
+    "load_test_option": "--thermal-test",
+    "abort_temperature_c": 85,
+    "idle_temperature_max_c": 70,
+    "sample_interval_seconds": 1,
+    "max_duration_seconds": 600,
+    "sensor_miss_limit": 2,
+    "plausible_range_c": [
+      5,
+      125
+    ],
+    "requires": [
+      "gueltige Temperaturmessung",
+      "drehender Luefter",
+      "aktiver Dienst t2fanrd",
+      "gesonderte Benutzerfreigabe"
+    ],
+    "measured_peak_in_audit_c": 98,
+    "note": "Ein nicht getestetes Geraet erhaelt niemals PASS. Ohne Lasttest erhaelt CPU NOT_TESTED und Luefterregelung NOT_TESTED."
+  },
+  "backup_policy": {
+    "required": [
+      "/etc/default/grub",
+      "/boot/grub/grub.cfg",
+      "pkg-before.txt",
+      "dpkg-selections.txt",
+      "running-kernel.txt",
+      "installer-version.txt",
+      "stamp.txt"
+    ],
+    "optional_count": 10,
+    "manifest": "MANIFEST, eine Zeile je Datei: <zustand>\\t<art>\\t<quelle>\\t<zielname>",
+    "order": [
+      "Pflichtdateien kopieren",
+      "Wahldateien kopieren",
+      "Nachweise erzeugen",
+      "Vollstaendigkeit pruefen",
+      "Versiegeln",
+      "Siegel nachpruefen"
+    ],
+    "on_failure": "Abbruch mit Code 17 vor jeder Installation",
+    "ignored_copy_errors": 0
+  },
+  "dry_run_policy": {
+    "writes_outside_tempdir": false,
+    "apt_base_dry_run": "<tempdir>/apt",
+    "apt_base_install": "/var/lib/maximus-t2/apt",
+    "fingerprint_paths": [
+      "/etc",
+      "/boot",
+      "/var/lib/maximus-t2",
+      "/var/backups/maximus-t2"
+    ],
+    "volatile_paths_excluded": 9,
+    "proof": "Fingerabdruck vor und nach dem Lauf, zusaetzlich Dateizaehlung unter /var/lib/maximus-t2/apt"
   }
 }

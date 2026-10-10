@@ -13,6 +13,8 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-10 | [[MAXIMUS T2 Installer]] | Fassung 4.2: vier Sicherheitsbefunde und vier Review-Fehler behoben, 203 Regressionstests |
+| 2026-10-10 | [[T2Linux]] | Abschnitt "Waerme und Luefterregelung" ergaenzt (98 Grad Celsius, `t2fanrd`) |
 | 2026-10-10 | [[MAXIMUS T2 Installer]] | Fassung 4.1: funf gemeldete, zwei eigene und 17 Review-Fehler behoben |
 | 2026-10-10 | [[T2Linux]] | Vier mittelbare Fehlerberichte ergaenzt (gmux, s2idle, LTS-Bestaetigung) |
 | 2026-10-10 | [[MAXIMUS T2 Installer]] | Neu erstellt (Installationspaket V4, PACKAGE_READY) |
@@ -65,7 +67,7 @@ tags:
 
 | Artefakt | Pfad | Status |
 |---|---|---|
-| MAXIMUS T2 Installer V4 | `output/MAXIMUS_T2_INSTALLER_V4/` | PACKAGE_READY |
+| MAXIMUS T2 Installer V4 | `output/MAXIMUS_T2_INSTALLER_V4/` | Fassung 4.2.0, SOURCE_READY und PACKAGE_READY |
 
 ## Navigation
 

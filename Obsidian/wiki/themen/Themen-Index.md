@@ -25,4 +25,4 @@ Uebersicht aller thematischen Artikel in der Wissensbasis.
 
 ## Betriebssysteme & Hardware
 
-- [[T2Linux]] — Linux auf Apple-Macs mit T2-Chip: Zustand, Kernelreihen, bekannte Fehler
+- [[T2Linux]] — Linux auf Apple-Macs mit T2-Chip: Zustand, Kernelreihen, bekannte Fehler, Waerme und Luefterregelung

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MAXIMUS_T2_INSTALLER V4.1 - T2-Kernel und Treiber installieren
+# MAXIMUS_T2_INSTALLER V4.2 - T2-Kernel und Treiber installieren
 #
 # Ergebnis: Das Zielgeraet erhaelt den T2-Kernel, die T2-Treiberpakete und die
 # passenden Konfigurationsdateien. Die vorhandenen Ubuntu-Kernel bleiben
@@ -14,6 +14,11 @@
 #
 # Das Skript installiert kein Ubuntu neu. Es veraendert weder EFI noch NVRAM
 # noch Partitionen. Es laedt keine Pakete aus dem Netz.
+#
+# V4.2: Mit --dry-run wird keine Datei ausserhalb eines temporaeren
+# Verzeichnisses angelegt oder geaendert. Das Skript weist das selbst nach:
+# Es nimmt vor und nach dem Lauf eine Momentaufnahme von /etc, /boot und
+# den eigenen Verzeichnissen und vergleicht sie.
 #
 # Rufe das Skript mit 'bash' auf. Auf exFAT fehlt das Ausfuehrungsbit.
 
@@ -91,6 +96,62 @@ write_file() {
 		install -m 0644 "$src" "$dst"
 		log_ok "geschrieben: $dst"
 	fi
+}
+
+# ---------------------------------------------------------------------------
+# V4.2: Pflicht- und Wahlsicherungen
+# ---------------------------------------------------------------------------
+# Gemessen in V4.1: 16 Kopierbefehle endeten auf '|| true'. Eine
+# fehlgeschlagene Kopie von /etc/default/grub blieb unbemerkt. Das Siegel
+# bewies nur Selbstkonsistenz, nicht Vollstaendigkeit.
+#
+# Regel in V4.2: Eine vorhandene Quelle MUSS erfolgreich kopiert werden.
+# Nur eine FEHLENDE Quelle darf uebersprungen werden, und nur bei 'wahl'.
+# Format je Zeile: <quellpfad>|<zielname>
+readonly MT2_BACKUP_REQUIRED="/etc/default/grub|etc-default-grub
+/boot/grub/grub.cfg|grub.cfg"
+
+readonly MT2_BACKUP_OPTIONAL="/etc/apt/sources.list|sources.list
+/etc/apt/sources.list.d|sources.list.d
+/etc/modprobe.d|modprobe.d
+/etc/modules-load.d|modules-load.d
+/etc/initramfs-tools/modules|initramfs-modules
+/etc/t2fand.conf|t2fand.conf
+/etc/systemd/logind.conf.d|logind.conf.d
+/etc/NetworkManager/conf.d|NetworkManager-conf.d
+/etc/udev/rules.d|udev-rules.d
+/proc/cmdline|cmdline-before.txt"
+
+# backup_copy <quelle> <zielname> <pflicht|wahl>
+backup_copy() {
+	local src="$1" name="$2" kind="$3"
+	if [ ! -e "$src" ]; then
+		if [ "$kind" = "pflicht" ]; then
+			die "$RC_BACKUP" "Die Pflichtdatei '$src' fehlt auf dem Zielgeraet." \
+				"Ohne sie ist kein Rueckfall moeglich. Die Installation ist gesperrt."
+		fi
+		log_info "nicht vorhanden, uebersprungen: $src"
+		printf 'fehlt\t%s\t%s\t-\n' "$kind" "$src" >> "$BACKUP_DIR/MANIFEST"
+		return 0
+	fi
+	if ! cp -a "$src" "$BACKUP_DIR/$name" 2>"$TMP_WORK/cp-err.txt"; then
+		log_err "Fehlermeldung: $(head -1 "$TMP_WORK/cp-err.txt" 2>/dev/null)"
+		die "$RC_BACKUP" "Die Sicherung von '$src' schlug fehl." \
+			"Pruefe den freien Speicherplatz unter /var. Die Installation ist gesperrt."
+	fi
+	printf 'gesichert\t%s\t%s\t%s\n' "$kind" "$src" "$name" >> "$BACKUP_DIR/MANIFEST"
+	return 0
+}
+
+# backup_write <befehl...> > <zielname>: haelt eine erzeugte Datei fest.
+# Auch hier gilt: Ein Fehler stoppt die Installation.
+backup_generate() {
+	local name="$1"; shift
+	if ! "$@" > "$BACKUP_DIR/$name" 2>/dev/null; then
+		die "$RC_BACKUP" "Die Sicherungsdatei '$name' liess sich nicht erzeugen." \
+			"Befehl: $*. Pruefe den freien Speicherplatz unter /var."
+	fi
+	printf 'erzeugt\tpflicht\t%s\t%s\n' "$*" "$name" >> "$BACKUP_DIR/MANIFEST"
 }
 
 # Haelt den Fortschritt fest. Eine Unterbrechung ist danach erkennbar.
@@ -203,17 +264,43 @@ done
 log_ok "Es sind keine konfliktbehafteten Treiberpakete vorgesehen."
 
 # ---------------------------------------------------------------------------
+log_step "Arbeitsverzeichnis anlegen"
+# ---------------------------------------------------------------------------
+TMP_WORK="$(mktemp -d -t maximus-t2-install-XXXXXX)"
+# shellcheck disable=SC2317  # Die Funktion ruft die EXIT-Falle auf.
+cleanup_work() { rm -rf "$TMP_WORK"; }
+trap cleanup_work EXIT
+log_ok "Temporaeres Arbeitsverzeichnis: $TMP_WORK"
+log_info "Die EXIT-Falle loescht es am Ende des Laufs."
+
+# V4.2: In der Simulation wird vorher eine Momentaufnahme genommen.
+# Am Ende beweist der Vergleich, dass nichts geaendert wurde.
+FP_PATHS="/etc /boot $MT2_STATE_DIR $MT2_BACKUP_ROOT"
+if [ "$DRY_RUN" -eq 1 ]; then
+	# shellcheck disable=SC2086  # Die Pfadliste muss expandieren.
+	mt2_fs_fingerprint "$TMP_WORK/fp-before.txt" $FP_PATHS
+	log_ok "Momentaufnahme vor dem Lauf: $(wc -l < "$TMP_WORK/fp-before.txt") Eintraege"
+fi
+
+# ---------------------------------------------------------------------------
 log_step "Gepinnte Offline-Paketquelle einrichten"
 # ---------------------------------------------------------------------------
 # V4.1: Simulation UND Installation nutzen genau diese eine Quelle.
 # Fassung V4.0 richtete nur 'apt-get update' auf die lokale Quelle aus.
 # Die Simulation und die Installation liefen danach gegen die Systemquellen.
 # Ein Download aus dem Netz war damit moeglich.
-if [ "$DRY_RUN" -eq 1 ] && [ ! -w /var/lib ]; then
-	die "$RC_NOT_ROOT" "/var/lib ist nicht beschreibbar." "Starte das Skript mit sudo."
+# V4.2: In der Simulation liegt die Paketverwaltung im temporaeren
+# Verzeichnis. Nur die echte Installation nutzt den festen Pfad.
+# Fassung V4.1 schrieb auch im Dry-Run nach /var/lib/maximus-t2.
+if [ "$DRY_RUN" -eq 1 ]; then
+	APT_BASE="$TMP_WORK/apt"
+	log_info "Betriebsart Simulation: Die Paketverwaltung liegt in $APT_BASE."
+else
+	APT_BASE="$MT2_APT_DIR"
+	log_info "Betriebsart Installation: Die Paketverwaltung liegt in $APT_BASE."
 fi
-mt2_apt_pin_create "$PKG_DIR" \
-	|| die "$RC_REPO" "Die gepinnte Paketverwaltung liess sich nicht anlegen." "Pruefe die Schreibrechte unter /var/lib."
+mt2_apt_pin_create "$PKG_DIR" "$APT_BASE" \
+	|| die "$RC_REPO" "Die gepinnte Paketverwaltung liess sich nicht anlegen." "Pruefe die Schreibrechte."
 log_ok "Konfiguration: $MT2_APT_CONF"
 log_ok "Quellenliste:  $MT2_APT_LIST"
 log_info "Eigene Listen: $MT2_APT_LISTS (die Systemlisten bleiben unberuehrt)"
@@ -240,11 +327,6 @@ fi
 # ---------------------------------------------------------------------------
 log_step "Paketbestand des Zielsystems auswerten"
 # ---------------------------------------------------------------------------
-TMP_WORK="$(mktemp -d -t maximus-t2-install-XXXXXX)"
-# shellcheck disable=SC2317  # Die Funktion ruft die EXIT-Falle auf.
-cleanup_work() { rm -rf "$TMP_WORK"; }
-trap cleanup_work EXIT
-
 mt2_pkg_snapshot "$TMP_WORK/pkg-before.txt"
 log_info "Auf dem Zielgeraet sind $(wc -l < "$TMP_WORK/pkg-before.txt") Pakete installiert."
 
@@ -343,10 +425,40 @@ if [ "$DRY_RUN" -eq 1 ]; then
 	log "         update-initramfs -u -k all"
 	log "         update-grub und Pruefung mit grub-script-check"
 	log "         grub-reboot fuer EINEN Teststart in den T2-Kernel"
+	# -------------------------------------------------------------------
+	log_step "Schreibfreiheit der Simulation nachweisen"
+	# -------------------------------------------------------------------
+	# V4.2: Der Vergleich beweist, dass der Dry-Run nichts geaendert hat.
+	# shellcheck disable=SC2086  # Die Pfadliste muss expandieren.
+	mt2_fs_fingerprint "$TMP_WORK/fp-after.txt" $FP_PATHS
+	log_info "Momentaufnahme nach dem Lauf: $(wc -l < "$TMP_WORK/fp-after.txt") Eintraege"
+	# V4.2: Fluechtige Pfade wie /etc/resolv.conf zaehlen nicht.
+	# Das System schreibt sie von selbst. Sonst entstuende ein Fehlalarm.
+	FP_CHANGES="$(mt2_fs_fingerprint_changes "$TMP_WORK/fp-before.txt" "$TMP_WORK/fp-after.txt")"
+	FP_VOLATILE="$(mt2_fs_fingerprint_volatile_count "$TMP_WORK/fp-before.txt" "$TMP_WORK/fp-after.txt")"
+	if [ -z "$FP_CHANGES" ]; then
+		log_ok "Kein Unterschied. Die Simulation war schreibfrei."
+		log_ok "Geprueft wurden: $FP_PATHS"
+		[ "${FP_VOLATILE:-0}" -gt 0 ] && \
+			log_info "${FP_VOLATILE} fluechtige Systempfade haben sich geaendert. Sie zaehlen nicht."
+	else
+		log_err "Die Simulation hat das Dateisystem veraendert:"
+		printf '%s\n' "$FP_CHANGES" | head -20 | sed 's/^/         /'
+		die "$RC_PKG_TREE" "Die Simulation ist nicht schreibfrei." \
+			"Das ist ein Fehler im Installationspaket. Melde ihn. Installiere nicht."
+	fi
+	LEFT_PERSIST="$(mt2_count_files "$MT2_APT_DIR" -mindepth 1)"
+	if [ "$LEFT_PERSIST" -eq 0 ]; then
+		log_ok "Unter $MT2_APT_DIR liegt keine Datei."
+	else
+		log_err "Unter $MT2_APT_DIR liegen $LEFT_PERSIST Dateien."
+		die "$RC_PKG_TREE" "Die Simulation hat eine dauerhafte Ablage angelegt." "Melde diesen Fehler."
+	fi
+
 	log_step "Simulation beendet"
 	log_ok "Alle Pruefungen der Simulation sind bestanden."
 	log ""
-	log "Es wurde nichts geaendert."
+	log "Es wurde nichts geaendert. Das ist nachgewiesen, nicht behauptet."
 	log "Starte die echte Installation mit:"
 	log "  sudo bash $0"
 	exit "$RC_OK"
@@ -389,37 +501,64 @@ else
 fi
 set_phase "backup"
 
-cp -a /etc/default/grub            "$BACKUP_DIR/etc-default-grub" 2>/dev/null || true
-cp -a /boot/grub/grub.cfg          "$BACKUP_DIR/grub.cfg" 2>/dev/null || true
-cp -a /etc/apt/sources.list        "$BACKUP_DIR/sources.list" 2>/dev/null || true
-cp -a /etc/apt/sources.list.d      "$BACKUP_DIR/sources.list.d" 2>/dev/null || true
-cp -a /etc/modprobe.d              "$BACKUP_DIR/modprobe.d" 2>/dev/null || true
-cp -a /etc/modules-load.d          "$BACKUP_DIR/modules-load.d" 2>/dev/null || true
-cp -a /etc/initramfs-tools/modules "$BACKUP_DIR/initramfs-modules" 2>/dev/null || true
-cp -a /etc/t2fand.conf             "$BACKUP_DIR/t2fand.conf" 2>/dev/null || true
-cp -a /etc/systemd/logind.conf.d   "$BACKUP_DIR/logind.conf.d" 2>/dev/null || true
-cp -a /etc/NetworkManager/conf.d   "$BACKUP_DIR/NetworkManager-conf.d" 2>/dev/null || true
-cp -a /etc/udev/rules.d            "$BACKUP_DIR/udev-rules.d" 2>/dev/null || true
+# V4.2: Pflichtdateien zuerst. Ein Fehler stoppt hier, nicht spaeter.
+: > "$BACKUP_DIR/MANIFEST"
+while IFS='|' read -r src name; do
+	[ -n "$name" ] || continue
+	backup_copy "$src" "$name" pflicht
+done <<EOF
+$MT2_BACKUP_REQUIRED
+EOF
+log_ok "Alle Pflichtdateien sind gesichert."
 
-cp "$TMP_WORK/pkg-before.txt"      "$BACKUP_DIR/pkg-before.txt"
-dpkg --get-selections > "$BACKUP_DIR/dpkg-selections.txt"
-apt-mark showhold    > "$BACKUP_DIR/apt-holds-before.txt" 2>/dev/null || true
+while IFS='|' read -r src name; do
+	[ -n "$name" ] || continue
+	backup_copy "$src" "$name" wahl
+done <<EOF
+$MT2_BACKUP_OPTIONAL
+EOF
+log_ok "Die Wahldateien sind abgearbeitet."
+
+# Erzeugte Nachweise. Auch sie sind Pflicht.
+cp "$TMP_WORK/pkg-before.txt" "$BACKUP_DIR/pkg-before.txt" \
+	|| die "$RC_BACKUP" "Der Paketbestand liess sich nicht sichern." "Pruefe den freien Speicherplatz unter /var."
+printf 'gesichert\tpflicht\t%s\t%s\n' "dpkg-Bestand" "pkg-before.txt" >> "$BACKUP_DIR/MANIFEST"
+backup_generate dpkg-selections.txt dpkg --get-selections
+backup_generate running-kernel.txt uname -r
+backup_generate installer-version.txt printf '%s\n' "$MT2_VERSION"
+backup_generate stamp.txt printf '%s\n' "$STAMP"
+
+# Diese Nachweise sind nuetzlich, aber nicht zwingend.
+apt-mark showhold > "$BACKUP_DIR/apt-holds-before.txt" 2>/dev/null || : > "$BACKUP_DIR/apt-holds-before.txt"
 dpkg-query -W -f='${Package} ${Version}\n' 'linux-image-*' 'linux-headers-*' \
-	> "$BACKUP_DIR/kernel-packages.txt" 2>/dev/null || true
+	> "$BACKUP_DIR/kernel-packages.txt" 2>/dev/null || : > "$BACKUP_DIR/kernel-packages.txt"
 find /boot -maxdepth 1 \( -name 'vmlinuz-*' -o -name 'initrd.img-*' \) -printf '%f %s\n' \
-	> "$BACKUP_DIR/boot-listing.txt" 2>/dev/null || true
-cp /proc/cmdline "$BACKUP_DIR/cmdline-before.txt" 2>/dev/null || true
+	> "$BACKUP_DIR/boot-listing.txt" 2>/dev/null || : > "$BACKUP_DIR/boot-listing.txt"
 find /lib/firmware/brcm -maxdepth 1 -type f -printf '%f %s\n' \
-	> "$BACKUP_DIR/firmware-brcm.txt" 2>/dev/null || true
-uname -r > "$BACKUP_DIR/running-kernel.txt"
-printf '%s\n' "$STAMP" > "$BACKUP_DIR/stamp.txt"
-printf '%s\n' "$MT2_VERSION" > "$BACKUP_DIR/installer-version.txt"
+	> "$BACKUP_DIR/firmware-brcm.txt" 2>/dev/null || : > "$BACKUP_DIR/firmware-brcm.txt"
+
+# V4.2: Vollstaendigkeit PRUEFEN, dann versiegeln. Nicht umgekehrt.
+declare -a REQ_ENTRIES=()
+mapfile -t REQ_ENTRIES <<EOF
+$MT2_BACKUP_REQUIRED
+EOF
+REQ_ENTRIES+=("$TMP_WORK/pkg-before.txt|pkg-before.txt")
+REQ_ENTRIES+=("|running-kernel.txt")
+REQ_ENTRIES+=("|dpkg-selections.txt")
+REQ_ENTRIES+=("|installer-version.txt")
+if mt2_backup_check_complete "$BACKUP_DIR" "${REQ_ENTRIES[@]}"; then
+	log_ok "Die Sicherung ist vollstaendig. Jede Pflichtdatei stimmt Byte fuer Byte."
+else
+	die "$RC_BACKUP" "Die Sicherung ist unvollstaendig oder weicht vom Original ab." \
+		"Die Installation ist gesperrt. Pruefe den freien Speicherplatz unter /var."
+fi
 
 # V4.1: Die Pruefsummen liegen IN der Sicherung. rollback.sh prueft sie.
 mt2_backup_seal "$BACKUP_DIR" \
 	|| die "$RC_BACKUP" "Die Sicherung liess sich nicht versiegeln." "Pruefe den freien Speicherplatz unter /var."
 if mt2_backup_verify "$BACKUP_DIR"; then
-	log_ok "Sicherung liegt in $BACKUP_DIR und ist versiegelt ($(wc -l < "$BACKUP_DIR/SHA256SUMS") Dateien)."
+	log_ok "Sicherung liegt in $BACKUP_DIR und ist versiegelt ($(grep -c . "$BACKUP_DIR/SHA256SUMS") Dateien)."
+	log_info "Das Verzeichnis traegt MANIFEST mit $(grep -c . "$BACKUP_DIR/MANIFEST") Eintraegen."
 else
 	die "$RC_BACKUP" "Die Sicherung ist nicht nachpruefbar." "Brich ab. Ohne gueltige Sicherung wird nichts geaendert."
 fi

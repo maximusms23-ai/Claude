@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MAXIMUS_T2_INSTALLER V4.1 - Hardware-Abnahme nach der Installation
+# MAXIMUS_T2_INSTALLER V4.2 - Hardware-Abnahme nach der Installation
 #
 # Ergebnis: Das Skript prueft jede Hardwarefunktion und schreibt einen Bericht.
 # Es fuehrt echte Funktionstests aus, nicht nur Modulpruefungen.
@@ -8,12 +8,20 @@
 #   --non-interactive   Fuehrt nur selbsttaetige Tests aus.
 #                       Tests mit Mitwirkung erhalten NOT_TESTED.
 #   --allow-suspend     Erlaubt den Standby-Test. Standard ist BLOCKED.
-#   --thermal-seconds N Dauer des Lasttests in Sekunden. Standard 60.
+#   --thermal-test      Erlaubt den CPU-Lasttest.
+#                       OHNE diese Option laeuft KEIN Lasttest.
+#                       Das Prueffeld CPU bleibt dann NOT_TESTED.
+#   --thermal-seconds N Dauer des Lasttests in Sekunden. Standard 60, hoechstens 600.
 #   --out DATEI         Zielpfad des Berichts.
 #   --no-color          Gibt keine Farbcodes aus.
 #
 # Bewertung: PASS, PARTIAL, FAIL, BLOCKED, NOT_TESTED
 # Ein nicht getestetes Geraet erhaelt niemals PASS.
+#
+# V4.2: Der CPU-Lasttest laeuft NICHT in der Standardabnahme.
+# Er verlangt die Option --thermal-test UND eine gesonderte Freigabe.
+# Er verlangt ausserdem eine gueltige Temperaturmessung und eine
+# nachgewiesene Luefterregelung. Siehe reports/RELEASE_V4_2.md.
 
 set -uo pipefail
 
@@ -24,14 +32,23 @@ ROOT="$(cd "$SELF_DIR/.." && pwd)"
 
 INTERACTIVE=1
 ALLOW_SUSPEND=0
+RUN_THERMAL=0
 THERMAL_SECONDS=60
 OUTFILE=''
-readonly TEMP_ABORT=90
+# V4.2: 85 statt 90 Grad. Im Audit wurden 98 Grad gemessen.
+readonly TEMP_ABORT=85
+# Ueber dieser Ruhetemperatur startet kein Lasttest.
+readonly TEMP_IDLE_MAX=70
+# Abstand zwischen zwei Messungen im Lauf. Vorher 2 Sekunden.
+readonly TEMP_SAMPLE_SECONDS=1
+# Hoechstdauer. Verhindert einen versehentlich stundenlangen Lauf.
+readonly THERMAL_SECONDS_MAX=600
 
 while [ "$#" -gt 0 ]; do
 	case "$1" in
 		--non-interactive)  INTERACTIVE=0 ;;
 		--allow-suspend)    ALLOW_SUSPEND=1 ;;
+		--thermal-test)     RUN_THERMAL=1 ;;
 		--thermal-seconds)  mt2_opt_needs_value "$#" --thermal-seconds; THERMAL_SECONDS="$2"; shift ;;
 		--out)              mt2_opt_needs_value "$#" --out; OUTFILE="$2"; shift ;;
 		--no-color)         NO_COLOR=1; export NO_COLOR ;;
@@ -44,6 +61,10 @@ done
 case "$THERMAL_SECONDS" in
 	''|*[!0-9]*) die "$RC_USAGE" "--thermal-seconds erwartet eine ganze Zahl." "Beispiel: --thermal-seconds 60" ;;
 esac
+if [ "$THERMAL_SECONDS" -lt 10 ] || [ "$THERMAL_SECONDS" -gt "$THERMAL_SECONDS_MAX" ]; then
+	die "$RC_USAGE" "--thermal-seconds muss zwischen 10 und $THERMAL_SECONDS_MAX liegen." \
+		"Angegeben wurde $THERMAL_SECONDS."
+fi
 
 mt2_require_root "$@"
 
@@ -89,16 +110,9 @@ md_cell() {
 	printf '%s' "$1" | sed -e 's/|/\\|/g' -e 's/\r//g' | tr '\n' ' '
 }
 
-max_temp_c() {
-	local t max=0 z
-	for z in /sys/class/thermal/thermal_zone*/temp; do
-		[ -r "$z" ] || continue
-		t="$(cat "$z" 2>/dev/null || echo 0)"
-		t=$((t / 1000))
-		[ "$t" -gt "$max" ] && max="$t"
-	done
-	printf '%s' "$max"
-}
+# V4.2: max_temp_c ist entfallen. Es gab bei fehlendem Sensor 0 aus.
+# Zustaendig ist jetzt mt2_cpu_temp aus scripts/lib/common.sh.
+# Diese Funktion gibt bei fehlendem Sensor NICHTS aus und liefert 1.
 
 fan_rpm_list() {
 	local f
@@ -394,17 +408,18 @@ FAN_VALUES="$(fan_rpm_list)"
 FAN_COUNT="$(printf '%s' "$FAN_VALUES" | wc -w)"
 FAN_SVC="$(systemctl is-active t2fanrd 2>/dev/null || echo inaktiv)"
 log_info "Luefterwerte: ${FAN_VALUES:-keine}   Dienst t2fanrd: $FAN_SVC"
-FAN_OK=0
+# V4.2: FAN_OK ist entfallen. Es war schon wahr, wenn ein Luefter nur
+# irgendeinen Wert lieferte, und gab damit den Lasttest frei.
+# Die Lasttestsperre nutzt jetzt NONZERO und FAN_SVC unmittelbar.
+NONZERO=0
 if [ "${FAN_COUNT:-0}" -eq 0 ]; then
 	add_result "Luefter" FAIL "Es sind keine Luefterdrehzahlen lesbar. Pruefe das Modul applesmc."
 else
 	NONZERO="$(printf '%s' "$FAN_VALUES" | tr ' ' '\n' | awk '$1>0' | wc -l)"
 	if [ "$NONZERO" -ge 1 ] && [ "$FAN_SVC" = "active" ]; then
 		add_result "Luefter" PASS "$FAN_COUNT Luefter sind lesbar, $NONZERO drehen, der Dienst laeuft."
-		FAN_OK=1
 	elif [ "$NONZERO" -ge 1 ]; then
-		add_result "Luefter" PARTIAL "$NONZERO Luefter drehen. Der Dienst t2fanrd ist '$FAN_SVC'."
-		FAN_OK=1
+		add_result "Luefter" PARTIAL "$NONZERO Luefter drehen. Der Dienst t2fanrd ist '$FAN_SVC'. Fuer den Lasttest reicht das nicht."
 	else
 		add_result "Luefter" PARTIAL "$FAN_COUNT Luefter sind lesbar, drehen aber nicht. Das kann bei geringer Last normal sein."
 	fi
@@ -413,53 +428,123 @@ fi
 # ---------------------------------------------------------------------------
 log_step "CPU-Temperatur und Drosselung"
 # ---------------------------------------------------------------------------
-TEMP_IDLE="$(max_temp_c)"
-log_info "Temperatur im Ruhezustand: ${TEMP_IDLE} Grad Celsius"
+# V4.2: Der Lasttest hat fuenf Vorbedingungen. Jede einzelne sperrt ihn.
+#   1. Die Option --thermal-test muss gesetzt sein.
+#   2. Es muss eine gueltige Temperaturmessung vorliegen.
+#   3. Die Luefterregelung muss nachgewiesen sein (streng, siehe FAN_STRICT_OK).
+#   4. Die Ruhetemperatur muss unter TEMP_IDLE_MAX liegen.
+#   5. Der Benutzer muss gesondert freigeben.
+# Im Lauf bricht der Test ab, sobald die Temperatur TEMP_ABORT erreicht
+# oder der Sensor ausfaellt.
+# Ein einziger Aufruf. Zwei Aufrufe koennten zwei verschiedene Werte liefern.
+TEMP_IDLE="$(mt2_cpu_temp)" || TEMP_IDLE=''
+SENSORS="$(mt2_cpu_temp_sensors)"
+if [ -n "$TEMP_IDLE" ]; then
+	log_info "Ruhetemperatur: ${TEMP_IDLE} Grad Celsius   lesbare Sensoren: ${SENSORS}"
+	add_result "CPU-Temperatursensor" PASS "${SENSORS} Sensoren lesbar. Hoechster Wert ${TEMP_IDLE} Grad Celsius."
+else
+	log_err "Es ist KEINE Temperatur messbar. Lesbare Sensoren: ${SENSORS}"
+	add_result "CPU-Temperatursensor" FAIL "Es ist keine Temperatur messbar. Pruefe die Module coretemp und applesmc."
+fi
 THROTTLE_BEFORE="$(cat /sys/devices/system/cpu/cpu0/thermal_throttle/package_throttle_count 2>/dev/null || echo 0)"
 
-if [ "$FAN_OK" -eq 0 ]; then
-	add_result "CPU" BLOCKED "Der Lasttest ist gesperrt. Die Luefterpruefung ist nicht bestanden. Temperatur im Ruhezustand: ${TEMP_IDLE} Grad Celsius."
-elif [ "${TEMP_IDLE:-0}" -ge 80 ]; then
-	add_result "CPU" BLOCKED "Der Lasttest ist gesperrt. Die Ruhetemperatur ${TEMP_IDLE} Grad Celsius ist zu hoch."
+# V4.2: Strenge Luefterbedingung, getrennt von FAN_OK.
+# FAN_OK war schon wahr, wenn ein Luefter nur irgendeinen Wert lieferte.
+# Fuer einen Lasttest ist das zu wenig.
+FAN_STRICT_OK=0
+if [ "${NONZERO:-0}" -ge 1 ] && [ "$FAN_SVC" = "active" ]; then
+	FAN_STRICT_OK=1
+fi
+log_info "Luefterbedingung fuer den Lasttest: drehende Luefter=${NONZERO:-0}, Dienst=${FAN_SVC}, erfuellt=${FAN_STRICT_OK}"
+
+THERMAL_RAN=0
+if [ "$RUN_THERMAL" -eq 0 ]; then
+	add_result "CPU" NOT_TESTED "Der Lasttest wurde nicht angefordert. Starte ihn bewusst mit --thermal-test."
+	log_info "Kein Lasttest in der Standardabnahme. Das ist Absicht."
+elif [ -z "$TEMP_IDLE" ]; then
+	add_result "CPU" BLOCKED "Der Lasttest ist gesperrt. Es ist keine Temperatur messbar. Ohne Messung gibt es keine Abbruchsicherung."
+elif [ "$FAN_STRICT_OK" -eq 0 ]; then
+	add_result "CPU" BLOCKED "Der Lasttest ist gesperrt. Die Luefterregelung ist nicht nachgewiesen (drehende Luefter: ${NONZERO:-0}, Dienst t2fanrd: ${FAN_SVC})."
+elif [ "$TEMP_IDLE" -ge "$TEMP_IDLE_MAX" ]; then
+	add_result "CPU" BLOCKED "Der Lasttest ist gesperrt. Die Ruhetemperatur ${TEMP_IDLE} Grad Celsius erreicht oder uebersteigt ${TEMP_IDLE_MAX} Grad."
 elif ! command -v stress-ng >/dev/null 2>&1; then
-	add_result "CPU" PARTIAL "stress-ng fehlt. Ruhetemperatur: ${TEMP_IDLE} Grad Celsius."
+	add_result "CPU" BLOCKED "Der Lasttest ist gesperrt. Das Programm stress-ng fehlt. Ruhetemperatur: ${TEMP_IDLE} Grad Celsius."
+elif [ "$INTERACTIVE" -eq 0 ]; then
+	add_result "CPU" NOT_TESTED "Der Lasttest verlangt eine gesonderte Freigabe. Sie ist ohne Mitwirkung nicht moeglich."
 else
-	log_info "Lasttest ueber ${THERMAL_SECONDS} Sekunden. Abbruch ab ${TEMP_ABORT} Grad Celsius."
-	stress-ng --cpu 0 --timeout "${THERMAL_SECONDS}s" --metrics-brief >/dev/null 2>&1 &
-	STRESS_PID=$!
-	TEMP_PEAK="$TEMP_IDLE"
-	ABORTED=0
-	while kill -0 "$STRESS_PID" 2>/dev/null; do
-		T="$(max_temp_c)"
-		[ "$T" -gt "$TEMP_PEAK" ] && TEMP_PEAK="$T"
-		if [ "$T" -ge "$TEMP_ABORT" ]; then
-			log_err "Abbruch: ${T} Grad Celsius erreicht."
-			kill "$STRESS_PID" 2>/dev/null || true
-			ABORTED=1
-			break
+	log_warn "Der Lasttest belastet alle Kerne voll."
+	log_warn "Im letzten Audit erreichte dieses Geraet 98 Grad Celsius."
+	log_info "Ruhetemperatur ${TEMP_IDLE} Grad, Sensoren ${SENSORS}, Dauer ${THERMAL_SECONDS} Sekunden."
+	log_info "Abbruch bei ${TEMP_ABORT} Grad Celsius oder bei Sensorausfall."
+	if ! mt2_confirm "Soll der CPU-Lasttest jetzt starten?"; then
+		add_result "CPU" NOT_TESTED "Der Lasttest wurde nicht freigegeben."
+	else
+		THERMAL_RAN=1
+		log_ok "Freigabe erteilt. Der Lasttest startet."
+		stress-ng --cpu 0 --timeout "${THERMAL_SECONDS}s" --metrics-brief >/dev/null 2>&1 &
+		STRESS_PID=$!
+		TEMP_PEAK="$TEMP_IDLE"
+		ABORTED=0
+		SENSOR_LOST=0
+		MISSES=0
+		SAMPLES=0
+		while kill -0 "$STRESS_PID" 2>/dev/null; do
+			T="$(mt2_cpu_temp)" || T=''
+			# V4.2: Die Entscheidung liegt in mt2_thermal_step.
+			# Diese Funktion ist einzeln geprueft, siehe Gruppe R13.
+			read -r ACTION TEMP_PEAK MISSES <<EOF
+$(mt2_thermal_step "$T" "$TEMP_PEAK" "$MISSES" "$TEMP_ABORT")
+EOF
+			case "$ACTION" in
+				abbruch_sensor)
+					log_err "SENSORAUSFALL nach ${MISSES} Fehlversuchen. Sofortiger Abbruch."
+					kill "$STRESS_PID" 2>/dev/null || true
+					SENSOR_LOST=1
+					break ;;
+				abbruch_temperatur)
+					log_err "Abbruch: ${T} Grad Celsius erreicht. Grenzwert ${TEMP_ABORT} Grad."
+					kill "$STRESS_PID" 2>/dev/null || true
+					ABORTED=1
+					break ;;
+			esac
+			if [ -n "$T" ]; then
+				SAMPLES=$((SAMPLES + 1))
+			else
+				log_warn "Messung ausgefallen (${MISSES} von ${MT2_TEMP_MISS_MAX})."
+			fi
+			sleep "$TEMP_SAMPLE_SECONDS"
+		done
+		wait "$STRESS_PID" 2>/dev/null || true
+		FAN_AFTER="$(fan_rpm_list)"
+		THROTTLE_AFTER="$(cat /sys/devices/system/cpu/cpu0/thermal_throttle/package_throttle_count 2>/dev/null || echo 0)"
+		THROTTLE_DELTA=$((THROTTLE_AFTER - THROTTLE_BEFORE))
+		log_info "Spitzentemperatur: ${TEMP_PEAK} Grad Celsius   Messungen: ${SAMPLES}   Luefter danach: ${FAN_AFTER:-unbekannt}   Drosselungen: ${THROTTLE_DELTA}"
+
+		if [ "$SENSOR_LOST" -eq 1 ]; then
+			add_result "CPU" FAIL "Der Temperatursensor fiel im Lauf aus. Der Test wurde nach ${SAMPLES} gueltigen Messungen abgebrochen. Hoechster Wert ${TEMP_PEAK} Grad Celsius."
+		elif [ "$ABORTED" -eq 1 ]; then
+			add_result "CPU" FAIL "Der Lasttest wurde bei ${TEMP_PEAK} Grad Celsius abgebrochen. Grenzwert ${TEMP_ABORT} Grad. Drosselungen: ${THROTTLE_DELTA}."
+		elif [ "$SAMPLES" -eq 0 ]; then
+			add_result "CPU" FAIL "Es gab keine einzige gueltige Messung im Lauf."
+		elif [ "$TEMP_PEAK" -ge 80 ]; then
+			add_result "CPU" PARTIAL "Spitzentemperatur ${TEMP_PEAK} Grad Celsius ueber ${THERMAL_SECONDS} Sekunden. Drosselungen: ${THROTTLE_DELTA}. Die Kuehlung ist grenzwertig."
+		else
+			add_result "CPU" PASS "Spitzentemperatur ${TEMP_PEAK} Grad Celsius ueber ${THERMAL_SECONDS} Sekunden bei ${SAMPLES} Messungen. Drosselungen: ${THROTTLE_DELTA}."
 		fi
-		sleep 2
-	done
-	wait "$STRESS_PID" 2>/dev/null || true
-	FAN_AFTER="$(fan_rpm_list)"
-	THROTTLE_AFTER="$(cat /sys/devices/system/cpu/cpu0/thermal_throttle/package_throttle_count 2>/dev/null || echo 0)"
-	THROTTLE_DELTA=$((THROTTLE_AFTER - THROTTLE_BEFORE))
-	log_info "Spitzentemperatur: ${TEMP_PEAK} Grad Celsius   Luefter danach: ${FAN_AFTER:-unbekannt}   Drosselungen: ${THROTTLE_DELTA}"
-	if [ "$ABORTED" -eq 1 ]; then
-		add_result "CPU" FAIL "Der Lasttest wurde bei ${TEMP_PEAK} Grad Celsius abgebrochen. Drosselungen: ${THROTTLE_DELTA}."
-	elif [ "$TEMP_PEAK" -ge 85 ]; then
-		add_result "CPU" PARTIAL "Spitzentemperatur ${TEMP_PEAK} Grad Celsius. Drosselungen: ${THROTTLE_DELTA}. Die Kuehlung ist grenzwertig."
-	else
-		add_result "CPU" PASS "Spitzentemperatur ${TEMP_PEAK} Grad Celsius ueber ${THERMAL_SECONDS} Sekunden. Drosselungen: ${THROTTLE_DELTA}."
+
+		# Reagiert die Steuerung auf Temperatur?
+		SUM_BEFORE="$(printf '%s' "$FAN_VALUES" | tr ' ' '\n' | awk '{s+=$1} END{print s+0}')"
+		SUM_AFTER="$(printf '%s' "$FAN_AFTER"   | tr ' ' '\n' | awk '{s+=$1} END{print s+0}')"
+		if [ "$SUM_AFTER" -gt "$SUM_BEFORE" ]; then
+			add_result "Luefterregelung" PASS "Die Drehzahl stieg unter Last von ${SUM_BEFORE} auf ${SUM_AFTER}."
+		else
+			add_result "Luefterregelung" PARTIAL "Die Drehzahl stieg nicht messbar (${SUM_BEFORE} -> ${SUM_AFTER})."
+		fi
 	fi
-	# Reagiert die Steuerung auf Temperatur?
-	SUM_BEFORE="$(printf '%s' "$FAN_VALUES"  | tr ' ' '\n' | awk '{s+=$1} END{print s+0}')"
-	SUM_AFTER="$(printf '%s' "$FAN_AFTER"    | tr ' ' '\n' | awk '{s+=$1} END{print s+0}')"
-	if [ "$SUM_AFTER" -gt "$SUM_BEFORE" ]; then
-		add_result "Luefterregelung" PASS "Die Drehzahl stieg unter Last von ${SUM_BEFORE} auf ${SUM_AFTER}."
-	else
-		add_result "Luefterregelung" PARTIAL "Die Drehzahl stieg nicht messbar (${SUM_BEFORE} -> ${SUM_AFTER})."
-	fi
+fi
+
+if [ "$THERMAL_RAN" -eq 0 ]; then
+	add_result "Luefterregelung" NOT_TESTED "Die Regelung ist nur unter Last pruefbar. Der Lasttest lief nicht."
 fi
 
 # ---------------------------------------------------------------------------

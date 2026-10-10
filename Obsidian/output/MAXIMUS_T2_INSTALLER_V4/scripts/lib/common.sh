@@ -27,7 +27,7 @@ readonly RC_ABORT=20          # Abbruch durch Benutzer
 # ---------------------------------------------------------------------------
 # Feste Pfade
 # ---------------------------------------------------------------------------
-readonly MT2_VERSION="4.1.0"
+readonly MT2_VERSION="4.2.0"
 readonly MT2_BACKUP_ROOT="/var/backups/maximus-t2"
 readonly MT2_STATE_DIR="/var/lib/maximus-t2"
 readonly MT2_LOG_DIR="/var/log/maximus-t2"
@@ -35,9 +35,18 @@ readonly MT2_LOG_DIR="/var/log/maximus-t2"
 # Grund: Ein Eintrag dort gilt fuer jeden spaeteren apt-Aufruf des Systems.
 # Nach dem Abziehen der Samsung T7 wuerde 'apt update' dann scheitern.
 readonly MT2_APT_DIR="/var/lib/maximus-t2/apt"
-readonly MT2_APT_LIST="$MT2_APT_DIR/offline.list"
-readonly MT2_APT_CONF="$MT2_APT_DIR/apt.conf"
-readonly MT2_APT_LISTS="$MT2_APT_DIR/lists"
+# V4.2: Feste Pfade. Nur die echte Installation nutzt sie.
+# Nur rollback.sh raeumt sie weg.
+readonly MT2_APT_LIST_PERSISTENT="$MT2_APT_DIR/offline.list"
+readonly MT2_APT_CONF_PERSISTENT="$MT2_APT_DIR/apt.conf"
+readonly MT2_APT_LISTS_PERSISTENT="$MT2_APT_DIR/lists"
+# V4.2: Arbeitspfade. mt2_apt_pin_create setzt sie je Aufruf.
+# Eine Pruefung uebergibt ein temporaeres Basisverzeichnis.
+# Dann bleibt nach dem Lauf nichts zurueck.
+MT2_APT_BASE=''
+MT2_APT_LIST=''
+MT2_APT_CONF=''
+MT2_APT_LISTS=''
 # Wird von mt2_apt_pin_create gesetzt: '_apt' oder 'root'.
 MT2_APT_SANDBOX='_apt' 
 # Fassung V4.0 legte die Quelle hier ab. rollback.sh entfernt die Altlast.
@@ -277,10 +286,20 @@ mt2_apt_wanted_files() {
 # Der dpkg-Status bleibt der echte Status des Zielgeraets.
 # Die Aufloesung beruecksichtigt deshalb die bereits installierten Pakete.
 #
-# Aufruf: mt2_apt_pin_create <paketverzeichnis>
+# Aufruf: mt2_apt_pin_create <paketverzeichnis> [basisverzeichnis]
+#
+# V4.2: Ohne Basisverzeichnis wird der feste Pfad unter /var/lib genutzt.
+# Das gilt nur fuer die echte Installation.
+# Jede Pruefung und jeder Dry-Run uebergibt ein temporaeres Verzeichnis.
+# Gemessen in V4.1: Eine Vorpruefung hinterliess 6 Dateien und 312 KB
+# dauerhaft unter /var/lib/maximus-t2.
 mt2_apt_pin_create() {
-	local pkgdir="$1" enc sandbox=''
-	mkdir -p "$MT2_APT_DIR" "$MT2_APT_LISTS/partial" "$MT2_APT_DIR/log" \
+	local pkgdir="$1" base="${2:-$MT2_APT_DIR}" enc sandbox=''
+	MT2_APT_BASE="$base"
+	MT2_APT_LIST="$base/offline.list"
+	MT2_APT_CONF="$base/apt.conf"
+	MT2_APT_LISTS="$base/lists"
+	mkdir -p "$base" "$MT2_APT_LISTS/partial" "$base/log" \
 		|| return 1
 	# apt laesst beim Holen die Rechte auf den Benutzer '_apt' fallen.
 	# Zwei Dinge muessen dann stimmen:
@@ -322,7 +341,7 @@ mt2_apt_pin_create() {
 		printf 'Dir::Etc::sourcelist "%s";\n' "$MT2_APT_LIST"
 		printf 'Dir::Etc::sourceparts "/dev/null";\n'
 		printf 'Dir::State::lists "%s";\n' "$MT2_APT_LISTS"
-		printf 'Dir::Log "%s/log";\n' "$MT2_APT_DIR"
+		printf 'Dir::Log "%s/log";\n' "$base"
 		printf 'APT::Architecture "amd64";\n'
 		printf 'APT::Architectures "amd64";\n'
 		printf 'Acquire::Languages "none";\n'
@@ -342,6 +361,14 @@ mt2_apt_pin_create() {
 
 # Fuehrt apt-get mit der gepinnten Konfiguration aus.
 mt2_apt() {
+	# V4.2: MT2_APT_CONF ist nicht mehr fest. Es wird von
+	# mt2_apt_pin_create gesetzt. Ein leerer Wert waere gefaehrlich:
+	# apt-get nutzt dann die Systemquellen und darf aus dem Netz laden.
+	# Deshalb bricht der Aufruf hier laut ab.
+	if [ -z "${MT2_APT_CONF:-}" ] || [ ! -f "$MT2_APT_CONF" ]; then
+		log_err "Die gepinnte apt-Konfiguration fehlt. Rufe zuerst mt2_apt_pin_create auf."
+		return "$RC_REPO"
+	fi
 	APT_CONFIG="$MT2_APT_CONF" apt-get "$@"
 }
 
@@ -442,4 +469,193 @@ mt2_fs_keeps_modes() {
 		exfat|vfat|msdos|ntfs|ntfs3|fuseblk|iso9660|udf) return 1 ;;
 		*) return 0 ;;
 	esac
+}
+
+# ---------------------------------------------------------------------------
+# V4.2: Temperaturmessung
+# ---------------------------------------------------------------------------
+# Ergebnis: Ohne gueltige Messung gibt es KEINEN Wert. Nie einen Ersatzwert.
+#
+# Gemessen in V4.1: Die Vorgaengerfunktion gab bei fehlendem Sensor 0 aus.
+# Der Wert 0 durchlief jede Pruefung. Der Lasttest startete, die
+# Abbruchsicherung griff nie, und das Prueffeld erhielt PASS mit
+# "Spitzentemperatur 0 Grad Celsius". Das Zielgeraet erreichte im Audit 98 Grad.
+readonly MT2_TEMP_MIN_PLAUSIBLE=5     # darunter liefert der Sensor Unsinn
+readonly MT2_TEMP_MAX_PLAUSIBLE=125   # darueber liefert der Sensor Unsinn
+
+# Gibt die Pfadmuster der Temperaturquellen aus.
+#
+# Testnaht: MT2_TEMP_SOURCES wirkt NUR, wenn zusaetzlich MT2_SELFTEST=1 steht.
+# Diese doppelte Bedingung schliesst eine versehentliche Nutzung aus.
+# Im Normalbetrieb gelten immer die echten Pfade.
+mt2_temp_sources() {
+	if [ "${MT2_SELFTEST:-0}" = "1" ] && [ -n "${MT2_TEMP_SOURCES:-}" ]; then
+		printf '%s\n' "$MT2_TEMP_SOURCES"
+		return 0
+	fi
+	printf '%s\n' "/sys/class/thermal/thermal_zone*/temp /sys/class/hwmon/hwmon*/temp*_input"
+}
+
+# Liest die hoechste glaubwuerdige Temperatur in Grad Celsius.
+# Rueckgabe 0: Der Wert wird ausgegeben.
+# Rueckgabe 1: Es ist KEIN Sensor lesbar. Es wird NICHTS ausgegeben.
+mt2_cpu_temp() {
+	local t max=-1 found=0 z pattern
+	# shellcheck disable=SC2046,SC2086  # Die Muster muessen expandieren.
+	for z in $(mt2_temp_sources); do
+		for pattern in $z; do
+			[ -r "$pattern" ] || continue
+			t="$(cat "$pattern" 2>/dev/null)" || continue
+			case "$t" in ''|*[!0-9]*) continue ;; esac
+			t=$((t / 1000))
+			[ "$t" -lt "$MT2_TEMP_MIN_PLAUSIBLE" ] && continue
+			[ "$t" -gt "$MT2_TEMP_MAX_PLAUSIBLE" ] && continue
+			found=1
+			[ "$t" -gt "$max" ] && max="$t"
+		done
+	done
+	if [ "$found" -eq 0 ]; then
+		return 1
+	fi
+	printf '%s' "$max"
+	return 0
+}
+
+# Zaehlt die lesbaren und glaubwuerdigen Temperaturquellen.
+mt2_cpu_temp_sensors() {
+	local n=0 t z pattern
+	# shellcheck disable=SC2046,SC2086  # Die Muster muessen expandieren.
+	for z in $(mt2_temp_sources); do
+		for pattern in $z; do
+			[ -r "$pattern" ] || continue
+			t="$(cat "$pattern" 2>/dev/null)" || continue
+			case "$t" in ''|*[!0-9]*) continue ;; esac
+			t=$((t / 1000))
+			[ "$t" -lt "$MT2_TEMP_MIN_PLAUSIBLE" ] && continue
+			[ "$t" -gt "$MT2_TEMP_MAX_PLAUSIBLE" ] && continue
+			n=$((n + 1))
+		done
+	done
+	printf '%s' "$n"
+}
+
+# So viele Messungen in Folge duerfen ausfallen, dann bricht der Test ab.
+readonly MT2_TEMP_MISS_MAX=2
+
+# Bewertet eine einzelne Messung im Lasttest.
+# Diese Funktion traegt die Sicherheitsentscheidung. Sie ist deshalb
+# getrennt und einzeln pruefbar.
+#
+# Aufruf: mt2_thermal_step <wert_oder_leer> <spitze> <fehlversuche> <abbruchgrenze>
+# Ausgabe: "<aktion> <neue_spitze> <neue_fehlversuche>"
+#   weiter               Der Lauf geht weiter.
+#   abbruch_temperatur   Die Grenze ist erreicht. Sofort abbrechen.
+#   abbruch_sensor       Zu viele Messungen fielen aus. Sofort abbrechen.
+mt2_thermal_step() {
+	local t="${1:-}" peak="$2" misses="$3" limit="$4"
+	if [ -z "$t" ]; then
+		misses=$((misses + 1))
+		if [ "$misses" -ge "$MT2_TEMP_MISS_MAX" ]; then
+			printf 'abbruch_sensor %s %s\n' "$peak" "$misses"
+		else
+			printf 'weiter %s %s\n' "$peak" "$misses"
+		fi
+		return 0
+	fi
+	case "$t" in ''|*[!0-9]*) printf 'abbruch_sensor %s %s\n' "$peak" "$MT2_TEMP_MISS_MAX"; return 0 ;; esac
+	[ "$t" -gt "$peak" ] && peak="$t"
+	if [ "$t" -ge "$limit" ]; then
+		printf 'abbruch_temperatur %s 0\n' "$peak"
+	else
+		printf 'weiter %s 0\n' "$peak"
+	fi
+	return 0
+}
+
+# ---------------------------------------------------------------------------
+# V4.2: Dateisystem-Momentaufnahme
+# ---------------------------------------------------------------------------
+# Ergebnis: Ein Dry-Run kann nachweisen, dass er nichts geaendert hat.
+# Kosten gemessen: 28 Millisekunden fuer 1305 Eintraege.
+#
+# Aufruf: mt2_fs_fingerprint <ausgabedatei> <pfad>...
+mt2_fs_fingerprint() {
+	local out="$1"; shift
+	find "$@" -xdev \( -type f -o -type l -o -type d \) \
+		-printf '%y\t%p\t%s\t%T@\n' 2>/dev/null | LC_ALL=C sort > "$out"
+}
+
+# Vergleicht zwei Momentaufnahmen.
+# Rueckgabe 0: kein Unterschied. Rueckgabe 1: Unterschied vorhanden.
+mt2_fs_fingerprint_equal() {
+	cmp -s "$1" "$2"
+}
+
+# Diese Pfade aendert das System von selbst. Sie zaehlen nicht als Aenderung.
+# Ohne diese Liste erzeugt zum Beispiel systemd-resolved einen Fehlalarm,
+# weil es /etc/resolv.conf im Betrieb neu schreibt.
+readonly MT2_FS_VOLATILE='/etc/mtab
+/etc/resolv.conf
+/etc/adjtime
+/etc/ld.so.cache
+/etc/.pwd.lock
+/etc/.updated
+/etc/blkid.tab
+/etc/blkid.tab.old
+/etc/machine-id'
+
+# Gibt die geaenderten Pfade aus, ohne die bekannt fluechtigen.
+# Aufruf: mt2_fs_fingerprint_changes <vorher> <nachher>
+#
+# Wichtig: 'diff' liefert 1, wenn die Dateien sich unterscheiden.
+# Mit 'set -o pipefail' faerbt das die ganze Rohrleitung ein.
+# Deshalb steht hier '|| true' direkt hinter diff.
+mt2_fs_fingerprint_changes() {
+	{ diff "$1" "$2" 2>/dev/null || true; } \
+		| sed -n 's/^[<>] //p' \
+		| cut -f2 \
+		| LC_ALL=C sort -u \
+		| { grep -vxF -f <(printf '%s\n' "$MT2_FS_VOLATILE") || true; }
+}
+
+# Zaehlt die geaenderten Pfade, die als fluechtig gelten.
+mt2_fs_fingerprint_volatile_count() {
+	local n=0
+	n="$( { diff "$1" "$2" 2>/dev/null || true; } \
+		| sed -n 's/^[<>] //p' \
+		| cut -f2 \
+		| LC_ALL=C sort -u \
+		| grep -cxF -f <(printf '%s\n' "$MT2_FS_VOLATILE") )" || n=0
+	printf '%s' "${n:-0}"
+}
+
+# ---------------------------------------------------------------------------
+# V4.2: Vollstaendigkeit einer Sicherung pruefen
+# ---------------------------------------------------------------------------
+# Ergebnis: Eine Sicherung gilt erst als brauchbar, wenn jede Pflichtdatei
+# vorhanden, nicht leer und Byte fuer Byte gleich dem Original ist.
+#
+# Gemessen in V4.1: Ein Siegel bewies nur Selbstkonsistenz. Eine Sicherung
+# ohne /etc/default/grub galt als gueltig.
+#
+# Aufruf: mt2_backup_check_complete <verzeichnis> <quelle|zielname>...
+mt2_backup_check_complete() {
+	local dir="$1"; shift
+	local miss=0 entry src name
+	for entry in "$@"; do
+		src="${entry%%|*}"
+		name="${entry##*|}"
+		[ -n "$name" ] || continue
+		if [ ! -s "$dir/$name" ]; then
+			log_err "Pflichtdatei fehlt oder ist leer in der Sicherung: $name"
+			miss=$((miss + 1))
+			continue
+		fi
+		if [ -f "$src" ] && ! cmp -s "$src" "$dir/$name"; then
+			log_err "Die Sicherung von '$src' weicht vom Original ab."
+			miss=$((miss + 1))
+		fi
+	done
+	[ "$miss" -eq 0 ] || return 1
+	return 0
 }

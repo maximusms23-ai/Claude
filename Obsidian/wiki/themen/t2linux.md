@@ -80,6 +80,30 @@ Die Paketquelle liefert vier Reihen. Alle sind fuer `noble` gebaut.
 Die Berichte anderer Distributionen stuetzen zwei Entscheidungen
 unabhaengig: die Wahl der LTS-Reihe und den Ausschluss von `apple-bce`.
 
+## Waerme und Luefterregelung
+
+Der Core i9-9880H im MacBookPro16,1 erreichte im Audit **98 Grad Celsius**.
+Die Ursache ist nicht geklaert.
+Zwei Punkte sind dabei wichtig.
+
+1. Die Temperatursensoren liefern erst, wenn `coretemp` und `applesmc`
+   geladen sind. Vorher ist `/sys/class/thermal` leer.
+2. Die Luefterregelung liegt unter Linux beim Dienst `t2fanrd`.
+   Die Firmware regelt nicht selbst.
+
+Daraus folgt eine Regel fuer jeden Lasttest:
+
+| Bedingung | Begruendung |
+| --- | --- |
+| gueltige Temperaturmessung | Ohne Messwert gibt es keine Abbruchsicherung. |
+| drehender Luefter | Ein lesbarer Wert allein beweist keine Kuehlung. |
+| aktiver Dienst `t2fanrd` | Ohne Dienst steigt die Drehzahl nicht unter Last. |
+| gesonderte Freigabe | Ein unbeaufsichtigter Lasttest ist bei 98 Grad gefaehrlich. |
+
+Ein leerer Sensorpfad darf **nicht** als 0 Grad gelten.
+Dieser Fehler stand in [[MAXIMUS T2 Installer]] bis zur Fassung 4.1.
+Die Fassung 4.2 behebt ihn.
+
 ## Notwendige Kernelparameter
 
 ```
@@ -97,6 +121,10 @@ Zwei Angaben gelten erst nach einer Messung am Geraet:
    `journalctl -k --grep=brcmfmac`.
 2. Der Treiber des internen Bildschirms. Lies ihn unter
    `/sys/class/drm/card*-eDP-*`.
+3. Die Temperatursensoren. Lies sie unter `/sys/class/thermal/thermal_zone*/temp`
+   und `/sys/class/hwmon/hwmon*/temp*_input`.
+4. Die Luefterdrehzahlen. Lies sie unter `/sys/class/hwmon/hwmon*/fan*_input`.
+   Pruefe zusaetzlich `systemctl is-active t2fanrd`.
 
 ## Verweise
 

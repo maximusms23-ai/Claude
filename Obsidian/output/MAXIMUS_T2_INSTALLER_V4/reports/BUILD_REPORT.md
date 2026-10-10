@@ -217,8 +217,11 @@ Das Paket wurde stattdessen in das Git-Repositorium gelegt, Zweig
 Dein nächster Schritt auf dem RTX-4080-Rechner:
 
 ```bash
-git clone <repo-url> maximus-claude
+# Der Zweig muss beim Klonen aktiv werden. Auf 'main' fehlt das Verzeichnis.
+git clone --branch claude/maximus-strata-validation-c44vzz \
+  https://github.com/maximusms23-ai/Claude maximus-claude
 cd maximus-claude/Obsidian/output/MAXIMUS_T2_INSTALLER_V4
+git branch --show-current
 bash scripts/fetch-packages.sh
 bash scripts/selftest.sh
 sudo bash scripts/deploy-to-t7.sh --dry-run

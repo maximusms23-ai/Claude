@@ -15,4 +15,4 @@ Projekte, Repositories und technische Vorhaben.
 - [[Gemme Training|Gemme Training]] — Fine-Tuning eines lokalen LLM auf Wiki-Inhalte
 - [[Ollama Projekt|Ollama]] — Lokale LLM-Laufzeitumgebung
 - [[PaperclipAI]] — Orchestrierungsplattform für autonome KI-Agenten
-- [[MAXIMUS T2 Installer]] — Offline-Installationspaket für T2Linux auf MacBookPro16,1 (PACKAGE_READY)
+- [[MAXIMUS T2 Installer]] — Offline-Installationspaket für T2Linux auf MacBookPro16,1 (Fassung 4.2.0, PACKAGE_READY)

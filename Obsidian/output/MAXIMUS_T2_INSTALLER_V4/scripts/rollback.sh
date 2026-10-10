@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MAXIMUS_T2_INSTALLER V4.1 - Aenderungen zuruecknehmen
+# MAXIMUS_T2_INSTALLER V4.2 - Aenderungen zuruecknehmen
 #
 # Ergebnis: Das Zielgeraet erhaelt die Konfiguration von vor der Installation
 # zurueck. Die vorhandenen Ubuntu-Kernel bleiben unangetastet.
@@ -187,6 +187,50 @@ case "$BAK_RC" in
 esac
 
 # ---------------------------------------------------------------------------
+log_step "Vollstaendigkeit der Sicherung pruefen"
+# ---------------------------------------------------------------------------
+# V4.2: Das Siegel beweist nur Selbstkonsistenz. Es beweist nicht, dass die
+# Pflichtdateien da sind. Diese Pruefung schliesst die Luecke.
+if [ -f "$BACKUP_DIR/MANIFEST" ]; then
+	log_info "MANIFEST mit $(grep -c . "$BACKUP_DIR/MANIFEST") Eintraegen gefunden."
+	MISS_REQ=0
+	while IFS="$(printf '\t')" read -r state kind src name; do
+		[ "$kind" = "pflicht" ] || continue
+		case "$state" in
+			fehlt)
+				log_err "Das MANIFEST meldet eine fehlende Pflichtdatei: $src"
+				MISS_REQ=$((MISS_REQ + 1)) ;;
+			gesichert|erzeugt)
+				if [ ! -s "$BACKUP_DIR/$name" ]; then
+					log_err "Pflichtdatei fehlt oder ist leer: $name"
+					MISS_REQ=$((MISS_REQ + 1))
+				fi ;;
+		esac
+	done < "$BACKUP_DIR/MANIFEST"
+	if [ "$MISS_REQ" -eq 0 ]; then
+		log_ok "Jede im MANIFEST genannte Pflichtdatei liegt vor."
+	elif [ "$FORCE_UNVERIFIED" -eq 1 ]; then
+		log_warn "$MISS_REQ Pflichtdateien fehlen. Der Rueckfall laeuft auf Anweisung dennoch."
+		log_warn "Diese Dateien kann er NICHT zuruecksetzen."
+	else
+		die "$RC_CHECKSUM" "$MISS_REQ Pflichtdateien fehlen in der Sicherung." \
+			"Ein Rueckfall waere unvollstaendig. Pruefe $BACKUP_DIR von Hand. Nutze danach --force-unverified."
+	fi
+else
+	log_warn "Die Sicherung hat kein MANIFEST. Sie stammt aus Fassung V4.0 oder V4.1."
+	# Mindestpruefung auf die zwei wichtigsten Dateien
+	MISS_REQ=0
+	for n in etc-default-grub grub.cfg; do
+		[ -s "$BACKUP_DIR/$n" ] || { log_warn "Es fehlt: $n"; MISS_REQ=$((MISS_REQ + 1)); }
+	done
+	if [ "$MISS_REQ" -gt 0 ] && [ "$FORCE_UNVERIFIED" -eq 0 ]; then
+		die "$RC_CHECKSUM" "$MISS_REQ wichtige Sicherungsdateien fehlen." \
+			"Pruefe $BACKUP_DIR von Hand. Nutze danach --force-unverified."
+	fi
+	[ "$MISS_REQ" -eq 0 ] && log_ok "Die zwei wichtigsten Sicherungsdateien liegen vor."
+fi
+
+# ---------------------------------------------------------------------------
 log_step "Umfang ermitteln"
 # ---------------------------------------------------------------------------
 declare -a WRITTEN=()
@@ -285,13 +329,29 @@ for rec in "${WRITTEN[@]}"; do
 done
 
 # Die Offline-Paketquelle und der Alteintrag der Fassung V4.0.
-remove_path "$MT2_APT_LIST"
-remove_path "$MT2_APT_CONF"
+# V4.2: Geloescht werden die FESTEN Pfade. Die Arbeitspfade einer Pruefung
+# liegen in einem temporaeren Verzeichnis und sind schon weg.
+remove_path "$MT2_APT_LIST_PERSISTENT"
+remove_path "$MT2_APT_CONF_PERSISTENT"
 remove_path "$MT2_APT_LIST_LEGACY"
-if [ -d "$MT2_APT_LISTS" ] && [ "$DRY_RUN" -eq 0 ]; then
-	rm -rf "$MT2_APT_LISTS" && log_ok "geloescht: $MT2_APT_LISTS"
-elif [ -d "$MT2_APT_LISTS" ]; then
-	printf '         [wuerde loeschen] %s\n' "$MT2_APT_LISTS"
+for d in "$MT2_APT_LISTS_PERSISTENT" "$MT2_APT_DIR/log"; do
+	if [ -d "$d" ] && [ "$DRY_RUN" -eq 0 ]; then
+		rm -rf "$d" && log_ok "geloescht: $d"
+	elif [ -d "$d" ]; then
+		printf '         [wuerde loeschen] %s\n' "$d"
+	fi
+done
+# V4.2: Der Bericht nennt das ganze Verzeichnis. Also muss es auch weg sein.
+# rmdir entfernt es nur, wenn es wirklich leer ist. Fremde Dateien bleiben.
+if [ -d "$MT2_APT_DIR" ] && [ "$DRY_RUN" -eq 0 ]; then
+	if rmdir "$MT2_APT_DIR" 2>/dev/null; then
+		log_ok "geloescht: $MT2_APT_DIR"
+	else
+		log_warn "$MT2_APT_DIR ist nicht leer und bleibt bestehen."
+		find "$MT2_APT_DIR" -mindepth 1 2>/dev/null | head -5 | sed 's/^/         /'
+	fi
+elif [ -d "$MT2_APT_DIR" ]; then
+	printf '         [wuerde loeschen, falls leer] %s\n' "$MT2_APT_DIR"
 fi
 
 # ---------------------------------------------------------------------------

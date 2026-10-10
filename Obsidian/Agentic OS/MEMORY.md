@@ -22,7 +22,7 @@ tags:
 
 ## Aktueller Stand
 
-Agent-OS-Integration ist repo-seitig vollstaendig: fuenf Agenten unter `.claude/agents/`, SessionStart-Hook fuer das Gedaechtnis, Protokoll und `MEMORY.md` unter `Obsidian/Agentic OS/`, Bootstrap-Skript unter `scripts/`, `Obsidian/output/`-Baum angelegt. Branch `claude/agent-os-integration-context-gobmre`.
+Agent-OS-Integration ist repo-seitig vollstaendig und in Cloud-Sessions **nachweislich aktiv**: beim Resume dieser Session hat der SessionStart-Hook gefeuert und `MEMORY.md` in den Kontext geladen, die fuenf Agenten aus `.claude/agents/` stehen als Agent-Typen bereit. Branch `claude/agent-os-integration-context-gobmre`, Commit 52940ea.
 
 Nicht erledigt: das lokale Setup unter `~/.agentic-os/claude-projects/` auf dem Mac des Users. Dafuer liegt `scripts/agentic-os-bootstrap.sh` bereit, das der User selbst ausfuehren muss — aus einem Cloud-Container ist dieser Pfad nicht erreichbar.
 
@@ -35,7 +35,7 @@ Nicht erledigt: das lokale Setup unter `~/.agentic-os/claude-projects/` auf dem 
 
 ## Offene Punkte
 
-- Lokales Bootstrap auf dem Mac des Users ist offen (siehe "Aktueller Stand").
+- Lokales Bootstrap auf dem Mac des Users ist offen. Aus einer Cloud-Session nicht machbar: keine Computer-Use-/Remote-Device-Tools vorhanden, keine Remote-Control-Verbindung, keine Peer-Session auf seiner Maschine. Erfordert eine Session, die auf seinem Rechner laeuft (Claude Desktop oder `claude remote-control`).
 - `Obsidian/raw/` existiert laut Dokumentation, ist im Repo aber nicht vorhanden — nur `Clippings/`, `Ideen/`, `Projekte/`. Ob `raw/` lokal existiert und nur nicht committet ist, ist ungeklaert.
 - Slash-Commands unter `.claude/commands/` sind nicht angelegt; die Agenten werden bis dahin per Name aufgerufen.
 - `Obsidian/wiki/Unbenannt.base` und `Obsidian/Unbenannt.canvas` sind unbenannte Platzhalter ohne Inhalt — Zweck unklar.
@@ -50,3 +50,4 @@ Nicht erledigt: das lokale Setup unter `~/.agentic-os/claude-projects/` auf dem 
 ## Session-Log
 
 - 2026-10-10 — Geprueft, ob Agent OS integriert war: war es nicht (leerer Branch, keine Agenten, kein Protokoll). Anschliessend die repo-seitige Integration gebaut und committet.
+- 2026-10-10 — Integration im Cloud-Resume verifiziert: Hook feuert, Agenten laden. Zugriff auf den Mac geprueft und ausgeschlossen (siehe "Offene Punkte").

@@ -1,0 +1,15 @@
+set timeout=10
+menuentry 'Ubuntu' --class ubuntu --class gnu-linux $menuentry_id_option 'gnulinux-simple-TESTUUID' {
+	linux	/boot/vmlinuz-7.0.0-38-generic root=UUID=TESTUUID ro quiet splash
+}
+submenu 'Advanced options for Ubuntu' $menuentry_id_option 'gnulinux-advanced-TESTUUID' {
+	menuentry 'Ubuntu, with Linux 7.0.0-38-generic' --class ubuntu $menuentry_id_option 'gnulinux-7.0.0-38-generic-advanced-TESTUUID' {
+		linux	/boot/vmlinuz-7.0.0-38-generic root=UUID=TESTUUID ro
+	}
+	menuentry 'Ubuntu, with Linux 6.18.54-1-t2-noble' --class ubuntu $menuentry_id_option 'gnulinux-6.18.54-1-t2-noble-advanced-TESTUUID' {
+		linux	/boot/vmlinuz-6.18.54-1-t2-noble root=UUID=TESTUUID ro
+	}
+	menuentry 'Ubuntu, with Linux 6.18.54-1-t2-noble (recovery mode)' --class ubuntu $menuentry_id_option 'gnulinux-6.18.54-1-t2-noble-recovery-TESTUUID' {
+		linux	/boot/vmlinuz-6.18.54-1-t2-noble root=UUID=TESTUUID ro single
+	}
+}

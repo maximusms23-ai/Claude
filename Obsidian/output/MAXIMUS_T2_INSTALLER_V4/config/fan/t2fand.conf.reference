@@ -1,0 +1,27 @@
+# MAXIMUS_T2_INSTALLER_V4 - Referenzwerte fuer /etc/t2fand.conf
+#
+# WICHTIG: Schreibe diese Datei NICHT direkt nach /etc/t2fand.conf.
+# Der Dienst t2fanrd erzeugt die Datei beim ersten Start selbst.
+# Erst dann stehen die richtigen Abschnittsnamen der Luefter fest.
+# scripts/install.sh aendert nur die Werte in den erzeugten Abschnitten.
+#
+# Schluessel je Luefter:
+#   low_temp           Ab dieser Temperatur steigt die Drehzahl.
+#   high_temp          Ab dieser Temperatur laeuft der Luefter voll.
+#   speed_curve        linear, exponential oder logarithmic
+#   always_full_speed  true erzwingt Volllast.
+#
+# Die folgenden Werte sind bewusst vorsichtig gewaehlt.
+# Das Zielgeraet erreichte im letzten Audit 98 Grad Celsius.
+
+[Fan1]
+low_temp = 55
+high_temp = 80
+speed_curve = linear
+always_full_speed = false
+
+[Fan2]
+low_temp = 55
+high_temp = 80
+speed_curve = linear
+always_full_speed = false

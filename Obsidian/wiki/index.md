@@ -13,6 +13,19 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-10 | [[MAXIMUS T2 Installer]] | Neu erstellt (Installationspaket V4, PACKAGE_READY) |
+| 2026-10-10 | [[T2Linux]] | Neu erstellt (Hardwarezustand, Kernelreihen, bekannte Fehler) |
+| 2026-10-10 | [[t2bce]] | Neu erstellt (Treiberstapel, Module, Ruhezustand) |
+| 2026-10-10 | [[Apple-Firmware brcmfmac]] | Neu erstellt (WLAN- und Bluetooth-Firmware, Methode 5) |
+| 2026-10-10 | [[Aditya Garg]] | Neu erstellt (Betreuer der T2-Paketquelle, Signaturschluessel) |
+| 2026-10-10 | [[t2linux-wiki]] | Neu erstellt (Quelleneintrag Projektdokumentation) |
+| 2026-10-10 | [[t2-ubuntu-repo]] | Neu erstellt (Quelleneintrag Paketquelle, GPG-Fingerabdruck) |
+| 2026-10-10 | [[T2-Debian-and-Ubuntu-Kernel]] | Neu erstellt (Quelleneintrag Kernel, Fehlerberichte) |
+| 2026-10-10 | [[Themen-Index]] | Abschnitt Betriebssysteme & Hardware ergaenzt |
+| 2026-10-10 | [[Konzepte-Index]] | Abschnitt Treiber & Firmware ergaenzt |
+| 2026-10-10 | [[Projekte-Index]] | [[MAXIMUS T2 Installer]] ergaenzt |
+| 2026-10-10 | [[Personen-Index]] | Erster Eintrag ergaenzt ([[Aditya Garg]]) |
+| 2026-10-10 | [[Quellen-Index]] | Drei Quellen und Quellentyp Wiki ergaenzt |
 | 2026-04-09 | [[gemma4|Gemma 4]] | Alias `Gemma 4-Modelle` + Speichertabelle (BF16/8bit/4bit) ergaenzt |
 | 2026-04-09 | [[index|Wiki-Index]] | Backslash-Fehler in Tabellenzeile behoben |
 | 2026-04-09 | [[Gemma-4-Modelle]] | Auf [[gemma4|Gemma 4]] weitergeleitet (Duplikat bereinigt) |
@@ -40,15 +53,22 @@ tags:
 
 ## Statistiken
 
-- Themen: 3
-- Konzepte: 3
-- Personen: 0
-- Projekte: 3
-- Quellen: 3
+- Themen: 4
+- Konzepte: 5
+- Personen: 1
+- Projekte: 4
+- Quellen: 6
+
+## Generierte Artefakte
+
+| Artefakt | Pfad | Status |
+|---|---|---|
+| MAXIMUS T2 Installer V4 | `output/MAXIMUS_T2_INSTALLER_V4/` | PACKAGE_READY |
 
 ## Navigation
 
 - [[Themen-Index]]
 - [[Konzepte-Index]]
+- [[Personen-Index]]
 - [[Projekte-Index]]
 - [[Quellen-Index]]

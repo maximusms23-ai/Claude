@@ -1,0 +1,17 @@
+# MAXIMUS_T2_INSTALLER_V4 - gepinnte T2-Paketdateien
+# Spalten: Dateiname<TAB>SHA256<TAB>Quell-URL
+# Die Pruefsummen stammen aus den GPG-signierten Paketindizes der Quellen.
+linux-t2-lts_6.18.54-1-noble_amd64.deb	da50ab72e87225ef04174eb6315253630608edd51f6145b0ebd8abaecc74499a	https://github.com/AdityaGarg8/t2-ubuntu-repo/releases/download/noble/linux-t2-lts_6.18.54-1-noble_amd64.deb
+linux-headers-6.18.54-1-t2-noble_6.18.54-1_amd64.deb	c57a1f3a7451784220cf7cbaa56b8372a09088ad49b2878d9785c0df81e4d5ec	https://github.com/AdityaGarg8/t2-ubuntu-repo/releases/download/noble/linux-headers-6.18.54-1-t2-noble_6.18.54-1_amd64.deb
+linux-image-6.18.54-1-t2-noble_6.18.54-1_amd64.deb	9bb660d61b73b7a2d11dcd7f1277ce8f3041a5d9e2cb4e1c50cab7e601dffadb	https://github.com/AdityaGarg8/t2-ubuntu-repo/releases/download/noble/linux-image-6.18.54-1-t2-noble_6.18.54-1_amd64.deb
+linux-t2-lts_6.18.53-1-noble_amd64.deb	5feecd1f2171ba57f06da46ae8f248fd59ed2b6693404f8772362e609ce139f6	https://github.com/AdityaGarg8/t2-ubuntu-repo/releases/download/noble/linux-t2-lts_6.18.53-1-noble_amd64.deb
+linux-headers-6.18.53-1-t2-noble_6.18.53-1_amd64.deb	37940b760e812cf75c0ab7c250a1f6ae885150df3711530c75ca46535bc1acab	https://github.com/AdityaGarg8/t2-ubuntu-repo/releases/download/noble/linux-headers-6.18.53-1-t2-noble_6.18.53-1_amd64.deb
+linux-image-6.18.53-1-t2-noble_6.18.53-1_amd64.deb	96cc992355a06189cfb3850615d42e77713d55ed4715ef00048179674676fd52	https://github.com/AdityaGarg8/t2-ubuntu-repo/releases/download/noble/linux-image-6.18.53-1-t2-noble_6.18.53-1_amd64.deb
+tiny-dfr_0.3.7-4-noble_amd64.deb	aee4808a1e91deacf9fce4ded72663cd4b4670980c540f6cf6d3cb149142a383	https://github.com/AdityaGarg8/t2-ubuntu-repo/releases/download/noble/tiny-dfr_0.3.7-4-noble_amd64.deb
+apple-firmware-script_1.4-3_amd64.deb	b6b8729afe3183378dee2f232f9311bad00d5e2646df280d0cbd3df22d58d0c6	https://adityagarg8.github.io/t2-ubuntu-repo/apple-firmware-script_1.4-3_amd64.deb
+apple-t2-audio-config_0.5.1_amd64.deb	f49e3496acb8730ce2b7a1db85d76b55b291cf9438a159ba52c8a39b0eda241a	https://adityagarg8.github.io/t2-ubuntu-repo/apple-t2-audio-config_0.5.1_amd64.deb
+t2-apple-audio-dsp-mic_0.4.0-1_amd64.deb	1acdff095e8ec95fd6956283618f8ffa075f09fc5c36767ccefd7867ee8a8c4c	https://adityagarg8.github.io/t2-ubuntu-repo/t2-apple-audio-dsp-mic_0.4.0-1_amd64.deb
+t2-apple-audio-dsp-speakers161_0.2.0-1_amd64.deb	4448335c17abad039a278567064ff08bc03c6d47390815aab2a9ef3a31660baf	https://adityagarg8.github.io/t2-ubuntu-repo/t2-apple-audio-dsp-speakers161_0.2.0-1_amd64.deb
+t2fanrd_0.1.0-4_amd64.deb	bc3ce5ca337fbb365a4676560872fa4cbe2cb124e1c3d5f0758ac98e90db14c0	https://adityagarg8.github.io/t2-ubuntu-repo/t2fanrd_0.1.0-4_amd64.deb
+t2-ncm_0.1.0-2_amd64.deb	81593ebc382b0613e52ec961899cf33f950b1edf155c8964bbb8b525ed120281	https://adityagarg8.github.io/t2-ubuntu-repo/t2-ncm_0.1.0-2_amd64.deb
+t2-touchid_0.1.0-3_amd64.deb	086ca709c0ff91c7a66f74470f81d09b4ab6ecf6760c9cd9765bad75fd3f8196	https://adityagarg8.github.io/t2-ubuntu-repo/t2-touchid_0.1.0-3_amd64.deb

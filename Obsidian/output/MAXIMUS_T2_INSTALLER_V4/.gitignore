@@ -1,0 +1,17 @@
+# Die Paketnutzlast gehoert nicht in das Git-Repositorium.
+# Eine einzelne Kerneldatei ist 112 MB gross.
+# Stelle sie mit scripts/fetch-packages.sh her.
+packages/*/*.deb
+packages/Packages
+packages/Packages.gz
+packages/Release
+packages/SHA256SUMS.debs.previous
+packages/**/*.part
+
+# Erzeugte Berichte der Zielmaschine
+reports/HARDWARE_TEST_REPORT-*.md
+reports/INSTALLATION_REPORT-*.md
+
+# Apple-Firmware darf nicht weitergegeben werden.
+firmware/verified/*
+!firmware/verified/.gitkeep

@@ -11,3 +11,7 @@ tags:
 # Personen-Index
 
 Relevante Personen, Autoren und Akteure.
+
+## Betreuer von Projekten
+
+- [[Aditya Garg]] — Betreuer der APT-Paketquelle für T2-Macs, signiert die Paketindizes

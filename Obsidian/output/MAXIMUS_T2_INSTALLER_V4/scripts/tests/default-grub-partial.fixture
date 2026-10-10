@@ -1,0 +1,4 @@
+# Testvorlage mit teilweise gesetzten Parametern
+GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_CMDLINE_LINUX="iommu=pt mitigations=off"

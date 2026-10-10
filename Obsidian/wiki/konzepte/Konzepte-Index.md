@@ -22,3 +22,8 @@ Zentrale Begriffe und Konzepte der Wissensbasis.
 ## Optimierungsverfahren
 
 - [[TurboQuant]] — KV-Cache-Quantisierung zur Laufzeit (Google Research, ICLR 2026)
+
+## Treiber & Firmware
+
+- [[t2bce]] — Treiberstapel fuer den Apple-T2-Chip, stellt interne Geraete als USB bereit
+- [[Apple-Firmware brcmfmac]] — WLAN- und Bluetooth-Firmware fuer Broadcom-Chips in T2-Macs

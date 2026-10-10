@@ -1,0 +1,55 @@
+# MAXIMUS_T2_INSTALLER_V4 - Pruefsummen des Rahmenwerks
+# Pruefen mit:  sha256sum -c SHA256SUMS
+# Nicht enthalten, weil sie erzeugt oder ausgefuellt werden:
+#   packages/*/*.deb                  Nutzlast, siehe packages/SHA256SUMS.debs
+#   packages/SHA256SUMS.debs          vom Bauskript erzeugt
+#   packages/Packages, Packages.gz    vom Bauskript erzeugt
+#   packages/Release                  vom Bauskript erzeugt
+#   reports/HARDWARE_TEST_REPORT.md   von verify.sh ueberschrieben
+#   reports/INSTALLATION_REPORT.md    vom Benutzer ausgefuellt
+#   firmware/verified/*               Apple-Firmware, nicht mitgeliefert
+cd5493b400305bf055a40d1ec803599105aed531d13e29d0deffd0871f981e5c  ./.gitignore
+35f741272463cd11e8644b5ab7568ca8a4511a5b178d9c9525632a7e0d107108  ./COMPATIBILITY_MATRIX.md
+bdaf2e00c01f52c5cd17df01d4bd8b79d5573b68f13a08bec66f89a6dfb09d38  ./README.md
+97143221cb1e17ed3f6c993379801db3364a51dc74b2e2fdbd64b350bcbcdab0  ./SOURCE_AUDIT.md
+96ee9a8db9b5555b446021350cc4367637c809a0b62dbdcb17f0036df607012a  ./config/apt/t2-online.list.template
+9d103d55e7c41f935e20452d7d6ae409f4f6c8731387de43c36acbfd7d3b573a  ./config/apt/t2-ubuntu-repo.fingerprint
+dc999e7943b6d0e2623f0d917e59c695398bbfa72d064c0883691d906fc9853f  ./config/apt/t2-ubuntu-repo.gpg
+f8bf69b5d667df8b805759df9206d0178da313e3e57b3acc1ab6310d6f901c57  ./config/audio/README.md
+8ccc5ae26a8be546f6368ff5e52911c6b97bad357718cd91597a8207d9b3464a  ./config/fan/t2fand.conf.reference
+992568d8fea9d90d055ed2a362f07dbcc4ffa6423ea243e325f368c775e0186a  ./config/grub/10-maximus-t2-grub.conf
+f2404c592b1917b35cf3feb47c34c24cd687c38c2fbc1ad0c25ed950a6834251  ./config/grub/20-maximus-t2-cmdline.conf
+c0b5cfd387f1d7aa4a6f12130e6c4da61c1bff1cbf945c56d8bf45e027957436  ./config/grub/OPTIONAL-PARAMS.md
+11c440ec10dfddeab788b21eb8434ca0a450da15b4fba760d03e172081f7e407  ./config/install-packages.list
+fb085fdf6b6319d5ca84cbeb1e0fca0497efca2570a3e6b6f5b1062540dfa57b  ./config/modules/initramfs-modules.conf
+16e13d389ec82b7f40ac776b146f580b9be22500dbce336c0d8f723ad992b102  ./config/modules/t2-touchbar.conf
+9e4115d42423d71742ec30c6e1169bb8ddc7a2af394b9ee9909ad11d5d2f4d02  ./config/modules/t2.conf
+01e6c02064e04fb77ff5c6527db3c425ba654e814b9ccb36d019e472372a329d  ./config/network/99-network-t2-ncm.conf
+8835a3fce1cc9af026684987db7f5d61e40a2b8ecfcfde5b536dacbf0bbe415e  ./config/network/99-network-t2-ncm.rules
+4c3c0645eef6ab988801387b1c12c7d4219b6d1a6f0c2624f07add12ab40e304  ./config/power/99-maximus-t2-sleep.conf
+44b9ac6d4094041a8f776292b5b5d9695f81603740a2eaf9c1f4a3b919e0123b  ./config/power/README.md
+8261ae0e7feea16379200c254f7d283d0d1d471f49c07560adb2b8509e927351  ./firmware/README.md
+92649913acba337a75427a85d767f7e5d331c04fa730204450ca8c43b86e4dbf  ./firmware/tools/SHA256SUMS
+39ac6d26bd265f5d32198062f515ad15ef93afb7a74e702be2b008090d5bd5f3  ./firmware/tools/fetch-macOS-v2.py
+c1c1d8aa25bb5f089e46ccd0d9738fc13bfbd784f499aa924466c690f059961e  ./firmware/tools/firmware.sh.reference
+9371c1fa1e2b9aecd0d62a17d2685f806164ed16fd81a7714c0918e4c74b577f  ./manifest.json
+58025a1ac07d993b2f944cca4835cc1fb5d424807f9b881fcd6db45a90334285  ./packages/README.md
+96bfd77072811ee220bbee4fa53a2f7ee4a030e1598ac38142cffa45ec684267  ./packages/t2linux.sources
+f98a955dd1e57958b9575e119313f8b79155f66bae2961cdbeb9112a006d2241  ./recovery/GRUB-NOTSTART.txt
+7f2fb2ad1e00e53326680512329ea7f35a386af85976505b8277fb5e4afe25c8  ./recovery/RESTORE.md
+f829931119f6830b73d2b2699ce76930e27aa175b1cca9407dab6b371e31b21d  ./reports/BUILD_REPORT.md
+ffac17fce0753def9cd7201016c37d0e8e57dc15ff031935b82bf24f3dbc2c49  ./reports/PACKAGE_AUDIT.md
+cc811263f019788580c8db9e400547b89b52fb03902acea5ebe6f06028082202  ./scripts/deploy-to-t7.sh
+77ec1574fe2b11a3132dd904a100fbfa162f496169f2ad9bb756c23f2dfdabd4  ./scripts/fetch-packages.sh
+8206fe82d5e8f72ee5f2d2952611ddc987eccdffd338556eb8653f85e7431346  ./scripts/install.sh
+6b2678f7295e4660aacccfb658ba6feada14e6860dcf62eaf769e840adbffea7  ./scripts/lib/common.sh
+4744468b0fcb44e85ada9e8a469f6443da7a164378ad7b5a8af28959f41f55cc  ./scripts/lib/grub-config.sh
+dcd3e4cd0a9cb7b288093cb0e81ee73b01ba98f5095a1d6028548b31c782bfb9  ./scripts/lib/grub-entry.sh
+4c90fb97afd1f862a48f3ba044ee120bfa9b948843909bf0cd8552f552f1f08f  ./scripts/preflight.sh
+cfb2bec503b54820cb1616b4a0dbac160b26b618cdd0f0c89bdd5cf5afe8701f  ./scripts/rollback.sh
+b1d905149b74b69eac1c2cab7cdf10900a6d3e8c6d989c8150f8c5477abed4c5  ./scripts/selftest.sh
+484e7b2fd2c003913d35e399b80e53b44ea0fc76a5747f31060fef0188b98dfe  ./scripts/tests/default-grub-nocmdline.fixture
+c8db6212c323863bed1323c59dbcd7d7b0a31ecc9380c60a9191abeea6d69cef  ./scripts/tests/default-grub-partial.fixture
+fe1c33ff373f991c752485cebdcdc4638ebf3ccf7c513a384dea138bef04bb24  ./scripts/tests/default-grub.fixture
+77b81bf287577d4931df61055490376f40d3a750339c69e414e514ef29461564  ./scripts/tests/grub.cfg.fixture
+88176e35193990bcb7d3b83dd8f30076bf728eabf07459f606c9d588fc111e27  ./scripts/verify.sh

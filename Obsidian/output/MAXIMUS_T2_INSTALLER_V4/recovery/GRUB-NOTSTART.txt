@@ -1,0 +1,121 @@
+================================================================================
+  MAXIMUS_T2_INSTALLER_V4 - NOTSTART
+  Drucke dieses Blatt aus. Lege es neben das MacBook.
+  Ein Live-USB-Stick ist nicht vorhanden.
+================================================================================
+
+WICHTIG: Die interne Tastatur arbeitet IM GRUB-MENUE NICHT.
+         Der T2-Chip liefert die Tastatur erst, wenn Linux laeuft.
+         HALTE DESHALB EINE USB-TASTATUR BEREIT.
+         Schliesse sie VOR dem Neustart an.
+
+--------------------------------------------------------------------------------
+FALL 1: Das GRUB-Menue erscheint. Der T2-Kernel startet nicht.
+--------------------------------------------------------------------------------
+
+  1. Druecke die Pfeiltaste nach unten.
+  2. Waehle "Advanced options for Ubuntu". Druecke Enter.
+  3. Waehle einen Eintrag mit "generic" im Namen.
+     Beispiel: Ubuntu, with Linux 7.0.0-38-generic
+  4. Druecke Enter.
+  5. Das System startet mit dem bisherigen Ubuntu-Kernel.
+  6. Melde dich an. Fuehre danach aus:
+
+        cd <T7-Pfad>/MAXIMUS_T2_INSTALLER_V4
+        sudo bash scripts/rollback.sh
+
+--------------------------------------------------------------------------------
+FALL 2: Das GRUB-Menue erscheint nicht.
+--------------------------------------------------------------------------------
+
+  1. Schalte das Geraet aus. Halte die Einschalttaste 10 Sekunden.
+  2. Schalte es ein.
+  3. Halte sofort die linke UMSCHALT-Taste gedrueckt.
+     Nutze dafuer die USB-Tastatur.
+     Alternativ: Tippe mehrfach die ESC-Taste.
+  4. Das GRUB-Menue erscheint. Gehe weiter mit FALL 1.
+
+--------------------------------------------------------------------------------
+FALL 3: GRUB zeigt nur die Eingabeaufforderung "grub>".
+--------------------------------------------------------------------------------
+
+  Tippe die folgenden Zeilen. Druecke nach jeder Zeile Enter.
+
+        ls
+
+  Notiere die Partitionen. Suche die Linux-Partition. Meist ist es (hd0,gpt3).
+  Pruefe sie:
+
+        ls (hd0,gpt3)/boot
+
+  Wenn dort vmlinuz-Dateien liegen, fahre fort.
+  Ersetze X durch deine Kernelversion, zum Beispiel 7.0.0-38-generic.
+  Ersetze UUID durch den Wert, den du mit "ls -l (hd0,gpt3)" findest.
+
+        set root=(hd0,gpt3)
+        linux /boot/vmlinuz-X root=/dev/nvme0n1p3 ro
+        initrd /boot/initrd.img-X
+        boot
+
+  Hinweis: Nutze die TAB-Taste. Sie ergaenzt Dateinamen.
+
+  Nach dem Start reparierst du den Bootloader:
+
+        sudo update-grub
+        sudo grub-install
+
+--------------------------------------------------------------------------------
+FALL 4: GRUB zeigt nur "grub rescue>".
+--------------------------------------------------------------------------------
+
+        set prefix=(hd0,gpt3)/boot/grub
+        set root=(hd0,gpt3)
+        insmod normal
+        normal
+
+  Danach erscheint das normale GRUB-Menue. Gehe weiter mit FALL 1.
+
+--------------------------------------------------------------------------------
+FALL 5: Nichts hilft. Der Bootloader ist beschaedigt.
+--------------------------------------------------------------------------------
+
+  Du brauchst ein Startmedium. Es gibt zwei Wege.
+
+  WEG A: Startmedium auf dem RTX-Rechner erstellen.
+    1. Lade ein Ubuntu-24.04.5-Abbild fuer amd64 herunter.
+    2. Pruefe die Pruefsumme gegen die Angabe auf der Ubuntu-Webseite.
+    3. Schreibe es auf einen USB-Stick.
+    4. Starte das MacBook. Halte dabei die ALT-Taste gedrueckt.
+    5. Waehle das USB-Medium.
+
+  WEG B: Apple-Internetwiederherstellung.
+    1. Halte beim Einschalten die Tastenfolge CMD + R gedrueckt.
+    2. Dieser Weg fuehrt zu macOS-Werkzeugen, nicht zu Linux.
+    3. Nutze ihn nur, um die Partitionstabelle zu lesen.
+    4. LOESCHE DORT NICHTS.
+
+  Reparatur von einem Ubuntu-Live-System aus:
+
+        sudo mount /dev/nvme0n1p3 /mnt
+        sudo mount /dev/nvme0n1p1 /mnt/boot/efi
+        for d in dev proc sys run; do sudo mount --bind /$d /mnt/$d; done
+        sudo chroot /mnt
+        update-grub
+        grub-install
+        exit
+
+  Pruefe die Geraetenamen vorher mit: lsblk -f
+
+--------------------------------------------------------------------------------
+GRENZEN DIESER ANLEITUNG
+--------------------------------------------------------------------------------
+
+  Zwei vorhandene Kernel sind KEINE Garantie fuer einen Start.
+  Ein beschaedigter Bootloader verhindert den Start trotz vorhandener Kernel.
+  Deshalb aendert das Installationsskript weder EFI noch NVRAM.
+  Deshalb sichert es die GRUB-Konfiguration vor jeder Aenderung.
+
+  Die Sicherungen liegen unter:  /var/backups/maximus-t2/<Zeitstempel>/
+  Die Protokolle liegen unter:   /var/log/maximus-t2/
+
+================================================================================

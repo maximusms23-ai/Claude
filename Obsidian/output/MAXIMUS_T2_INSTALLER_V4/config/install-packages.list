@@ -1,0 +1,57 @@
+# MAXIMUS_T2_INSTALLER_V4 - Paketliste fuer die Installation
+# Eine Zeile je Paket. Alles nach '#' ist ein Kommentar.
+#
+# WICHTIG: apple-bce, apple-touchbar, applesmc-t2, bcm5974-t2 und apfs-dkms
+# fehlen hier absichtlich. Der Kernel linux-t2-lts enthaelt diese Treiber
+# bereits. Eine zusaetzliche Installation erzeugt Konflikte.
+
+# --- Kernel mit T2-Unterstuetzung -----------------------------------------
+linux-t2-lts
+
+# --- Eingabe und Touch Bar -------------------------------------------------
+tiny-dfr
+
+# --- Luefter ---------------------------------------------------------------
+t2fanrd
+
+# --- Audio -----------------------------------------------------------------
+apple-t2-audio-config
+t2-apple-audio-dsp-mic
+t2-apple-audio-dsp-speakers161
+pipewire-audio
+pavucontrol
+alsa-utils
+
+# --- WLAN- und Bluetooth-Firmware (Werkzeug, nicht die Firmware selbst) ---
+apple-firmware-script
+curl
+dmg2img
+python3
+
+# --- Netzwerk des T2-Chips -------------------------------------------------
+t2-ncm
+
+# --- Touch ID (optional, nur mit in macOS angelegten Fingerabdruecken) ----
+t2-touchid
+
+# --- Bluetooth -------------------------------------------------------------
+bluez
+bluez-tools
+
+# --- Pruefwerkzeuge fuer die Hardware-Abnahme ------------------------------
+pciutils
+usbutils
+v4l-utils
+ffmpeg
+evtest
+libinput-tools
+iw
+wireless-tools
+lm-sensors
+mesa-utils
+vainfo
+edid-decode
+powertop
+acpi
+upower
+stress-ng

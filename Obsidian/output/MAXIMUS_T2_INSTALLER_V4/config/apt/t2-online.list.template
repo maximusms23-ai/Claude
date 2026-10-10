@@ -1,0 +1,12 @@
+# MAXIMUS_T2_INSTALLER_V4 - Online-Paketquellen fuer T2 Macs
+# Ziel: /etc/apt/sources.list.d/t2.list
+#
+# Nutze diese Datei NUR, wenn die Offline-Installation nicht ausreicht.
+# Der Schluessel gilt ausschliesslich fuer diese beiden Quellen.
+# Kopiere ihn vorher:
+#   sudo install -m 0644 config/apt/t2-ubuntu-repo.gpg /etc/apt/keyrings/t2-ubuntu-repo.gpg
+#
+# Quelle 1: gemeinsames Repositorium fuer Debian und Ubuntu
+deb [arch=amd64 signed-by=/etc/apt/keyrings/t2-ubuntu-repo.gpg] https://adityagarg8.github.io/t2-ubuntu-repo ./
+# Quelle 2: Repositorium fuer Ubuntu 24.04 (noble), enthaelt Kernel und tiny-dfr
+deb [arch=amd64 signed-by=/etc/apt/keyrings/t2-ubuntu-repo.gpg] https://github.com/AdityaGarg8/t2-ubuntu-repo/releases/download/noble ./

@@ -65,6 +65,9 @@ Arbeitsanweisungen fuer Codex in diesem Workspace.
 - Das Projektgedaechtnis liegt in `Obsidian/Agentic OS/MEMORY.md`, die Regeln dazu in `Obsidian/Agentic OS/AI Memory Protocol.md`
 - Zu Session-Beginn das Gedaechtnis lesen, am Ende Erkenntnisse zurueckschreiben
 - Widerspricht das Gedaechtnis dem Dateibestand, gilt der Dateibestand
+- Slash-Commands: `/ingest`, `/health`, `/sync`, `/output`, `/memory`, `/check`, `/anstehend`
+- `python3 scripts/wiki_check.py` prueft Frontmatter, offene Links, Index-Drift und Statistiken; dieselbe Pruefung laeuft in CI
+- Zwei Regeln werden von Hooks erzwungen, nicht nur dokumentiert: Schreibzugriffe auf `Obsidian/raw/` und `Obsidian/Clippings/` werden blockiert, und eine Session laesst sich nicht beenden, solange die Pflicht-Updates der Indizes fehlen
 
 ## Zusammenarbeit
 

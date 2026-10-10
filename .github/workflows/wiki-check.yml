@@ -1,0 +1,38 @@
+name: Wiki-Integritaet
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Harte Fehler brechen den Build: fehlendes oder kaputtes Frontmatter.
+      # Warnungen (offene Wikilinks, Index-Drift, leere Seiten) werden berichtet,
+      # brechen aber nicht — offene Links sind in Obsidian normale Themenvorschlaege.
+      - name: Wissensbasis pruefen
+        run: python3 scripts/wiki_check.py --warnings-ok
+
+      # Der Guard-Hook kann Werkzeuge blockieren. Eine Fehlkonstruktion darin
+      # legt die Arbeit lahm, also wird er mitgetestet.
+      - name: Guard-Hook testen
+        run: python3 scripts/test_guard_readonly.py
+
+      # Der Build muss durchlaufen, sonst scheitert spaeter der Pages-Deploy.
+      # Nicht --strict: Wikilinks auf noch nicht existierende Seiten erzeugen
+      # Warnungen, und die sind hier erwuenscht statt fatal.
+      - name: MkDocs-Build probeweise
+        run: |
+          pip install --quiet mkdocs-material mkdocs-roamlinks-plugin
+          cd Obsidian && mkdocs build

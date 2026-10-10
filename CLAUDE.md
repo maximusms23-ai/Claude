@@ -57,11 +57,18 @@ Claude/
 ## Agentic OS (Agenten-Ebene)
 
 - Subagenten: `.claude/agents/` — `wiki-ingest`, `wiki-health`, `wiki-index`, `output-builder`, `memory-keeper`
+- Slash-Commands: `/ingest`, `/health`, `/sync`, `/output`, `/memory`, `/check`, `/anstehend`
 - Projektgedaechtnis: `Obsidian/Agentic OS/MEMORY.md`, Regelwerk in `Obsidian/Agentic OS/AI Memory Protocol.md`
 - **Zu Session-Beginn das Gedaechtnis lesen** (der SessionStart-Hook `.claude/hooks/session-start-memory.sh` laedt es automatisch; scheitert er, manuell lesen)
 - Bei Widerspruch zwischen Gedaechtnis und Dateibestand gilt der Dateibestand
+- Pruefung: `python3 scripts/wiki_check.py` (auch in CI via `.github/workflows/wiki-check.yml`)
 - Lokaler Arbeitsplatz: `scripts/agentic-os-bootstrap.sh`
 - Uebersicht: `Obsidian/wiki/projekte/agentic-os.md`
+
+### Erzwungene Regeln (Hooks)
+
+- `guard-readonly.py` blockt Schreibzugriffe auf `Obsidian/raw/` und `Obsidian/Clippings/`. Lesen bleibt frei. Soll dort wirklich geschrieben werden, braucht es eine ausdrueckliche Freigabe des Users.
+- `stop-wiki-gate.py` laesst eine Session nicht beenden, solange eine Inhaltsaenderung nicht in `wiki/index.md` steht (und bei neuen, umbenannten oder entfernten Seiten nicht im zugehoerigen `*-Index.md`), oder solange `wiki_check.py` einen Fehler meldet. Das macht die Pflicht-Updates unten verbindlich.
 
 ## Mandatory After Every Content Change
 

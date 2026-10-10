@@ -276,6 +276,63 @@ if [ "$DRY_RUN" -eq 0 ]; then
 			log_warn "fehlt: $f"
 		fi
 	done
+
+	# ---------------------------------------------------------------------
+	# Startmenue erzeugen
+	# ---------------------------------------------------------------------
+	# Gemessen: Ohne diesen Schritt startet das Ziel in die Eingabe-
+	# aufforderung 'grub>' statt in das Menue. grub-install legt nur den
+	# Starter ab. Die Datei /boot/grub/grub.cfg entsteht erst hier.
+	# Die Startparameter stehen schon in /etc/default/grub, weil die
+	# Nachbereitung sie spaeter erneut setzt und update-grub wiederholt.
+	if in_target update-grub >>"$MX_LOG" 2>&1; then
+		log_ok "Das Startmenue ist erzeugt."
+	else
+		die "$RC_INSTALL" "update-grub schlug fehl." \
+			"Das Ziel waere nicht startfaehig. Pruefe $MX_LOG."
+	fi
+fi
+
+# ---------------------------------------------------------------------------
+log_step "9b. Startfaehigkeit nachweisen"
+# ---------------------------------------------------------------------------
+# Ein erfolgreich beendeter Befehl allein genuegt nicht als Nachweis.
+# Diese Pruefung sucht die drei Dinge, ohne die kein Start gelingt.
+if [ "$DRY_RUN" -eq 0 ]; then
+	BOOTFEHLER=0
+	CFG="$TARGET/boot/grub/grub.cfg"
+	if [ -s "$CFG" ]; then
+		NME="$(grep -c '^menuentry\|^submenu' "$CFG" 2>/dev/null || echo 0)"
+		if [ "$NME" -ge 1 ]; then
+			log_ok "grub.cfg vorhanden mit $NME Eintraegen."
+		else
+			log_err "grub.cfg hat keinen Menueeintrag."
+			BOOTFEHLER=$((BOOTFEHLER + 1))
+		fi
+	else
+		log_err "Es gibt keine /boot/grub/grub.cfg. Das Ziel startet in 'grub>'."
+		BOOTFEHLER=$((BOOTFEHLER + 1))
+	fi
+	NK="$(find "$TARGET/boot" -maxdepth 1 -name 'vmlinuz-*' 2>/dev/null | wc -l)"
+	NI="$(find "$TARGET/boot" -maxdepth 1 -name 'initrd.img-*' 2>/dev/null | wc -l)"
+	if [ "$NK" -ge 1 ] && [ "$NI" -ge 1 ]; then
+		log_ok "$NK Kernel und $NI Initialramdisks liegen in /boot."
+		find "$TARGET/boot" -maxdepth 1 -name 'vmlinuz-*' -printf '         %f\n' 2>/dev/null
+	else
+		log_err "In /boot fehlen Kernel ($NK) oder Initialramdisk ($NI)."
+		BOOTFEHLER=$((BOOTFEHLER + 1))
+	fi
+	if [ -f "$TARGET/boot/efi/EFI/BOOT/BOOTX64.EFI" ]; then
+		log_ok "Der Starter liegt unter EFI/BOOT/BOOTX64.EFI."
+	else
+		log_err "EFI/BOOT/BOOTX64.EFI fehlt. Der Mac-Startmanager findet nichts."
+		BOOTFEHLER=$((BOOTFEHLER + 1))
+	fi
+	if [ "$BOOTFEHLER" -gt 0 ]; then
+		die "$RC_INSTALL" "Die Startfaehigkeit ist nicht nachgewiesen ($BOOTFEHLER Punkte)." \
+			"Starte das Ziel NICHT. Lies recovery/WIEDERHERSTELLUNG.md."
+	fi
+	log_ok "Die Startfaehigkeit ist nachgewiesen."
 fi
 
 log_step "10. Ergebnis"

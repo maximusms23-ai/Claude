@@ -319,7 +319,83 @@ Freigabe ohne weitere Fragen durch. Sie braucht kein Netz. Der Pfad
 Beide Fehler sind im Quelltext behoben. **Die Korrekturen sind noch nicht
 in einem vollständigen Lauf nachgeprüft.**
 
-## 10. Noch nicht geprüft
+## 10. Befund 7: Das installierte System startete nicht
+
+Dies ist der schwerste Fund dieser Prüfläufe. Er wäre ohne den Neustarttest
+unentdeckt geblieben.
+
+**Messung.** Nach der vollständigen Installation wurde die Testplatte **ohne
+Installationsmedium** gestartet. Die serielle Schnittstelle zeigte:
+
+```
+GNU GRUB  version 2.12
+
+grub>
+```
+
+Das System landete in der Eingabeaufforderung, nicht im Startmenü.
+
+**Ursache.** `grub-install` legt nur den Starter in der EFI-Partition ab.
+Die Datei `/boot/grub/grub.cfg` entsteht erst durch `update-grub`.
+Gemessen vor der Korrektur:
+
+```
+grep -c 'update-grub' install-direct.sh  ->  0
+grep -c 'update-grub' postinstall.sh     ->  0
+```
+
+Beide Skripte riefen `update-grub` **nie** auf. Die Meldung
+`[  OK  ] GRUB in die EFI-Partition geschrieben` war richtig und trotzdem
+irreführend: Der Starter lag da, seine Konfiguration nicht.
+
+**Das ist genau der Fall, vor dem der Auftrag warnt:** Ein erfolgreich
+beendeter Schreibbefehl allein genügt nicht als Nachweis der Startfähigkeit.
+
+**Korrektur.** Zwei Teile:
+
+1. `install-direct.sh` ruft nach `grub-install` jetzt `update-grub` auf.
+   `postinstall.sh` wiederholt es, nachdem es die Startparameter geändert
+   hat. Ohne diese Wiederholung stünden die neuen Parameter zwar in
+   `/etc/default/grub`, aber nicht im Menü.
+2. Ein neuer Schritt **9b "Startfähigkeit nachweisen"** prüft drei Dinge und
+   bricht sonst mit Code 18 ab:
+   - `/boot/grub/grub.cfg` ist vorhanden und hat mindestens einen Eintrag,
+   - in `/boot` liegen Kernel **und** Initialramdisk,
+   - `EFI/BOOT/BOOTX64.EFI` ist vorhanden.
+
+Gemessen nach der Korrektur:
+
+```
+grep -c 'update-grub' install-direct.sh  ->  3
+grep -c 'update-grub' postinstall.sh     ->  3
+```
+
+## 11. Gegenproben zu den Korrekturen 5 und 6
+
+Geprüft ohne virtuelle Maschine mit `tests/pruefe-nachbereitung.sh`:
+
+```
+=== Korrektur 5: Medienpfad zur Laufzeit ===
+notiert war:  /root/cdrom
+gefunden:     <vorhandener Pfad>
+BESTANDEN: der vorhandene Pfad gewinnt, die tote Notiz nicht.
+Gegenprobe ohne Treffer: /cdrom
+BESTANDEN: Rueckfall auf /cdrom.
+
+=== Korrektur 6: Startparameter ohne stehendes Anfuehrungszeichen ===
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"  -> [quiet splash pm_async=off ...]
+GRUB_CMDLINE_LINUX_DEFAULT='quiet splash'  -> [quiet splash pm_async=off ...]
+GRUB_CMDLINE_LINUX_DEFAULT=quiet           -> [quiet pm_async=off ...]
+GRUB_CMDLINE_LINUX_DEFAULT=""              -> [pm_async=off ...]
+Gegenprobe doppelt: [quiet splash pm_async=off intel_iommu=on]
+BESTANDEN: kein doppelter Parameter.
+
+Fehler gesamt: 0
+```
+
+Vier Schreibweisen und eine Gegenprobe gegen doppelte Parameter.
+
+## 12. Noch nicht geprüft
 
 | Punkt | Grund |
 | --- | --- |

@@ -20,12 +20,12 @@ eed12a9c6445e48f1c85f41ba9c64445c9c127f57e9bb2bb24e851413bc589cf  ./iso-overlay/
 c29e7eb0429cc7bad320eaa0feb85c89994d09b41357e265d2841864a89c88ba  ./iso-overlay/maximus/firmware/ANLEITUNG.md
 c1af88f9baf3d7c380cf31960f25019cdc3529e926333fc06a472ac903bd7335  ./iso-overlay/maximus/firstboot/maximus-firstboot.service
 e470a8b3e7f13b41946c5598cbfc2bed9a28d2aa07ad87b8bff9e4e483b4944f  ./iso-overlay/maximus/firstboot/report.sh
-5d316e3db19736371e56cd3ce610380efc498dde4244b68ae78756e603a17e23  ./iso-overlay/maximus/install-direct.sh
+b2963b1af9a965359d61b4e43f8de3fe645b0961d57d374ee073f52914c89c8a  ./iso-overlay/maximus/install-direct.sh
 c869959c1802647a3b6ef60f28451ecc34b4bf46bfd16bd9fe0055412469cbdb  ./iso-overlay/maximus/lib/common.sh
 7349f024ceca6e5f1966a67b8267f9b3ba93de10e762c6ac7509588c8b0bb241  ./iso-overlay/maximus/onfailure.sh
 eb35b4def278e99299f1f5fcba6beb3144a4f147c3960b5e8da9ede514a8d187  ./iso-overlay/maximus/packages/.gitignore
 dc1aa8e6692c114f732cffdaf6104bb72f174c0cb1f4fcd13dc3ffa8a49d9728  ./iso-overlay/maximus/packages/SHA256SUMS
-44b0ee07522a0a8caaff8584812cec92953d69ece35662b9fe3bc2a7ced483cd  ./iso-overlay/maximus/postinstall.sh
+6e92cec7c7ad0307fe1062dade6299de8a40a3c419456c9d4238f16cb899d036  ./iso-overlay/maximus/postinstall.sh
 dc3e357468210fa79de6f964afad3cd67dfbc5fc82169ac2477b240a485c7b7b  ./iso-overlay/maximus/selftest.sh
 629f1c2f7130498fef3b359d72a02b3007331fe8726e6bddec7b1b4dc4c2c14a  ./iso-overlay/maximus/wizard.sh
 5acec8783e164903c2466ec57fbfbd601b6a708e45e2e8b666337edee7b15392  ./iso-overlay/preseed/maximus-de.seed
@@ -33,7 +33,8 @@ e082d913fdbb1f1b5517f4bd2780571fa58209bbbf025421a69f39b6407c8668  ./iso-overlay/
 8dd1dfcf16f910dcfcbb32a8a749df4fdf9c9ad415d437e7d86f0e90b83bfcd1  ./manifest.json
 e87238e7dba8d9fdb844fbae6d5c2eda00a410235b06757a3bdefa6b9cf4ffaa  ./recovery/T2-STARTEINSTELLUNGEN.md
 58203c56848ec146d86fdc768569a940ef5dd8b80aa07fdb97dd57bdc842f8e8  ./recovery/WIEDERHERSTELLUNG.md
-6c2d551b983c506d6ada2a4c5b09e8e44f6f0ff332da760b390fe3e9af52b8a3  ./reports/PRUEFPROTOKOLL.md
+7393daab42c270e45e0f7ecfd092fbb4b77fd56031e6de1b017fd149034d1d41  ./reports/PRUEFPROTOKOLL.md
 c41042c01e320b3e5a13645662cbad2554a730e059f4ec35293eb3cadb5715d8  ./tests/boot-efi.sh
 0dde17d0d27bb517712a3bdb85817cbc6a921347d109aef74e299dfff37538d5  ./tests/boot-installed.sh
+6c45322484d111e615107e87edba836ca083511be5397c3d3cbb6372716b5e67  ./tests/pruefe-nachbereitung.sh
 045ea2652d007327019f8b52b98b2e8cece88b996015d2cedc0dd2be2fc4ca7d  ./tests/testantworten.txt

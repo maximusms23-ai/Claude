@@ -146,6 +146,18 @@ if [ -d "$MODDIR" ]; then
 	else
 		note_fail "update-initramfs meldete einen Fehler."
 	fi
+	# Die geaenderten Startparameter wirken erst nach update-grub.
+	# Gemessen: Ohne diesen Schritt startet das Ziel in 'grub>'.
+	if in_target update-grub >>"$MX_LOG" 2>&1; then
+		log_ok "Das Startmenue ist mit den neuen Parametern erzeugt."
+	else
+		note_fail "update-grub meldete einen Fehler."
+	fi
+	if [ -s "$TARGET/boot/grub/grub.cfg" ]; then
+		log_ok "grub.cfg vorhanden ($(grep -c '^menuentry\|^submenu' "$TARGET/boot/grub/grub.cfg") Eintraege)."
+	else
+		note_fail "Es gibt keine /boot/grub/grub.cfg. Das Ziel startet nicht."
+	fi
 else
 	note_fail "$MODDIR fehlt im Zielsystem."
 fi

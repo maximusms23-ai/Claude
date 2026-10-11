@@ -13,6 +13,7 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-11 | [[Infrastruktur]] | RTX-PC bestaetigt (Hostname, IP, WLAN), NVIDIA-Befund, Geraetetabelle, offene Punkte |
 | 2026-10-10 | [[Infrastruktur]] | Neu erstellt (Cloud-Sandbox, 4080-Rechner, Remote Control) |
 | 2026-10-10 | [[Themen-Index]] | Sektion Technik mit [[Infrastruktur]] ergaenzt |
 | 2026-04-09 | [[gemma4|Gemma 4]] | Alias `Gemma 4-Modelle` + Speichertabelle (BF16/8bit/4bit) ergaenzt |

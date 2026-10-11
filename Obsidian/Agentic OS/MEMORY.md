@@ -31,6 +31,9 @@ tags:
   - Bootstrap-Falle 1: das Skript akzeptiert nur das volle Wort `ja`, nicht `j`. Falle 2: es prueft mit `sshd -t` vor dem ersten Dienststart; auf Ubuntu 24.04 fehlt dann `/run/sshd` (legt `ssh.service` erst beim Start an) → falsches „STOPP: sshd-Konfiguration ungueltig". Abhilfe: `sudo install -d -m 0755 /run/sshd`, dann erneut laufen lassen.
   - Geplanter Weg fuer den Agent-OS-Auftrag: nach SSH vom Mac aus `ssh -N -L 8080:127.0.0.1:8080 maxim@192.168.178.127`, dann Endpunkt `http://127.0.0.1:8080/v1`. SSH steht seit 2026-10-11. llama-server laeuft wieder (bestaetigt von der Codex-Session am Mac: Qwen3.5-9B-Q6_K als `maximus-qwen35`, nur `127.0.0.1:8080`, Prozess haelt `/dev/nvidia0`). Die Codex-Session richtet SSH-Alias und Tunnel ein. **Offen:** der zeitlich zugeordnete GPU-Nachweis fuer einen echten Agent-OS-Auftrag — solange NVML wegen des Treiber-Mismatches ausfaellt, muss er ueber Prozessdaten (`/proc/<pid>/maps`, `/dev/nvidia*`-Handles) und llama-server-Logs mit Zeitstempeln gefuehrt werden; nach dem Neustart genuegt `nvidia-smi --query-compute-apps`.
 
+- **Ziel des Users (2026-10-11): den RTX-Rechner vollstaendig fernsteuern — ein- und ausschalten, auch bei dunklem Bildschirm.** Drei getrennte Probleme: (1) Bildschirm aus ist fuer SSH irrelevant; was SSH killt, ist automatischer Ruhezustand → abschalten. (2) Ausschalten/Neustart: enge sudoers-Regel nur fuer `systemctl poweroff|reboot|suspend`, Datei `/etc/sudoers.d/power`. (3) Einschalten: WLAN-Treiber meldet WoWLAN „wake up on magic packet" (`iw phy`, 2026-10-11 bestaetigt) — funktioniert nur aus **Suspend**, nie aus S5. Daher Modell A: Suspend als „Aus"-Zustand + Magic Packet ueber WLAN (`nmcli ... 802-11-wireless.wake-on-wlan magic`). Modell B: Ethernet-Kabel + BIOS-WoL (weckt aus S5). Modell C: smarte Steckdose + BIOS „AC BACK: Always On" (robustester Weg). Ethernet-Port ist laut Uebergabe unverkabelt.
+  - **Nicht** `suspend.target` maskieren, wenn Modell A gewaehlt wird — das verhindert auch das gewollte Suspend. Nur den *automatischen* Idle-Suspend abschalten (gsettings `sleep-inactive-ac-type nothing`, logind `IdleAction=ignore`).
+
 ## Aktueller Stand
 
 Agent-OS-Ebene ist repo-seitig vollstaendig ausgebaut und in Cloud-Sessions nachweislich aktiv: SessionStart-Hook feuert, die fuenf Agenten laden. Dazu sieben Slash-Commands, drei Hooks (Gedaechtnis laden, Quellmaterial schuetzen, Pflicht-Updates erzwingen), `scripts/wiki_check.py` und dieselbe Pruefung in CI (`.github/workflows/wiki-check.yml`). Branch `claude/agent-os-integration-context-gobmre`.
@@ -83,6 +86,7 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 
 ## Session-Log
 
+- 2026-10-11 — Fernsteuerungsziel aufgenommen; WoWLAN-Faehigkeit per `iw phy` bestaetigt; Architektur A/B/C festgehalten.
 - 2026-10-11 — SSH-Bootstrap am RTX-Rechner vom User durchgefuehrt, Fingerabdruck verifiziert. Zwei Skript-Fallen dabei dokumentiert (`ja` statt `j`; fehlendes `/run/sshd` vor dem ersten Start).
 
 - 2026-10-11 — Uebergabeprotokoll des RTX-Rechners vom User erhalten. GPU-Worker als Fakten aufgenommen (unverifiziert, als solche markiert). Erklaert den lokalen `ANTHROPIC_BASE_URL`: Local-LLM-Architektur, kein Fehler.

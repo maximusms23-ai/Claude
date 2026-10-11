@@ -25,6 +25,11 @@ tags:
 - Laufzeitdaten von Agent OS liegen in `~/.agentic-os/` — eigenes Verzeichnis pro Modul (`project-memory/`, `todos/`, `bots/`, `radar/`, `app-lab/`, `ultracode-runs/` u. a.). `~/.agentic-os/claude-projects/` enthaelt `claude-default/`, `ultracode-plan/`, `verbindungstest/` — alle drei leer.
 - Offene `[[Wikilinks]]` sind in diesem Vault **keine Fehler**, sondern Themenvorschlaege fuer noch nicht existierende Seiten. `wiki/themen/Mannheim.md` haelt allein 36 davon.
 
+- **GPU-Worker (Quelle: vom User eingefuegtes Uebergabeprotokoll einer anderen Session, 2026-10-11 — von mir nicht verifiziert):** physischer Rechner `maxim-B650-EAGLE-AX`, Ubuntu 24.04.5, RTX 4080, LAN-IP `192.168.178.127` (DHCP, Lease bis 21.10., noch keine feste Adresse). Laufzeit: llama.cpp mit Qwen3.5-9B (Q6_K) als OpenAI-kompatibler Server auf `127.0.0.1:8080`, Modellname `maximus-qwen35`, Start/Stop-Skripte unter `~/maximus/`. GPU-Nutzung nachgewiesen (337 tok/s Prompt, 77 tok/s Generierung). Projektordner dort: `maximus-gpu-worker`, Doku `docs/21-ssh-nvidia-*.md`, Pruefskript `~/maximus/bin/nvidia-check.sh`.
+  - NVIDIA: Kernelmodul 595.91.07 geladen, Bibliotheken 595.99.02 → „Driver/library version mismatch". Ursache: Paketupgrade nach dem Systemstart. Reparatur = Neustart, keine Paketaenderung. NVML (VRAM-Anzeige) bis dahin defekt, CUDA-Inferenz laeuft trotzdem.
+  - SSH: `openssh-server` auf dem RTX-Rechner fehlt noch. Bootstrap-Skript liegt auf einem temporaeren Skriptserver am Mac (`192.168.178.48:8765`), verlangt interaktives „ja" + sudo → nur lokal am Geraet ausfuehrbar. Port 22 am Mac ist geschlossen.
+  - Geplanter Weg fuer den Agent-OS-Auftrag: nach SSH vom Mac aus `ssh -N -L 8080:127.0.0.1:8080 maxim@192.168.178.127`, dann Endpunkt `http://127.0.0.1:8080/v1`. Status laut Protokoll: **BLOCKIERT** bis SSH steht; der Nachweis eines echten Agent-OS-Auftrags auf der RTX steht aus.
+
 ## Aktueller Stand
 
 Agent-OS-Ebene ist repo-seitig vollstaendig ausgebaut und in Cloud-Sessions nachweislich aktiv: SessionStart-Hook feuert, die fuenf Agenten laden. Dazu sieben Slash-Commands, drei Hooks (Gedaechtnis laden, Quellmaterial schuetzen, Pflicht-Updates erzwingen), `scripts/wiki_check.py` und dieselbe Pruefung in CI (`.github/workflows/wiki-check.yml`). Branch `claude/agent-os-integration-context-gobmre`.
@@ -36,6 +41,8 @@ Im Leitstand von Agent OS ist diese Ebene **nicht sichtbar, und kann es auch nic
 Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Users/maxim/Projects/Maximus_OS` — aus einer Cloud-Session nicht erreichbar (`/Users/...` existiert dort nicht, `127.0.0.1:3737` ist die Loopback-Adresse des Containers).
 
 ## Entscheidungen
+
+- 2026-10-11 — Der Mac betreibt **zwei getrennte Inferenz-Wege**, die nicht vermischt werden duerfen: (a) Claude Platform ueber `ant` → `api.anthropic.com`, fuer den Bereich „Claude Platform" in Agent OS; (b) lokale Modelle (LM Studio auf `127.0.0.1:1234`, GPU-Worker ueber Tunnel auf `127.0.0.1:8080`), OpenAI-kompatibel. Der `ANTHROPIC_BASE_URL=127.0.0.1:1234` ist damit kein Versehen, sondern Teil von (b) — die Reparatur ist **Trennung** (eigenes `ant`-Profil, Endpunkte pro Werkzeug), nicht Loeschen.
 
 - 2026-10-10 — `scripts/agentic-os-bootstrap.sh` laeuft nur noch mit `--confirm` und verweist zuerst auf Agent OS' eigenen Connector. Sein Verzeichnis-Layout war geraten; unbesehen ausgefuehrt haette es Verzeichnisse angelegt, die Agent OS so vielleicht nicht erwartet.
 - 2026-10-10 — Die hier gebaute Ebene bleibt bestehen, aber sie ist **nicht** der Anschluss an Agent OS. Sie regelt, wie Claude Code in diesem Repo arbeitet. Was Agent OS schon selbst macht (Memory Galaxy, Obsidian-Connector), soll nicht doppelt gefuehrt werden — vor dem Anschluss ist zu pruefen, welche Teile dann entfallen.
@@ -73,6 +80,8 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 - Index-Pflege nach jeder Inhaltsaenderung ist Pflicht, nicht Kuer (`*-Index.md` plus `wiki/index.md`).
 
 ## Session-Log
+
+- 2026-10-11 — Uebergabeprotokoll des RTX-Rechners vom User erhalten. GPU-Worker als Fakten aufgenommen (unverifiziert, als solche markiert). Erklaert den lokalen `ANTHROPIC_BASE_URL`: Local-LLM-Architektur, kein Fehler.
 
 - 2026-10-10 — Geprueft, ob Agent OS integriert war: war es nicht (leerer Branch, keine Agenten, kein Protokoll). Anschliessend die repo-seitige Integration gebaut und committet.
 - 2026-10-10 — Integration im Cloud-Resume verifiziert: Hook feuert, Agenten laden. Zugriff auf den Mac geprueft und ausgeschlossen (siehe "Offene Punkte").

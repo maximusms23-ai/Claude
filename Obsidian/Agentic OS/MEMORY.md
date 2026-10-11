@@ -29,7 +29,7 @@ tags:
   - NVIDIA: Kernelmodul 595.91.07 geladen, Bibliotheken 595.99.02 → „Driver/library version mismatch". Ursache: Paketupgrade nach dem Systemstart. Reparatur = Neustart, keine Paketaenderung. NVML (VRAM-Anzeige) bis dahin defekt, CUDA-Inferenz laeuft trotzdem.
   - **SSH auf dem RTX-Rechner: BESTAETIGT (2026-10-11, Bootstrap-Ausgabe vom User eingefuegt).** `ssh.socket` active, ufw inaktiv, Mac-Schluessel (Kommentar `maximus-mac-mini-4080-2026-10-11`) in `authorized_keys`. ED25519-Hostschluessel-Fingerabdruck: `SHA256:EMKrX8CNJoAphW6ZpCIy5VlC/B3cngzknNSo5eKYEXo` — am Mac vor der ersten Verbindung vergleichen. Port 22 am Mac bleibt geschlossen (Richtung ist Mac → RTX).
   - Bootstrap-Falle 1: das Skript akzeptiert nur das volle Wort `ja`, nicht `j`. Falle 2: es prueft mit `sshd -t` vor dem ersten Dienststart; auf Ubuntu 24.04 fehlt dann `/run/sshd` (legt `ssh.service` erst beim Start an) → falsches „STOPP: sshd-Konfiguration ungueltig". Abhilfe: `sudo install -d -m 0755 /run/sshd`, dann erneut laufen lassen.
-  - Geplanter Weg fuer den Agent-OS-Auftrag: nach SSH vom Mac aus `ssh -N -L 8080:127.0.0.1:8080 maxim@192.168.178.127`, dann Endpunkt `http://127.0.0.1:8080/v1`. SSH steht seit 2026-10-11; Tunnel und der Nachweis eines echten Agent-OS-Auftrags auf der RTX stehen aus. llama-server wurde von der RTX-Session nach dem Test wieder gestoppt — vor dem Tunnel-Test dort starten.
+  - Geplanter Weg fuer den Agent-OS-Auftrag: nach SSH vom Mac aus `ssh -N -L 8080:127.0.0.1:8080 maxim@192.168.178.127`, dann Endpunkt `http://127.0.0.1:8080/v1`. SSH steht seit 2026-10-11. llama-server laeuft wieder (bestaetigt von der Codex-Session am Mac: Qwen3.5-9B-Q6_K als `maximus-qwen35`, nur `127.0.0.1:8080`, Prozess haelt `/dev/nvidia0`). Die Codex-Session richtet SSH-Alias und Tunnel ein. **Offen:** der zeitlich zugeordnete GPU-Nachweis fuer einen echten Agent-OS-Auftrag — solange NVML wegen des Treiber-Mismatches ausfaellt, muss er ueber Prozessdaten (`/proc/<pid>/maps`, `/dev/nvidia*`-Handles) und llama-server-Logs mit Zeitstempeln gefuehrt werden; nach dem Neustart genuegt `nvidia-smi --query-compute-apps`.
 
 ## Aktueller Stand
 
@@ -77,6 +77,7 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 
 - Der User fragt auf Deutsch und erwartet Antworten auf Deutsch.
 - Vor Aussagen ueber Vorhandensein oder Fehlen von Dateien tatsaechlich im Repo nachsehen. In einer frueheren Session wurde ein fehlender Vault-Pfad als Rechteproblem gedeutet, obwohl die Datei einfach nicht existierte.
+- Der User arbeitet parallel mit mehreren Agenten-Sessions (Codex am Mac, Claude Code am RTX-Rechner, diese Cloud-Session) und fuegt Ausgaben zwischen ihnen ein. Diese Session ist dabei Gedaechtnis und Pruefinstanz, nicht Ausfuehrende — keine Befehle doppelt anweisen, die eine andere Session gerade ausfuehrt.
 - Cloud-Session laeuft in einem Linux-Container, nicht auf dem Mac des Users: `/Users/maxim/...` ist dort grundsaetzlich nicht erreichbar. Das explizit sagen statt es als Zugriffsfehler zu melden.
 - Index-Pflege nach jeder Inhaltsaenderung ist Pflicht, nicht Kuer (`*-Index.md` plus `wiki/index.md`).
 

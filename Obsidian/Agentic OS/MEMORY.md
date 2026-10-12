@@ -25,6 +25,9 @@ tags:
 - Laufzeitdaten von Agent OS liegen in `~/.agentic-os/` — eigenes Verzeichnis pro Modul (`project-memory/`, `todos/`, `bots/`, `radar/`, `app-lab/`, `ultracode-runs/` u. a.). `~/.agentic-os/claude-projects/` enthaelt `claude-default/`, `ultracode-plan/`, `verbindungstest/` — alle drei leer.
 - Offene `[[Wikilinks]]` sind in diesem Vault **keine Fehler**, sondern Themenvorschlaege fuer noch nicht existierende Seiten. `wiki/themen/Mannheim.md` haelt allein 36 davon.
 
+- **Apollo** = Sprachagent in Agent OS (Hermes-Umfeld). Gespraechsverlauf in `~/.agentic-os/apollo-conversations.jsonl` auf dem Mac. Stand 2026-10-12 laut User: komplett auf **Codex** als Backend umgestellt; frueher gab es einen Weg ueber „normales ChatGPT", der zurueckgestellt wurde. **Wunsch des Users:** Fallback wieder integrieren, sodass Apollo auch funktioniert, wenn Codex ausfaellt. Code liegt in Agent OS (`~/Projects/Maximus_OS/source/`), aus der Cloud-Session nicht erreichbar.
+  - Technischer Haken: Das ChatGPT-Abo hat keine eigene API. Programmatisch erreichbar ist es nur ueber Codex mit ChatGPT-Login. Ein Fallback, der *unabhaengig* von Codex funktionieren soll, braucht deshalb einen eigenen Zugang: OpenAI-API-Key (separat abgerechnet), OpenRouter, oder lokal (RTX `127.0.0.1:8080` / LM Studio `127.0.0.1:1234`).
+
 - **GPU-Worker (Quelle: vom User eingefuegtes Uebergabeprotokoll einer anderen Session, 2026-10-11 — von mir nicht verifiziert):** physischer Rechner `maxim-B650-EAGLE-AX`, Ubuntu 24.04.5, RTX 4080, LAN-IP `192.168.178.127` (DHCP, Lease bis 21.10., noch keine feste Adresse). Laufzeit: llama.cpp mit Qwen3.5-9B (Q6_K) als OpenAI-kompatibler Server auf `127.0.0.1:8080`, Modellname `maximus-qwen35`, Start/Stop-Skripte unter `~/maximus/`. GPU-Nutzung nachgewiesen (337 tok/s Prompt, 77 tok/s Generierung). Projektordner dort: `maximus-gpu-worker`, Doku `docs/21-ssh-nvidia-*.md`, Pruefskript `~/maximus/bin/nvidia-check.sh`.
   - NVIDIA: Kernelmodul 595.91.07 geladen, Bibliotheken 595.99.02 → „Driver/library version mismatch". Ursache: Paketupgrade nach dem Systemstart. Reparatur = Neustart, keine Paketaenderung. NVML (VRAM-Anzeige) bis dahin defekt, CUDA-Inferenz laeuft trotzdem.
   - **SSH auf dem RTX-Rechner: BESTAETIGT (2026-10-11, Bootstrap-Ausgabe vom User eingefuegt).** `ssh.socket` active, ufw inaktiv, Mac-Schluessel (Kommentar `maximus-mac-mini-4080-2026-10-11`) in `authorized_keys`. ED25519-Hostschluessel-Fingerabdruck: `SHA256:EMKrX8CNJoAphW6ZpCIy5VlC/B3cngzknNSo5eKYEXo` — am Mac vor der ersten Verbindung vergleichen. Port 22 am Mac bleibt geschlossen (Richtung ist Mac → RTX).
@@ -85,6 +88,8 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 - Index-Pflege nach jeder Inhaltsaenderung ist Pflicht, nicht Kuer (`*-Index.md` plus `wiki/index.md`).
 
 ## Session-Log
+
+- 2026-10-12 — Apollo-Fallback (Codex → zweiter Weg) als Wunsch aufgenommen; Diagnose und Uebergabe-Auftrag fuer eine Mac-Session formuliert.
 
 - 2026-10-11 — Fernsteuerungsziel aufgenommen; WoWLAN-Faehigkeit per `iw phy` bestaetigt; Architektur A/B/C festgehalten.
 - 2026-10-11 — SSH-Bootstrap am RTX-Rechner vom User durchgefuehrt, Fingerabdruck verifiziert. Zwei Skript-Fallen dabei dokumentiert (`ja` statt `j`; fehlendes `/run/sshd` vor dem ersten Start).

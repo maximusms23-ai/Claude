@@ -20,6 +20,8 @@ tags:
 - `Obsidian/TODOS.md` und `Obsidian/PROJEKTE.md` sind gitignored und existieren nur lokal beim User. In Cloud-Sessions sind sie nicht vorhanden.
 - Agent-OS-Ebene liegt in `.claude/` (Agenten, Commands, Hooks, Settings), `scripts/` (Pruefskript, Bootstrap) und `Obsidian/Agentic OS/` (Protokoll, Gedaechtnis).
 - **„Agent OS" des Users ist ein fertiges Produkt**, nicht dieses Repo: ein Desktop-Paket unter `/Users/maxim/Projects/Maximus_OS`, Version 2026-10-10, bezogen aus dem „AI Profit Boardroom". Dashboard („Leitstand") auf `http://localhost:3737`, Start via `Start Agent OS.command` bzw. `start-maximus-os.sh`. Struktur: `install/` (nummerierte Anleitungen), `source/`, `runtime/`, `config.example.json`, `SETUP-WITH-AI.md`.
+- **Nicht verwechseln:** das GitHub-Repo `maximusms23-ai/Maximus_OS` ist **nicht** Agent OS. Es ist ein aelteres, eigenes Projekt (19 Dateien, `dokument-pipeline/`, letzter Commit 2026-03-28), ohne `source/`, ohne Design OS. Der Agent-OS-Quellcode (`/Users/maxim/Projects/Maximus_OS/source`, eigenes lokales Git) liegt nur auf dem Mac und ist von keiner Cloud-Session erreichbar.
+- **Design OS** = Bereich in Agent OS unter `http://127.0.0.1:3737/design-os` (Designbibliothek, Website-Generator, Meine Websites, 3D-Welten). Codex-Uebergabe dazu: `source/docs/architecture/design-os-claude-handover.md`. Laut Codex fehlen 7 von 8 erwarteten Skills. Vollstaendiger Implementierungsauftrag vom User am 2026-10-13 formuliert — muss in Claude Code **auf dem Mac** in `source/` laufen, der Auftrag verbietet selbst die Arbeit in einer Cloud-VM ohne Projektzugriff.
 - **Agent OS hat einen eigenen Obsidian-Connector**: `install/11-MEMORY-OBSIDIAN.md` („Memory Galaxy", „Jarvis's memory"). Vorgesehener Weg laut dessen README: Terminal-Agenten IN jenem Ordner starten und sagen „connect my Obsidian vault to the Agent OS". Der User soll dabei keine Dateien selbst editieren.
 - **Obsidian-Vault-ID des Arbeits-Vaults: `53213b4610731fc1`** (vom User genannt). Pfad aufloesbar ueber `~/Library/Application Support/obsidian/obsidian.json` (macOS). Damit ist geklaert, welcher Vault gemeint ist — auf `/Volumes/Daten_Bank/Obsidian/` liegen mehrere Vaults und Backups, die NICHT der Arbeits-Vault sind.
 - Laufzeitdaten von Agent OS liegen in `~/.agentic-os/` — eigenes Verzeichnis pro Modul (`project-memory/`, `todos/`, `bots/`, `radar/`, `app-lab/`, `ultracode-runs/` u. a.). `~/.agentic-os/claude-projects/` enthaelt `claude-default/`, `ultracode-plan/`, `verbindungstest/` — alle drei leer.
@@ -90,6 +92,8 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 - Index-Pflege nach jeder Inhaltsaenderung ist Pflicht, nicht Kuer (`*-Index.md` plus `wiki/index.md`).
 
 ## Session-Log
+
+- 2026-10-13 — Design-OS-Auftrag erhalten. GitHub-Repo `Maximus_OS` geprueft: anderes Projekt, nicht Agent OS. Auftrag deshalb nicht hier ausgefuehrt, sondern fuer die Mac-Session ergaenzt.
 
 - 2026-10-12 — Apollo-Fallback (Codex → zweiter Weg) als Wunsch aufgenommen; Diagnose und Uebergabe-Auftrag fuer eine Mac-Session formuliert.
 

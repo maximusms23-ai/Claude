@@ -79,6 +79,8 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 - `Obsidian/wiki/2026-04-09.md` ist eine vollstaendig leere Seite. Nicht geloescht, weil das eine inhaltliche Entscheidung des Users ist.
 - `Obsidian/.github/workflows/deploy.yml` ist eine Dublette des Workflows im Repo-Wurzel-`.github/`. Nur der im Wurzelverzeichnis ist aktiv; die Kopie im Vault ist wirkungslos und stiftet Verwirrung.
 
+- **Freigabe ausstehend (2026-10-13):** Codex am Mac will Agent-OS-Cloud-Agenten auf Mac und RTX Schreib- und Ausfuehrungsrechte geben und braucht dafuer `approvals.single_query_mode: approve` auf der RTX-Stage — unbeaufsichtigte Python- und Shell-Aufrufe. Die automatische Freigabepruefung hat das bereits einmal abgelehnt; ein allgemeines Vollzugriffs-Okay reicht dafuer ausdruecklich nicht. Empfehlung dieser Session: **keine globale Freigabe**, sondern eigener Linux-Benutzer ohne sudo bzw. festes Arbeitsverzeichnis als Sandbox, Agenten einzeln freischalten (Hermes mit Telegram-Gateway zuletzt), Negativtest an der Sandbox-Grenze. Codex-Doku dazu auf dem Mac unter `~/Documents/ChatGPT/Agent OS/rtx-migration/deployment/` (MIGRATION-ABNAHME.md, MAC-OPERATOR-STAGE-PREPARED.md, OPERATOR-BUILTINS-STAGE-PREPARED.md), von hier nicht eingesehen.
+
 ## Gelernte Konventionen
 
 - Der User fragt auf Deutsch und erwartet Antworten auf Deutsch.

@@ -13,6 +13,8 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-14 | [[Kimi Code]] | Neu erstellt (K3 nicht lokal lauffaehig, CLI-Installation, Agent-OS-Aufruf, Skript) |
+| 2026-10-14 | [[Projekte-Index]] | [[Kimi Code]] ergaenzt |
 | 2026-10-11 | [[Infrastruktur]] | RTX-PC bestaetigt (Hostname, IP, WLAN), NVIDIA-Befund, Geraetetabelle, offene Punkte |
 | 2026-10-10 | [[Infrastruktur]] | Neu erstellt (Cloud-Sandbox, 4080-Rechner, Remote Control) |
 | 2026-10-10 | [[Themen-Index]] | Sektion Technik mit [[Infrastruktur]] ergaenzt |
@@ -46,7 +48,7 @@ tags:
 - Themen: 4
 - Konzepte: 3
 - Personen: 0
-- Projekte: 3
+- Projekte: 4
 - Quellen: 3
 
 ## Navigation

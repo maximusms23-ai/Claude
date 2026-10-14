@@ -133,6 +133,7 @@ Eine reine Cloud-Session kann diesen Schritt nicht ersetzen. Sie kann nur den Gi
 - [ ] Pruefen, ob Ollama auf dem RTX-PC laeuft und welche Modelle installiert sind
 - [ ] GPU-Provider in Agent OS anbinden und einen echten Auftrag Mac → RTX → Mac nachweisen
 - [ ] Temporaeren Skriptserver auf dem Mac nach Abschluss beenden
+- [ ] [[Kimi Code]] installieren (Cloud-Modell, keine GPU noetig), siehe `scripts/install-kimi-code.sh`
 
 ## Verwandte Seiten
 

@@ -15,3 +15,4 @@ Projekte, Repositories und technische Vorhaben.
 - [[Gemme Training|Gemme Training]] — Fine-Tuning eines lokalen LLM auf Wiki-Inhalte
 - [[Ollama Projekt|Ollama]] — Lokale LLM-Laufzeitumgebung
 - [[PaperclipAI]] — Orchestrierungsplattform für autonome KI-Agenten
+- [[Kimi Code]] — Moonshot-Coding-Agent in Agent OS; Cloud-Modell, Installation per CLI

@@ -13,6 +13,7 @@ tags:
 
 ## Projekt-Fakten
 
+- **Dieses Repo ist auf GitHub oeffentlich** (`maximusms23-ai/Claude`, visibility public). Alles in `MEMORY.md` und im Wiki ist fuer jeden lesbar — keine Keys, Tokens, Telefonnummern, Konto-IDs mit Missbrauchspotenzial. Geheimnis-Scan 2026-10-14: aktueller Stand und gesamte Historie sauber.
 - Repo `maximusms23-ai/claude` enthaelt einen Obsidian-Vault unter `Obsidian/`, der als LLM-gepflegte Wissensbasis dient. Der User editiert Wiki-Dateien selten selbst.
 - Schreibbereich ist `Obsidian/wiki/`, Einstieg `Obsidian/wiki/index.md`. `Obsidian/raw/` und `Obsidian/Clippings/` sind read-only Quellmaterial.
 - Inhaltssprache Deutsch, technische Bezeichner Englisch. Jede `.md`-Seite braucht Frontmatter `title`, `created`, `type`.
@@ -57,6 +58,10 @@ Im Leitstand von Agent OS ist diese Ebene **nicht sichtbar, und kann es auch nic
 
 Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Users/maxim/Projects/Maximus_OS` — aus einer Cloud-Session nicht erreichbar (`/Users/...` existiert dort nicht, `127.0.0.1:3737` ist die Loopback-Adresse des Containers).
 
+- **Fernsteuerung am Mac laeuft (2026-10-14):** `claude remote-control` in `~/Projects/Maximus_OS/source`. Diese Mac-Sitzung hat Dateien und Shell in `source/`, Lese-/Schreibzugriff auf den Vault und erreicht die RTX ueber den SSH-Alias. Sie ist ab jetzt die ausfuehrende Sitzung fuer Agent OS; diese Cloud-Sitzung bleibt Gedaechtnis und Pruefinstanz.
+- **Sicherheitsvorfall, offen:** In einer Vault-Notiz vom 2026-10-12 (Vault auf dem Mac, nicht in diesem Repo) steht ein Telegram-Bot-Token im Klartext — laut Mac-Sitzung der Token des OpenClaw-Bots. Risiko: Agenten, die den Vault lesen (Memory Galaxy, Hermes, Jarvis, OpenClaw), koennen den Token als Kontext an Cloud-Modelle schicken; zusaetzlich liegt er in iCloud/Backups, falls der Vault dort synchronisiert ist. Reihenfolge der Behebung: (1) User widerruft den Token bei @BotFather, (2) neuen Token nur in die Konfigurationsdatei des Bots, nie in Notizen, (3) Zeile in der Notiz schwaerzen — die Mac-Sitzung tut das nur auf ausdrueckliche Anweisung. Erst schwaerzen ohne zu widerrufen laesst den alten Token gueltig.
+- **Offene Stoerungen laut Mac-Sitzung (2026-10-14):** OpenClaw-Telegram-Bot antwortet nicht · OpenClaw-Heartbeat still seit 2026-10-13 21:15 · Hermes-Operator-Sitzungen scheitern an Tool-Policy-Fehlern (Terminal- und Telegram-Werkzeuge fehlen) · RTX/ASUS-Migration bleibt auf Staging, Produktion = Mac-Port 3737 · Autonomous Loop wartet auf Entscheidung ueber eigene SQLite-Datei unter `~/.agentic-os/autonomous-loop/` · Codex hat am 2026-10-13 jcode, einen Autonomous-Loop-Controller und lokale KI-Adapter in `source/` integriert (Berichte unter `source/docs/`).
+
 ## Entscheidungen
 
 - 2026-10-11 — Der Mac betreibt **zwei getrennte Inferenz-Wege**, die nicht vermischt werden duerfen: (a) Claude Platform ueber `ant` → `api.anthropic.com`, fuer den Bereich „Claude Platform" in Agent OS; (b) lokale Modelle (LM Studio auf `127.0.0.1:1234`, GPU-Worker ueber Tunnel auf `127.0.0.1:8080`), OpenAI-kompatibel. Der `ANTHROPIC_BASE_URL=127.0.0.1:1234` ist damit kein Versehen, sondern Teil von (b) — die Reparatur ist **Trennung** (eigenes `ant`-Profil, Endpunkte pro Werkzeug), nicht Loeschen.
@@ -100,6 +105,8 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 - Index-Pflege nach jeder Inhaltsaenderung ist Pflicht, nicht Kuer (`*-Index.md` plus `wiki/index.md`).
 
 ## Session-Log
+
+- 2026-10-14 — Remote Control am Mac bestaetigt. Geleakter Telegram-Token in Mac-Vault gemeldet; dieses oeffentliche Repo darauf gescannt — sauber. `~/.hermes/.env` hat bereits Rechte 600.
 
 - 2026-10-14 — Fuenf Agent-OS-Dateien vom User erhalten (Roadmap, CHANGELOG, Check My Setup, Claude-Launcher, config.example). Apollo-Frage geklaert (Schalter existiert), Konfigurationsort und Design-OS-Herkunft festgehalten, zwei Probleme gefunden (bypassPermissions-Launcher, Key-Pfad-Fehler im Setup-Check).
 

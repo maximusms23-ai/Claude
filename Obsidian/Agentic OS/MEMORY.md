@@ -62,6 +62,13 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 - **Sicherheitsvorfall, offen:** In einer Vault-Notiz vom 2026-10-12 (Vault auf dem Mac, nicht in diesem Repo) steht ein Telegram-Bot-Token im Klartext — laut Mac-Sitzung der Token des OpenClaw-Bots. Risiko: Agenten, die den Vault lesen (Memory Galaxy, Hermes, Jarvis, OpenClaw), koennen den Token als Kontext an Cloud-Modelle schicken; zusaetzlich liegt er in iCloud/Backups, falls der Vault dort synchronisiert ist. Reihenfolge der Behebung: (1) User widerruft den Token bei @BotFather, (2) neuen Token nur in die Konfigurationsdatei des Bots, nie in Notizen, (3) Zeile in der Notiz schwaerzen — die Mac-Sitzung tut das nur auf ausdrueckliche Anweisung. Erst schwaerzen ohne zu widerrufen laesst den alten Token gueltig.
 - **Offene Stoerungen laut Mac-Sitzung (2026-10-14):** OpenClaw-Telegram-Bot antwortet nicht · OpenClaw-Heartbeat still seit 2026-10-13 21:15 · Hermes-Operator-Sitzungen scheitern an Tool-Policy-Fehlern (Terminal- und Telegram-Werkzeuge fehlen) · RTX/ASUS-Migration bleibt auf Staging, Produktion = Mac-Port 3737 · Autonomous Loop wartet auf Entscheidung ueber eigene SQLite-Datei unter `~/.agentic-os/autonomous-loop/` · Codex hat am 2026-10-13 jcode, einen Autonomous-Loop-Controller und lokale KI-Adapter in `source/` integriert (Berichte unter `source/docs/`).
 
+- **SEO Content Pipeline Pack (AIPB, 2026-10-14 vom User erhalten):** `blog-post.md` (Claude-Skill), `seoPipeline.ts.template`, `example-transcript.txt`, `README.md`. Ziel des Packs: pro Keyword 5 verschiedene Artikel auf 5 eigenen Websites (Eleventy → Netlify), Querverlinkung, Einreichung bei Omega Indexer. Einbau laut README durch Ersetzen der `SITES` in `source/src/lib/seoPipeline.ts` → **wird bei jedem Agent-OS-Update ueberschrieben**, braucht Git/Patch-Sicherung.
+  - **Im Pack steckt ein fremder, aktiver Omega-Indexer-API-Key** (der des Pack-Autors, Step 8 in `blog-post.md`). Nicht verwenden, nirgends speichern, nicht in dieses oeffentliche Repo. Nur ein eigener Key oder Schritt weglassen.
+  - Ueber die 4 `{{TODO}}`-Stellen hinaus ist der Skill fest auf den Autor zugeschnitten: Autorenstimme und Bio, Schema-Autor mit dessen Social-Links, Skool-/Mastermind-CTAs, Footer, 5 fremde Domains, Pfade `/Users/juliangoldie/...`, Google-Sheet. Unveraendert wuerde er Artikel unter fremdem Namen auf den Seiten des Users veroeffentlichen.
+  - Risiko: 5 Artikel pro Keyword plus Netzwerk-Querverlinkung zum Ranking faellt unter Googles Spam-Richtlinien („scaled content abuse", „link schemes") — Abstrafung aller verbundenen Seiten moeglich. Entscheidung des Users.
+  - RTX bringt hier keinen Vorteil (Claude laeuft ueber API/CLI, Eleventy/Netlify sind leicht). Sinnvoll nur als Staging-Test (RTX 3738 → Mac 3739) vor dem Einbau in die Produktion auf dem Mac.
+  - Lizenz des Packs: nutzen und anpassen erlaubt, das Pack selbst nicht wiederveroeffentlichen → keine Kopie in dieses oeffentliche Repo.
+
 ## Entscheidungen
 
 - 2026-10-11 — Der Mac betreibt **zwei getrennte Inferenz-Wege**, die nicht vermischt werden duerfen: (a) Claude Platform ueber `ant` → `api.anthropic.com`, fuer den Bereich „Claude Platform" in Agent OS; (b) lokale Modelle (LM Studio auf `127.0.0.1:1234`, GPU-Worker ueber Tunnel auf `127.0.0.1:8080`), OpenAI-kompatibel. Der `ANTHROPIC_BASE_URL=127.0.0.1:1234` ist damit kein Versehen, sondern Teil von (b) — die Reparatur ist **Trennung** (eigenes `ant`-Profil, Endpunkte pro Werkzeug), nicht Loeschen.
@@ -105,6 +112,8 @@ Offen: diesen Connector laufen lassen. Erfordert einen Terminal-Agenten in `/Use
 - Index-Pflege nach jeder Inhaltsaenderung ist Pflicht, nicht Kuer (`*-Index.md` plus `wiki/index.md`).
 
 ## Session-Log
+
+- 2026-10-14 — SEO-Pipeline-Pack geprueft: fremder API-Key, fest verdrahtete Fremd-Identitaet, Spam-Richtlinien-Risiko. Nichts installiert; Vorbedingungen und Mac-Auftrag formuliert.
 
 - 2026-10-14 — Remote Control am Mac bestaetigt. Geleakter Telegram-Token in Mac-Vault gemeldet; dieses oeffentliche Repo darauf gescannt — sauber. `~/.hermes/.env` hat bereits Rechte 600.
 

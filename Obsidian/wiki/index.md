@@ -13,6 +13,7 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-21 | [[Harness²]] | Neu erstellt (Eignungsprüfung für Agent OS) |
 | 2026-04-09 | [[gemma4|Gemma 4]] | Alias `Gemma 4-Modelle` + Speichertabelle (BF16/8bit/4bit) ergaenzt |
 | 2026-04-09 | [[index|Wiki-Index]] | Backslash-Fehler in Tabellenzeile behoben |
 | 2026-04-09 | [[Gemma-4-Modelle]] | Auf [[gemma4|Gemma 4]] weitergeleitet (Duplikat bereinigt) |
@@ -43,7 +44,7 @@ tags:
 - Themen: 3
 - Konzepte: 3
 - Personen: 0
-- Projekte: 3
+- Projekte: 4
 - Quellen: 3
 
 ## Navigation

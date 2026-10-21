@@ -15,3 +15,4 @@ Projekte, Repositories und technische Vorhaben.
 - [[Gemme Training|Gemme Training]] — Fine-Tuning eines lokalen LLM auf Wiki-Inhalte
 - [[Ollama Projekt|Ollama]] — Lokale LLM-Laufzeitumgebung
 - [[PaperclipAI]] — Orchestrierungsplattform für autonome KI-Agenten
+- [[Harness²]] — Google-Research-Framework zur Harness-Optimierung; geprüft, für die Ausbildung nicht geeignet

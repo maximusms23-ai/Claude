@@ -27,7 +27,9 @@ Stand der Uebergabe vom 2026-10-11. Nur die RTX-PC-Zeile ist durch eigene Messun
 | RTX-PC `maxim-B650-EAGLE-AX` | `192.168.178.127` (WLAN, DHCP) | GPU-Worker | BESTAETIGT |
 | Mac-Skriptserver | `192.168.178.48:8765` | Einmalige Bereitstellung `bootstrap-rtx-ssh.sh` | NICHT GEPRUEFT, aus Cloud nicht erreichbar |
 
-Zugriffsweg Mac mini → RTX-PC: SSH mit Schluessel `maximus-mac-mini-4080-2026-10-11` (ed25519, oeffentlicher Teil liegt beim Mac, privater Schluessel bleibt dort). SSH-Port, Hostschluessel-Fingerprint und Alias: _offen_.
+Zugriffsweg Mac mini → RTX-PC: SSH mit Schluessel `maximus-mac-mini-4080-2026-10-11` (ed25519, privater Schluessel bleibt auf dem Mac). Stand 2026-10-22 laut Mac-Session funktionsfaehig, Alias `rtx4080` in der SSH-Config des Mac. SSH-Port und Hostschluessel-Fingerprint: _nicht dokumentiert_.
+
+**Agent OS auf dem RTX-PC:** Staging-Kopie unter `/home/maxim/maximus/agent-os-staging` mit eigener Node-Laufzeit (`runtime/node-v24.19.0-linux-x64`) und Integrationen unter `integrations/`, u. a. `linkedin-mcp` (Chrome-Profil `~/.agentic-os/linkedin-mcp/profile`). Der grafische Desktop des RTX-PCs laeuft auf `DISPLAY=:1` (GDM, Xauthority `/run/user/1000/gdm/Xauthority`).
 
 ## Umgebungen im Ueberblick
 
@@ -126,8 +128,8 @@ Eine reine Cloud-Session kann diesen Schritt nicht ersetzen. Sie kann nur den Gi
 ## Offene Punkte
 
 - [x] Hostname, LAN-IP und Betriebssystem des RTX-PCs eintragen (2026-10-11)
-- [ ] SSH-Bootstrap lokal am RTX-PC pruefen (Pruefsumme `e84041750f0a4cd12f38b3cd43faf52cfb59a8135bd3eb9e3635ea5cad1ddd1a`, Inhalt lesen) und erst dann ausfuehren
-- [ ] SSH-Hostschluessel-Fingerprint erfassen, neue Schluesselanmeldung vom Mac mini testen
+- [x] SSH Mac mini → RTX-PC eingerichtet, Alias `rtx4080` (laut Mac-Session 2026-10-22; Fingerprint und Port hier nicht erfasst)
+- [ ] LinkedIn-MCP-Login auf dem RTX-PC: Chrome-Fenster erscheint nur auf dem physischen Display `:1`, 5-Minuten-Timeout. Loesung: Profil vorab am RTX-Bildschirm oder per Remote Desktop einloggen, dann `--login` erneut
 - [ ] NVIDIA-Diagnose durchfuehren, Ursache belegen, kleinste Reparatur (vermutlich Neustart)
 - [ ] Feste DHCP-Zuordnung in der FRITZ!Box fuer die tatsaechlich genutzte Schnittstelle (`wlp7s0` oder spaeter Kabel-MAC)
 - [ ] Pruefen, ob Ollama auf dem RTX-PC laeuft und welche Modelle installiert sind

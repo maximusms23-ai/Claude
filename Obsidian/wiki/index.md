@@ -13,6 +13,7 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-22 | [[Infrastruktur]] | SSH Mac→RTX bestaetigt (Alias rtx4080), Agent-OS-Staging auf RTX, LinkedIn-Login offen |
 | 2026-10-14 | [[Kimi Code]] | Neu erstellt (K3 nicht lokal lauffaehig, CLI-Installation, Agent-OS-Aufruf, Skript) |
 | 2026-10-14 | [[Projekte-Index]] | [[Kimi Code]] ergaenzt |
 | 2026-10-11 | [[Infrastruktur]] | RTX-PC bestaetigt (Hostname, IP, WLAN), NVIDIA-Befund, Geraetetabelle, offene Punkte |

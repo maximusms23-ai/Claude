@@ -13,6 +13,8 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-27 | [[Agenten-OS]] | Neu erstellt (OS-Analogie, Maximus_OS-Beispiel, Illustrations-Prompts) |
+| 2026-10-27 | [[PaperclipAI]] | Link auf [[Agenten-OS]] ergänzt |
 | 2026-04-09 | [[gemma4|Gemma 4]] | Alias `Gemma 4-Modelle` + Speichertabelle (BF16/8bit/4bit) ergaenzt |
 | 2026-04-09 | [[index|Wiki-Index]] | Backslash-Fehler in Tabellenzeile behoben |
 | 2026-04-09 | [[Gemma-4-Modelle]] | Auf [[gemma4|Gemma 4]] weitergeleitet (Duplikat bereinigt) |
@@ -41,7 +43,7 @@ tags:
 ## Statistiken
 
 - Themen: 3
-- Konzepte: 3
+- Konzepte: 4
 - Personen: 0
 - Projekte: 3
 - Quellen: 3

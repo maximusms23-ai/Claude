@@ -22,3 +22,7 @@ Zentrale Begriffe und Konzepte der Wissensbasis.
 ## Optimierungsverfahren
 
 - [[TurboQuant]] — KV-Cache-Quantisierung zur Laufzeit (Google Research, ICLR 2026)
+
+## Agenten & Architektur
+
+- [[Agenten-OS]] — Betriebssystem-Schicht, die KI-Agenten plant, mit Gedächtnis/Werkzeugen versorgt und Rechte/Budget durchsetzt

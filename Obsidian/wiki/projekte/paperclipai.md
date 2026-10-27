@@ -74,5 +74,6 @@ Agenten wie **Wiki-Kurator** und **Archivarius** können Recherche-Ergebnisse in
 
 ## Siehe auch
 
+- [[Agenten-OS]] — Konzept dahinter: Maximus_OS als Betriebssystem für Agenten
 - [[Ollama]] — Lokales LLM-Backend (potentiell als LLM-Provider nutzbar)
 - [[Gemme Training]] — Fine-Tuning für spezialisierte Agenten

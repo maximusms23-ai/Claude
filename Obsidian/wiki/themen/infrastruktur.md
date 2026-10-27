@@ -18,14 +18,14 @@ Uebersicht der Rechenumgebungen, in denen Claude Code fuer dieses Wiki arbeitet,
 
 ## Geraete im Heimnetz (192.168.178.0/24)
 
-Stand der Uebergabe vom 2026-10-11. Nur die RTX-PC-Zeile ist durch eigene Messung belegt.
+Zielarchitektur laut Uebergabe vom 2026-10-27. Nur die RTX-PC-Zeile ist durch eigene Messung belegt, alles andere stammt aus der Uebergabe.
 
-| Geraet | Adresse | Rolle | Status |
-|--------|---------|-------|--------|
-| Mac mini | _offen_ | Zentraler Orchestrator: Agent OS unter `/Users/maxim/Projects/maximus-agent-os/source`, Codex | NICHT GEPRUEFT |
-| ASUS-Linux-Server `asusserver` | `192.168.178.183`, Benutzer `maxim` | Bestehende Infrastruktur, nicht veraendern | NICHT GEPRUEFT |
-| RTX-PC `maxim-B650-EAGLE-AX` | `192.168.178.127` (WLAN, DHCP) | GPU-Worker | BESTAETIGT |
-| Mac-Skriptserver | `192.168.178.48:8765` | Einmalige Bereitstellung `bootstrap-rtx-ssh.sh` | NICHT GEPRUEFT, aus Cloud nicht erreichbar |
+| Geraet | Adresse / Alias | Rolle (Ziel) | Status |
+|--------|-----------------|--------------|--------|
+| Intel-Mac | `192.168.178.134`, Alias `fleet-intelmac`, Benutzer `maxim_mac`, 64 GiB | Zentraler Agent-OS-Orchestrator: Studio-Postgres 54329, Honcho-Postgres 54330, Honcho-API 8000, Gbrain 3131, Web 3737, Infra 3740, Modell-Link Mac mini 12340 | NICHT GEPRUEFT, Prozesse laut Uebergabe vorhanden |
+| Mac mini M4 | `192.168.178.48`, Alias `macmini`, Benutzer `maxim`, 16 GiB | Lokale Ergaenzungs-KI Qwen3.5-4B Q8 (API 12340, Backend 12344, LaunchAgent `com.maximus.qwen4b-mac`), Colibri-Pilot isoliert; bisheriger Arbeits-Mac, iPhone-URL `https://192.168.178.48:8444` | NICHT GEPRUEFT, Backend zuletzt entladen |
+| RTX-PC `maxim-B650-EAGLE-AX` | `192.168.178.127`, Alias `rtx4080`, Benutzer `maxim`, 4080 SUPER 16 GiB VRAM, 32 GiB RAM | Haupt-KI Qwen3.8-Flash-Next Gyro-S unter Strata 0.1.50, Port 18081; kanonischer Vault `agent-os-staging/vault-staging` | BESTAETIGT (Host), Modellserver zuletzt nicht aktiv |
+| ASUS-Linux-Server `asusserver` | `192.168.178.183`, Benutzer `maxim` | Bestehende Infrastruktur, unveraendert | NICHT GEPRUEFT |
 
 Zugriffsweg Mac mini → RTX-PC: SSH mit Schluessel `maximus-mac-mini-4080-2026-10-11` (ed25519, privater Schluessel bleibt auf dem Mac). Stand 2026-10-22 laut Mac-Session funktionsfaehig, Alias `rtx4080` in der SSH-Config des Mac. SSH-Port und Hostschluessel-Fingerprint: _nicht dokumentiert_.
 
@@ -133,7 +133,8 @@ Eine reine Cloud-Session kann diesen Schritt nicht ersetzen. Sie kann nur den Gi
 - [ ] NVIDIA-Diagnose durchfuehren, Ursache belegen, kleinste Reparatur (vermutlich Neustart)
 - [ ] Feste DHCP-Zuordnung in der FRITZ!Box fuer die tatsaechlich genutzte Schnittstelle (`wlp7s0` oder spaeter Kabel-MAC)
 - [ ] Pruefen, ob Ollama auf dem RTX-PC laeuft und welche Modelle installiert sind
-- [ ] GPU-Provider in Agent OS anbinden und einen echten Auftrag Mac → RTX → Mac nachweisen
+- [ ] Agent-OS-Migration auf Intel-Mac: Phase A mit `scripts/agent-os-phase-a-inventory.sh` auf dem Intel-Mac ausfuehren, dann Plan und Freigabe
+- [ ] RTX-Strata-Modell (Port 18081) abgesichert starten, Apollo/Darwin/Dokumentbewertung ueber RTX-Route nachweisen
 - [ ] Temporaeren Skriptserver auf dem Mac nach Abschluss beenden
 - [ ] [[Kimi Code]] installieren (Cloud-Modell, keine GPU noetig), siehe `scripts/install-kimi-code.sh`
 

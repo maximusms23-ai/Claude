@@ -35,6 +35,9 @@ Dazu gehören **Release Notes / Changelog**: was ist neu, was ist kaputt gegange
 
 ## Versionsnummern (Semantic Versioning)
 
+![[02-zahlenschloss.png]]
+*MAJOR ist schwer zu drehen und bricht etwas, PATCH dreht man nebenbei.*
+
 Format `MAJOR.MINOR.PATCH`, z. B. `2.4.1`:
 
 - **MAJOR** (`3.0.0`) — inkompatible Änderung, Nutzer müssen etwas anpassen
@@ -45,6 +48,9 @@ Alternative: Kalender-Versionen (CalVer) wie `2026.403.0` bei [[PaperclipAI]].
 
 ## Ausroll-Strategien
 
+![[03-kanarienvogel.png]]
+*Canary Release: erst 5 % der Nutzer, dann alle.*
+
 - **Big Bang** — alle bekommen die neue Version gleichzeitig. Einfach, aber riskant.
 - **Canary Release** — erst ein kleiner Teil der Nutzer (z. B. 5 %), dann schrittweise mehr. Benannt nach dem Kanarienvogel im Bergwerk, der Gefahr früh anzeigt.
 - **Blue-Green** — zwei identische Umgebungen; umgeschaltet wird per Weiche, zurück genauso schnell.
@@ -52,9 +58,15 @@ Alternative: Kalender-Versionen (CalVer) wie `2026.403.0` bei [[PaperclipAI]].
 
 ## Rollen
 
+![[05-waage.png]]
+*Go/No-Go: neue Funktionen gegen offene Bugs abwägen.*
+
 Release Manager (koordiniert, entscheidet Go/No-Go), Entwickler, QA (prüft), Betrieb/DevOps (rollt aus, beobachtet). In [[Agenten-OS|Maximus_OS]] bilden Staff Engineer → QA Engineer → Release Engineer genau diese Kette unter dem CTO ab.
 
 ## Typische Fehler
+
+![[04-drachen.png]]
+*Ohne Rollback-Plan kein Release: v2.4 stürzt ab, v2.3 liegt bereit.*
 
 - Kein Rollback-Plan („geht schon gut“)
 - Zu große Releases: viele Änderungen auf einmal, Fehlerursache schwer zu finden

@@ -15,10 +15,10 @@ Zu [[releasemanagement|Releasemanagement]]. Stil: Skill `/007`. Jeden Prompt **e
 | # | Datei | Nach Abschnitt | Kernaussage | Struktur | Was Xiaohei tut | Status |
 |---|---|---|---|---|---|---|
 | 1 | `01-schleusen.png` | Der Weg einer Version | Eine Version steigt Stufe für Stufe von Test bis Produktion | Workflow | kurbelt Schleusentore, ein Boot „v2.4“ steigt Kammer für Kammer | **fertig** (selbst gezeichnet, Quelle `src/01-schleusen.html`) |
-| 2 | `02-zahlenschloss.png` | Versionsnummern | MAJOR ist schwer zu drehen, PATCH ganz leicht | Konzept-Metapher | stemmt sich gegen das große Rad eines Zahlenschlosses, das kleine dreht er mit dem Finger | **stark** |
-| 3 | `03-kanarienvogel.png` | Ausroll-Strategien → Canary | Erst 5 % der Nutzer, dann alle | Vorher/Nachher | lässt einen Vogelkäfig in einen Schacht, hinter ihm wartet eine Menschenschlange | **stark** |
-| 4 | `04-drachen-zurueckholen.png` | Phase 8: Rollback | Ein Release muss jederzeit zurückholbar sein | Konzept-Metapher | kurbelt einen abstürzenden Drachen an der Schnur zurück | optional |
-| 5 | `05-go-no-go-waage.png` | Phase 5: Freigabe | Go/No-Go ist eine Abwägung | Konzept-Metapher | balanciert auf einer Waage zwischen „neue Funktionen“ und „offene Bugs“ | optional |
+| 2 | `02-zahlenschloss.png` | Versionsnummern | MAJOR ist schwer zu drehen, PATCH ganz leicht | Konzept-Metapher | stemmt sich gegen das große Rad eines Zahlenschlosses, das kleine dreht er mit dem Finger | **fertig** (selbst gezeichnet, Quelle in `src/`) |
+| 3 | `03-kanarienvogel.png` | Ausroll-Strategien → Canary | Erst 5 % der Nutzer, dann alle | Vorher/Nachher | lässt einen Vogelkäfig in einen Schacht, hinter ihm wartet eine Menschenschlange | **fertig** (selbst gezeichnet, Quelle in `src/`) |
+| 4 | `04-drachen-zurueckholen.png` | Phase 8: Rollback | Ein Release muss jederzeit zurückholbar sein | Konzept-Metapher | kurbelt einen abstürzenden Drachen an der Schnur zurück | **fertig** (selbst gezeichnet, Quelle in `src/`) |
+| 5 | `05-go-no-go-waage.png` | Phase 5: Freigabe | Go/No-Go ist eine Abwägung | Konzept-Metapher | balanciert auf einer Waage zwischen „neue Funktionen“ und „offene Bugs“ | **fertig** (selbst gezeichnet, Quelle in `src/`) |
 
 ---
 

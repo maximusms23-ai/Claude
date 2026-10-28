@@ -13,6 +13,7 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-28 | [[Releasemanagement]] | 4 weitere Illustrationen eingebunden (Zahlenschloss, Kanarienvogel, Rollback, Waage) |
 | 2026-10-28 | [[Releasemanagement]] | Illustration „Schleusen“ eingebunden |
 | 2026-10-28 | [[Incident-Management]] | Neu erstellt (Ablauf, Schweregrade, Postmortem, Illustrations-Prompts) |
 | 2026-10-28 | [[Releasemanagement]] | Link auf [[Incident-Management]] ergänzt |

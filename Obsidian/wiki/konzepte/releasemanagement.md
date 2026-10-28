@@ -17,6 +17,9 @@ tags:
 
 ## Der Weg einer Version
 
+![[01-schleusen.png]]
+*Xiaohei kurbelt die Version v2.4 Schleuse für Schleuse von Test über Staging und Freigabe zu den Nutzern.*
+
 | Phase | Was passiert | Typische Werkzeuge |
 |---|---|---|
 | 1. Planen | Umfang festlegen, Termin, Verantwortliche | Issues, Roadmap, Milestones |

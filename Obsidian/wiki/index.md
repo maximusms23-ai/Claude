@@ -13,6 +13,7 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-28 | [[Releasemanagement]] | Illustration „Schleusen“ eingebunden |
 | 2026-10-28 | [[Incident-Management]] | Neu erstellt (Ablauf, Schweregrade, Postmortem, Illustrations-Prompts) |
 | 2026-10-28 | [[Releasemanagement]] | Link auf [[Incident-Management]] ergänzt |
 | 2026-10-28 | [[Releasemanagement]] | Neu erstellt (Phasen, SemVer, Ausroll-Strategien, Illustrations-Prompts) |

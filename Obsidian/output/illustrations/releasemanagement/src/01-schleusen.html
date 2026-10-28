@@ -1,0 +1,77 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>html,body{margin:0;background:#fff}svg{display:block}
+text{font-family:'Caveat',cursive;font-weight:700}</style></head><body>
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+<defs>
+ <filter id="w" x="-5%" y="-5%" width="110%" height="110%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="4" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+ </filter>
+ <marker id="ah" viewBox="0 0 12 12" refX="8" refY="6" markerWidth="11" markerHeight="11" orient="auto">
+  <path d="M1,1 L10,6 L1,11" fill="none" stroke="#E8711A" stroke-width="2" stroke-linecap="round"/>
+ </marker>
+</defs>
+<g filter="url(#w)" fill="none" stroke="#111" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+ <!-- canal profile -->
+ <path d="M150,722 L522,718 L520,600 L842,602 L840,482 L1162,479 L1160,362 L1460,360"/>
+ <path d="M150,722 L150,640" />
+ <!-- gates -->
+ <rect x="512" y="498" width="16" height="104" fill="#fff"/>
+ <rect x="1152" y="268" width="16" height="96" fill="#fff"/>
+ <!-- lifted gate at 840 -->
+ <rect x="832" y="350" width="16" height="96" fill="#fff"/>
+ <path d="M840,350 L840,300"/>
+ <!-- water lines -->
+ <g stroke-width="2.2">
+  <path d="M160,648 q20,-8 40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0"/>
+  <path d="M530,520 q20,-8 40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0"/>
+  <path d="M560,548 q20,-6 40,0 t40,0 t40,0" stroke-width="1.6"/>
+  <path d="M700,560 q20,-6 40,0 t40,0" stroke-width="1.6"/>
+  <path d="M850,402 q20,-8 40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0"/>
+  <!-- pouring water under gate -->
+  <path d="M846,452 q-8,40 -24,70" stroke-width="2"/>
+  <path d="M846,466 q-4,34 -14,56" stroke-width="1.6"/>
+  <path d="M846,478 q-14,26 -36,44" stroke-width="1.6"/>
+ </g>
+ <!-- paper boat -->
+ <path d="M610,518 L760,518 L735,546 L635,546 Z" fill="#fff"/>
+ <path d="M688,516 L688,420 L740,500 Z" fill="#fff"/>
+ <!-- pier + wheel -->
+ <path d="M880,382 L1100,380 M900,382 L900,480 M1080,380 L1080,480" stroke-width="2.8"/>
+ <path d="M1050,380 L1052,330"/>
+ <circle cx="1052" cy="300" r="42" fill="#fff"/>
+ <path d="M1052,258 L1052,342 M1010,300 L1094,300 M1022,270 L1082,330 M1082,270 L1022,330" stroke-width="2.4"/>
+ <path d="M840,300 Q900,230 1052,300" stroke-width="2" stroke-dasharray="6 6"/>
+ <!-- users -->
+ <g stroke-width="2.6">
+  <circle cx="1290" cy="300" r="11"/><path d="M1290,311 L1290,336 M1290,336 L1281,358 M1290,336 L1299,358 M1279,320 L1301,320"/>
+  <circle cx="1335" cy="296" r="11"/><path d="M1335,307 L1335,334 M1335,334 L1326,358 M1335,334 L1344,358 M1322,316 L1348,312"/>
+  <circle cx="1380" cy="302" r="11"/><path d="M1380,313 L1380,337 M1380,337 L1371,358 M1380,337 L1389,358 M1369,322 L1391,322"/>
+  <circle cx="1422" cy="298" r="11"/><path d="M1422,309 L1422,335 M1422,335 L1413,358 M1422,335 L1431,358 M1410,318 L1436,318"/>
+ </g>
+</g>
+<!-- Xiaohei (solid black) -->
+<g filter="url(#w)">
+ <path d="M922,330 C910,292 920,252 952,248 C984,244 1000,276 996,314 C992,340 978,350 960,350 C942,350 928,344 922,330 Z" fill="#111"/>
+ <circle cx="946" cy="284" r="5.5" fill="#fff"/><circle cx="970" cy="282" r="5.5" fill="#fff"/>
+ <g stroke="#111" stroke-width="3" stroke-linecap="round" fill="none">
+  <path d="M946,348 L942,381 M970,348 L976,381"/>
+  <path d="M994,296 Q1006,284 1014,282"/>
+  <path d="M994,314 Q1006,322 1014,320"/>
+ </g>
+ <path d="M1014,276 L1014,326" stroke="#111" stroke-width="6" stroke-linecap="round"/>
+</g>
+<!-- orange main flow -->
+<path filter="url(#w)" d="M230,600 C420,520 560,430 700,392 C820,350 900,150 1250,200" fill="none" stroke="#E8711A" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="14 10" marker-end="url(#ah)"/>
+<!-- sail label -->
+<text x="694" y="490" font-size="30" fill="#111">v2.4</text>
+<!-- labels -->
+<text x="300" y="790" font-size="46" fill="#111">Test</text>
+<text x="620" y="668" font-size="46" fill="#111">Staging</text>
+<text x="930" y="545" font-size="46" fill="#111">Freigabe</text>
+<text x="1305" y="235" font-size="46" fill="#111">Nutzer</text>
+<text x="300" y="400" font-size="44" fill="#E8711A">Stufe für Stufe</text>
+<text x="190" y="702" font-size="36" fill="#D23B2E">Bug? → zurück</text>
+<text x="1185" y="440" font-size="32" fill="#2F6FD6">Wasserstand = Vertrauen</text>
+</svg></body></html>

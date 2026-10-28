@@ -63,4 +63,5 @@ Shot-List und Bild-Prompts im Xiaohei-Stil: `output/illustrations/agenten-os/pro
 
 - [[PaperclipAI]] — Orchestrierungsplattform, auf der Maximus_OS läuft
 - [[Ollama]] — lokales LLM als „CPU“ eines Agenten-OS
+- [[Releasemanagement]] — was der Release Engineer in Maximus_OS tut
 - [[Gemme Training]] — Fine-Tuning für spezialisierte Agenten

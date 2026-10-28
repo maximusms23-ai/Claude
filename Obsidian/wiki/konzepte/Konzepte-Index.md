@@ -26,3 +26,7 @@ Zentrale Begriffe und Konzepte der Wissensbasis.
 ## Agenten & Architektur
 
 - [[Agenten-OS]] — Betriebssystem-Schicht, die KI-Agenten plant, mit Gedächtnis/Werkzeugen versorgt und Rechte/Budget durchsetzt
+
+## Softwareentwicklung & Betrieb
+
+- [[Releasemanagement]] — Weg einer Version vom Code zum Nutzer: Phasen, SemVer, Canary/Blue-Green, Rollback

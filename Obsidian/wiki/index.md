@@ -13,6 +13,8 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-28 | [[Releasemanagement]] | Neu erstellt (Phasen, SemVer, Ausroll-Strategien, Illustrations-Prompts) |
+| 2026-10-28 | [[Agenten-OS]] | Link auf [[Releasemanagement]] ergänzt |
 | 2026-10-27 | [[Agenten-OS]] | Neu erstellt (OS-Analogie, Maximus_OS-Beispiel, Illustrations-Prompts) |
 | 2026-10-27 | [[PaperclipAI]] | Link auf [[Agenten-OS]] ergänzt |
 | 2026-04-09 | [[gemma4|Gemma 4]] | Alias `Gemma 4-Modelle` + Speichertabelle (BF16/8bit/4bit) ergaenzt |
@@ -43,7 +45,7 @@ tags:
 ## Statistiken
 
 - Themen: 3
-- Konzepte: 4
+- Konzepte: 5
 - Personen: 0
 - Projekte: 3
 - Quellen: 3

@@ -13,6 +13,8 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-28 | [[Incident-Management]] | Neu erstellt (Ablauf, Schweregrade, Postmortem, Illustrations-Prompts) |
+| 2026-10-28 | [[Releasemanagement]] | Link auf [[Incident-Management]] ergänzt |
 | 2026-10-28 | [[Releasemanagement]] | Neu erstellt (Phasen, SemVer, Ausroll-Strategien, Illustrations-Prompts) |
 | 2026-10-28 | [[Agenten-OS]] | Link auf [[Releasemanagement]] ergänzt |
 | 2026-10-27 | [[Agenten-OS]] | Neu erstellt (OS-Analogie, Maximus_OS-Beispiel, Illustrations-Prompts) |
@@ -45,7 +47,7 @@ tags:
 ## Statistiken
 
 - Themen: 3
-- Konzepte: 5
+- Konzepte: 6
 - Personen: 0
 - Projekte: 3
 - Quellen: 3

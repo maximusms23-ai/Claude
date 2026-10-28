@@ -30,3 +30,4 @@ Zentrale Begriffe und Konzepte der Wissensbasis.
 ## Softwareentwicklung & Betrieb
 
 - [[Releasemanagement]] — Weg einer Version vom Code zum Nutzer: Phasen, SemVer, Canary/Blue-Green, Rollback
+- [[Incident-Management]] — Umgang mit Störungen: erkennen, eindämmen, beheben, Postmortem

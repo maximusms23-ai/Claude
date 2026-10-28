@@ -64,5 +64,6 @@ Shot-List und Bild-Prompts im Xiaohei-Stil: `output/illustrations/releasemanagem
 
 ## Siehe auch
 
+- [[Incident-Management]] — was passiert, wenn ein Release Probleme macht
 - [[Agenten-OS]] — Release Engineer als Agent in Maximus_OS
 - [[PaperclipAI]] — Beispiel für Kalender-Versionierung

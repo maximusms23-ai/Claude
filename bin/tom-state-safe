@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# tom-state-safe — Fehlertoleranter Wrapper um tom-state auto-transition
+#
+# Prueft vor jedem Lauf:
+#   1. $TOM_VAULT-Verzeichnis existiert und ist lesbar/schreibbar
+#   2. Python3 verfuegbar
+#
+# Loggt jeden Lauf nach ~/Library/Logs/tom-state-transitions.log
+# Wird vom launchd-Job com.maxim.tom-state-transitions aufgerufen.
+
+set -uo pipefail
+
+LOG_FILE="$HOME/Library/Logs/tom-state-transitions.log"
+TOM_VAULT_DEFAULT="/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw"
+export TOM_VAULT="${TOM_VAULT:-$TOM_VAULT_DEFAULT}"
+TOM_STATE="/Users/maxim/Claude/bin/tom-state"
+
+mkdir -p "$(dirname "$LOG_FILE")"
+
+log_line() {
+  local status="$1" exit_code="$2" duration="$3" msg="$4"
+  local ts
+  ts=$(date "+%Y-%m-%d %H:%M:%S %z")
+  printf '%s | %s | EXIT=%s | DURATION=%ss | %s\n' \
+    "$ts" "$status" "$exit_code" "$duration" "$msg" >> "$LOG_FILE"
+}
+
+START_TS=$(date +%s)
+
+# Preflight 1: python3
+if ! command -v python3 >/dev/null 2>&1; then
+  log_line "SKIP" "0" "0" "python3 not found in PATH"
+  exit 0
+fi
+
+# Preflight 2: $TOM_VAULT erreichbar
+if [ ! -d "$TOM_VAULT" ]; then
+  log_line "SKIP" "0" "0" "TOM_VAULT not reachable: $TOM_VAULT"
+  exit 0
+fi
+
+if [ ! -w "$TOM_VAULT" ]; then
+  log_line "SKIP" "0" "0" "TOM_VAULT not writable: $TOM_VAULT"
+  exit 0
+fi
+
+# Preflight 3: tom-state existiert
+if [ ! -f "$TOM_STATE" ]; then
+  log_line "FAIL" "1" "0" "tom-state not found at $TOM_STATE"
+  exit 1
+fi
+
+log_line "START" "-" "0" "running tom-state auto-transition"
+set +e
+python3 "$TOM_STATE" auto-transition
+RC=$?
+set -e
+
+END_TS=$(date +%s)
+DURATION=$((END_TS - START_TS))
+
+if [ "$RC" -eq 0 ]; then
+  log_line "OK" "$RC" "$DURATION" "auto-transition finished successfully"
+else
+  log_line "FAIL" "$RC" "$DURATION" "auto-transition exited with error"
+fi
+
+exit "$RC"

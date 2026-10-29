@@ -1,0 +1,213 @@
+#!/usr/bin/env python3
+"""
+tom-status — Vault-weite Zusammenfassung "Was steht an?"
+
+Scannt $TOM_VAULT und gibt eine kompakte Terminal-Uebersicht mit Zahlen
+pro Bereich und den Top-5 dringendsten Items aus.
+
+Usage:
+  tom-status
+  tom-status --json
+
+Dependencies: Python 3.8+ stdlib only.
+"""
+
+import json
+import os
+import sys
+from datetime import date, timedelta
+from pathlib import Path
+
+TOM_VAULT = os.environ.get(
+    "TOM_VAULT",
+    "/Users/maxim/Library/Mobile Documents/"
+    "com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw",
+)
+
+TODAY = date.today()
+SKIP_FILES = {"Dashboard.md", "Heute.md", "README.md", "TODOS.md", "PROJEKTE.md"}
+
+
+def parse_frontmatter(text: str):
+    if not text.startswith("---"):
+        return {}, text
+    end = text.find("\n---", 3)
+    if end == -1:
+        return {}, text
+    fm_text = text[4:end]
+    fields = {}
+    for line in fm_text.splitlines():
+        if ":" in line:
+            key, _, val = line.partition(":")
+            fields[key.strip()] = val.strip().strip('"').strip("'")
+    return fields, text[end + 4:]
+
+
+def safe_date(val: str):
+    if not val:
+        return None
+    try:
+        return date.fromisoformat(val)
+    except ValueError:
+        return None
+
+
+def scan_vault():
+    vault = Path(TOM_VAULT)
+    docs = {"Eingang": 0, "In-Bearbeitung": 0, "Warte-auf-Rueckmeldung": 0,
+            "Antwort-formuliert": 0}
+    aufgaben = {"Offen": 0, "In-Arbeit": 0, "Blockiert": 0}
+    termine_heute = []
+    termine_woche = []
+    termine_verpasst = []
+    projekte_aktiv = 0
+    vertraege_frist = []
+    social_draft = 0
+    social_geplant = 0
+    urgent_items = []
+
+    scan_map = {
+        "20_Dokumente": "dokument",
+        "40_Aufgaben": "aufgabe",
+        "50_Gesundheit": "termin",
+        "30_Projekte": "mixed",
+        "60_Finanzen": "vertrag",
+        "80_Social_Media": "social",
+        "00_Inbox": "mixed",
+    }
+
+    for folder, expected_type in scan_map.items():
+        target = vault / folder
+        if not target.is_dir():
+            continue
+        for path in target.rglob("*.md"):
+            if path.name in SKIP_FILES:
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except Exception:
+                continue
+
+            fm, _ = parse_frontmatter(text)
+            note_type = fm.get("type", "")
+            state = fm.get("state", "")
+            title = fm.get("title", path.stem)
+
+            if note_type == "dokument" and state in docs:
+                docs[state] += 1
+                due = safe_date(fm.get("due_date", ""))
+                if due and due <= TODAY + timedelta(days=7) and state != "Erledigt":
+                    days_left = (due - TODAY).days
+                    urgent_items.append((days_left, "FRIST", title, str(due)))
+
+            elif note_type == "aufgabe" and state in aufgaben:
+                aufgaben[state] += 1
+                due = safe_date(fm.get("due_date", ""))
+                if due and due <= TODAY + timedelta(days=3):
+                    days_left = (due - TODAY).days
+                    urgent_items.append((days_left, "AUFGABE", title, str(due)))
+
+            elif note_type == "termin":
+                datum = safe_date(fm.get("datum", ""))
+                if not datum:
+                    continue
+                if state == "Verpasst":
+                    telefon = fm.get("telefon", "")
+                    termine_verpasst.append((title, str(datum), telefon))
+                    urgent_items.append((-999, "VERPASST", title,
+                                         f"tel:{telefon}" if telefon else "kein tel"))
+                elif datum == TODAY and state not in ("Wahrgenommen", "Zusammenfassung"):
+                    uhrzeit = fm.get("uhrzeit", "")
+                    termine_heute.append((title, uhrzeit))
+                    urgent_items.append((0, "HEUTE", title, uhrzeit or "ganztaegig"))
+                elif TODAY < datum <= TODAY + timedelta(days=7) and state not in ("Wahrgenommen", "Zusammenfassung"):
+                    termine_woche.append((title, str(datum)))
+
+            elif note_type == "projekt" and state == "aktiv":
+                projekte_aktiv += 1
+
+            elif note_type == "vertrag" and state not in ("Gekuendigt", "Versaeumt", ""):
+                frist = safe_date(fm.get("kuendigungsfrist_datum", ""))
+                if frist and frist <= TODAY + timedelta(days=30):
+                    days_left = (frist - TODAY).days
+                    partner = fm.get("vertragspartner", title)
+                    vertraege_frist.append((partner, str(frist), days_left))
+                    urgent_items.append((days_left, "VERTRAG", partner, f"{days_left}d"))
+
+            elif note_type == "social-post":
+                if state == "Draft":
+                    social_draft += 1
+                elif state == "Geplant":
+                    social_geplant += 1
+
+    return {
+        "docs": docs,
+        "aufgaben": aufgaben,
+        "termine_heute": termine_heute,
+        "termine_woche": termine_woche,
+        "termine_verpasst": termine_verpasst,
+        "projekte_aktiv": projekte_aktiv,
+        "vertraege_frist": vertraege_frist,
+        "social_draft": social_draft,
+        "social_geplant": social_geplant,
+        "urgent_items": sorted(urgent_items, key=lambda x: x[0]),
+    }
+
+
+def print_status(data: dict):
+    docs = data["docs"]
+    aufg = data["aufgaben"]
+    doc_total = sum(docs.values())
+    aufg_total = sum(aufg.values())
+
+    print(f"=== Tom Status — {TODAY.isoformat()} ===\n")
+
+    doc_parts = ", ".join(f"{v} {k}" for k, v in docs.items() if v > 0)
+    print(f"  Dokumente:  {doc_total} offen" + (f" ({doc_parts})" if doc_parts else ""))
+
+    aufg_parts = ", ".join(f"{v} {k}" for k, v in aufg.items() if v > 0)
+    print(f"  Aufgaben:   {aufg_total} offen" + (f" ({aufg_parts})" if aufg_parts else ""))
+
+    t_heute = len(data["termine_heute"])
+    t_woche = len(data["termine_woche"])
+    t_verpasst = len(data["termine_verpasst"])
+    termin_str = f"  Termine:    {t_heute} heute, {t_woche} diese Woche"
+    if t_verpasst:
+        termin_str += f", {t_verpasst} VERPASST"
+    print(termin_str)
+
+    print(f"  Projekte:   {data['projekte_aktiv']} aktiv")
+
+    vf = data["vertraege_frist"]
+    if vf:
+        top = vf[0]
+        print(f"  Vertraege:  {len(vf)} Frist naht ({top[0]} — {top[2]} Tage)")
+    else:
+        print(f"  Vertraege:  keine dringenden Fristen")
+
+    print(f"  Social:     {data['social_draft']} Drafts, {data['social_geplant']} geplant")
+
+    urgent = data["urgent_items"][:5]
+    if urgent:
+        print(f"\n--- Top-{len(urgent)} dringend ---")
+        for i, (_, tag, title, detail) in enumerate(urgent, 1):
+            print(f"  {i}. [{tag}] {title} — {detail}")
+
+    print()
+
+
+def main():
+    if not Path(TOM_VAULT).is_dir():
+        print(f"FEHLER: TOM_VAULT nicht erreichbar: {TOM_VAULT}", file=sys.stderr)
+        sys.exit(1)
+
+    data = scan_vault()
+
+    if "--json" in sys.argv:
+        print(json.dumps(data, ensure_ascii=False, indent=2, default=str))
+    else:
+        print_status(data)
+
+
+if __name__ == "__main__":
+    main()

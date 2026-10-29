@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+#
+# build-shortcut-helpers — shortcuts-forge Helper bauen + smoken (Phase 61)
+#
+# Zweck:
+#   Kompiliert den Swift-Helper (swiftc + ad-hoc codesign), setzt chmod +x
+#   auf alle Helper und fuehrt fuer jeden einen Smoke-Test aus.
+#
+# Usage:
+#   bin/build-shortcut-helpers            # bauen + smoken
+#   bin/build-shortcut-helpers --no-smoke # nur bauen
+#
+# Dependencies: swiftc (Xcode), codesign, python3, osascript
+
+set -euo pipefail
+
+FORGE_ROOT="/Users/maxim/Claude/shortcuts-forge"
+HELPERS="$FORGE_ROOT/helpers"
+SWIFT_BUILD="$HELPERS/swift/build"
+MODULE_CACHE="/Users/maxim/Claude/.tmp-swift-module-cache"
+
+NO_SMOKE=0
+[[ "${1:-}" == "--no-smoke" ]] && NO_SMOKE=1
+
+echo "== shortcuts-forge: Helper-Build =="
+
+# --- Swift ---
+mkdir -p "$SWIFT_BUILD"
+echo "[swift] swiftc battery_info.swift"
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+swiftc -O \
+  -module-cache-path "$MODULE_CACHE" \
+  "$HELPERS/swift/battery_info.swift" \
+  -o "$SWIFT_BUILD/battery_info"
+codesign --force --sign - "$SWIFT_BUILD/battery_info" >/dev/null 2>&1 || true
+echo "[swift] OK: $SWIFT_BUILD/battery_info"
+
+# --- chmod ---
+chmod +x "$HELPERS/python/text_tools.py"
+echo "[chmod] OK: python/text_tools.py"
+
+# --- Smoke-Tests ---
+if [[ "$NO_SMOKE" -eq 0 ]]; then
+  echo ""
+  echo "== Smoke-Tests =="
+
+  OUT=$(echo "hallo tom" | "$HELPERS/python/text_tools.py" --mode upper)
+  if [[ "$OUT" == "HALLO TOM" ]]; then
+    echo "[python] OK: text_tools.py --mode upper -> $OUT"
+  else
+    echo "[python] FEHLER: erwartet 'HALLO TOM', bekam '$OUT'" >&2
+    exit 1
+  fi
+
+  OUT=$("$SWIFT_BUILD/battery_info")
+  if [[ "$OUT" == \{*percent*\} ]]; then
+    echo "[swift]  OK: battery_info -> $OUT"
+  else
+    echo "[swift]  FEHLER: kein JSON mit 'percent': '$OUT'" >&2
+    exit 1
+  fi
+
+  # AppleScript nur syntax-checken (Safari muss nicht laufen, kein Consent-Trigger)
+  if osacompile -o /dev/null "$HELPERS/applescript/safari_current_page.applescript" 2>/dev/null; then
+    echo "[ascript] OK: safari_current_page.applescript kompiliert (Laufzeit-Test manuell: Safari + Consent)"
+  else
+    echo "[ascript] FEHLER: AppleScript kompiliert nicht" >&2
+    exit 1
+  fi
+fi
+
+echo ""
+echo "Fertig. Aufruf-Pfade fuer Kurzbefehle: \$HOME/Documents/Tom-Shortcuts/helpers/..."

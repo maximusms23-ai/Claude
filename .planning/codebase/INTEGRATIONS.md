@@ -1,0 +1,138 @@
+# External Integrations
+
+**Analysis Date:** 2026-04-12
+
+**Vault scope:** Active Tom vault is **`$TOM_VAULT`** (iCloud). Paths under `Obsidian/wiki/` in this repo refer to the **legacy Alt-Vault** unless a note says otherwise. RAG [`config.py`](/Gemma/rag/config.py) may still point at `Obsidian/wiki` — align with migration plans.
+
+## APIs & External Services
+
+**Local LLM Runtime:**
+- Ollama - Local LLM inference engine
+  - SDK/Client: `langchain-ollama` for active RAG/query flows
+  - Purpose: Model execution for `qwen2.5:3b`
+  - Communication: Local HTTP API (default port 11434)
+  - Used in: `query.py`, `langchain_stack.py`, OpenClaw/Open WebUI local runtime
+
+**Local Embeddings:**
+- SentenceTransformers / Hugging Face
+  - SDK/Client: `langchain-huggingface`, `sentence-transformers`
+  - Purpose: Embeddings generation via `BAAI/bge-small-en-v1.5`
+  - Used in: `index.py` and `query.py` through `Gemma/rag/langchain_stack.py`
+
+**Local Research Surfaces:**
+- Open WebUI
+  - Purpose: Stable local chat plus optional web search/RAG over Ollama
+  - Config (repo reference): [`openwebui/.env.example`](/openwebui/.env.example)
+- OpenClaw
+  - Purpose: Local search/fetch-enabled assistant path over Ollama
+  - Config (repo reference): [`openclaw/openclaw.json.reference`](/openclaw/openclaw.json.reference); live: `~/.openclaw/openclaw.json`
+
+**Web Content Integration:**
+- Obsidian Web Clipper - Browser extension for capturing web articles
+  - Purpose: Save external articles to **`$TOM_VAULT/Clippings/`** (Tom); legacy Alt-Vault: `Obsidian/Clippings/`
+  - No authentication required (local browser extension)
+
+## Data Storage
+
+**Databases:**
+- ChromaDB (Vector Database)
+  - Type: In-process vector database with persistent disk storage
+  - Connection: Local filesystem at `/Users/maxim/Claude/Gemma/rag/chroma_db/`
+  - Client: chromadb Python package (PersistentClient)
+  - Purpose: Store and retrieve embeddings for RAG semantic search
+  - Collection: "wiki" - Contains indexed markdown chunks with metadata
+
+**File Storage:**
+- Local filesystem only
+  - Wiki files: `/Users/maxim/Claude/Obsidian/wiki/`
+  - Raw sources: `/Users/maxim/Claude/Obsidian/raw/`
+  - Web clippings: `/Users/maxim/Claude/Obsidian/Clippings/`
+  - Vector DB: `/Users/maxim/Claude/Gemma/rag/chroma_db/`
+  - Training data: `/Users/maxim/Claude/Gemma/training-data/`
+
+**Caching:**
+- ChromaDB embeddings cache - Persistent vector embeddings in chroma_db directory
+- Hugging Face / SentenceTransformers local model cache for `BAAI/bge-small-en-v1.5`
+
+## Authentication & Identity
+
+**Auth Provider:**
+- None - This is a local-only system with no remote authentication
+- Obsidian: Local application, no cloud auth
+- Ollama: Local runtime, no authentication
+- GitHub Pages deployment: Uses GitHub Actions with standard `contents: write` permissions
+
+## Monitoring & Observability
+
+**Error Tracking:**
+- None detected
+
+**Logs:**
+- Console-based logging via Python print() statements
+  - Ollama embedding generation progress in `index.py`
+  - RAG query execution in `query.py`
+  - No log files configured
+
+## CI/CD & Deployment
+
+**Hosting:**
+- GitHub Pages - Static wiki deployment
+  - Repository: This repository (GitHub)
+  - Deployment trigger: Push to main branch
+  - Built artifact: MkDocs static site
+
+**CI Pipeline:**
+- GitHub Actions workflow: `/Users/maxim/Claude/Obsidian/.github/workflows/deploy.yml`
+  - Trigger: Push to main branch
+  - Environment: Ubuntu latest
+  - Steps:
+    1. Checkout code (actions/checkout@v4)
+    2. Setup Python 3.12 (actions/setup-python@v5)
+    3. Install mkdocs, mkdocs-material, mkdocs-roamlinks-plugin
+    4. Build and deploy via `mkdocs gh-deploy --force`
+  - Permissions: `contents: write` for pushing to gh-pages branch
+
+## Environment Configuration
+
+**Required env vars:**
+- `TOM_LOCAL_MODEL`
+- `TOM_RAG_EMBED_MODEL`
+- `OLLAMA_BASE_URL`
+- Open WebUI search vars such as `WEB_SEARCH_ENGINE` and provider API keys when external search is enabled
+
+**Secrets location:**
+- No secret management detected
+- No .env files in use
+- GitHub Actions uses default GITHUB_TOKEN for gh-pages deployment
+
+## Webhooks & Callbacks
+
+**Incoming:**
+- None detected
+
+**Outgoing:**
+- GitHub Pages deployment hook - Auto-triggered on push to main
+
+## Local Development Integrations
+
+**Obsidian Vault:**
+- Local knowledge management application
+- Syncs with wiki directory at `/Users/maxim/Claude/Obsidian/wiki/`
+- Supports: Markdown editing, wikilinks, frontmatter, tags, search
+
+**RAG Pipeline Workflow:**
+- Manual trigger via CLI commands:
+  - `python3 Gemma/rag/index.py` - Index wiki into ChromaDB
+  - `python3 Gemma/rag/query.py "question"` - Query via RAG
+
+**Research Workflow:**
+- `openclaw models status` - Validate local OpenClaw model wiring
+- Open WebUI - Run local chat/RAG/search against the same Ollama base model
+
+## MCP (Cursor IDE)
+
+**Audit 2026-04-12:** [`.cursor/mcp.json`](../../.cursor/mcp.json) exposes a **single** server, `tom-tools` → [`mcp-server/tom_mcp.py`](../../mcp-server/tom_mcp.py) (read-oriented Tom CLIs). Kein zweiter Shadow-Server; Erweiterungen nur nach Review ([ADR-006](../obsidian-plugin-config/adr-006-mcp-architecture.md)).
+
+---
+
+*Integration audit: 2026-04-12*

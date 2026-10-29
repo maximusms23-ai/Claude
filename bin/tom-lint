@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# tom-lint — Health-Check für $TOM_VAULT/95_Gehirn/ via claude-memory-compiler
+#
+# Zweck: Prüft Brain-Struktur auf Broken Wikilinks, Orphans, Sparse Articles,
+# Stale Content. Mit --structural-only wird der Contradiction-Check (LLM, API)
+# übersprungen — schnell und kostenlos.
+#
+# Usage:
+#   tom-lint                    # vollständiger Lint (inkl. Contradiction-Check via LLM)
+#   tom-lint --structural-only  # nur strukturelle Checks, keine LLM-Calls
+#
+# Report landet in $TOM_VAULT/95_Gehirn/reports/lint-YYYY-MM-DD.md.
+
+set -euo pipefail
+
+TOOL_DIR="/Users/maxim/Claude/claude-memory-compiler"
+export TOM_VAULT="${TOM_VAULT:-/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/Obsidian_Valuet/Obsidian_Zentralw}"
+
+cd "$TOOL_DIR"
+exec uv run python scripts/lint.py "$@"

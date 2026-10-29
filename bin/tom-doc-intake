@@ -1,0 +1,353 @@
+#!/usr/bin/env python3
+"""
+tom-doc-intake — KI-gestuetzte Dokument-Aufnahme fuer Obsidian.
+
+Liest ein Dokument (PDF/DOCX/MD/TXT), extrahiert Text lokal,
+laesst qwen2.5:3b via Ollama strukturierte Metadaten erzeugen
+(Pydantic JSON-Schema) und erstellt eine Obsidian-Note mit
+komplettem Frontmatter inkl. archiv_pfad file:// URL.
+
+Usage:
+    tom-doc-intake <quelldatei>
+    tom-doc-intake <quelldatei> --dry-run
+    tom-doc-intake <quelldatei> --target 20_Dokumente/13_Betreuung/
+    tom-doc-intake <quelldatei> --kategorie 14_Betreuung
+
+Dependencies: pydantic (pip install pydantic)
+"""
+
+import argparse
+import json
+import os
+import re
+import subprocess
+import sys
+import unicodedata
+from datetime import datetime
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from doc_intake_schema import ArchivKategorie, DocIntakeResult
+
+TOM_VAULT = Path(
+    os.environ.get(
+        "TOM_VAULT",
+        "/Users/maxim/Library/Mobile Documents/com~apple~CloudDocs/"
+        "Obsidian_Valuet/Obsidian_Zentralw",
+    )
+)
+DOKUMENTE_DIR = TOM_VAULT / "20_Dokumente"
+ARCHIV_VOLUME = Path(os.environ.get("ARCHIV_VOLUME", "/Volumes/Archiv/ARCIV"))
+OLLAMA_CHAT_URL = "http://127.0.0.1:11434/api/chat"
+MODEL = os.environ.get("TOM_DOC_INTAKE_MODEL", "qwen2.5:3b")
+MAX_TEXT_CHARS = int(os.environ.get("TOM_DOC_INTAKE_MAX_CHARS", "12000"))
+MODEL_TIMEOUT = int(os.environ.get("TOM_DOC_INTAKE_TIMEOUT", "120"))
+
+TEXT_EXTS = {".md", ".txt", ".text", ".json", ".yaml", ".yml", ".csv"}
+OFFICE_EXTS = {".doc", ".docx", ".ppt", ".pptx", ".rtf"}
+PDF_EXTS = {".pdf"}
+
+SYSTEM_PROMPT = (
+    "Du bist ein Dokumenten-Analyst fuer eine deutsche Familie. "
+    "Analysiere das folgende Dokument und extrahiere strukturierte Metadaten. "
+    "Antworte ausschliesslich im vorgegebenen JSON-Schema. "
+    "Regeln: "
+    "- Betraege immer mit Waehrung angeben (z.B. '342.50 EUR'). "
+    "- Daten im Format YYYY-MM-DD. "
+    "- betreff_kurz: max 80 Zeichen, praegnant. "
+    "- zusammenfassung: 2-3 Saetze, sachlich. "
+    "- antwortfrist: nur setzen wenn Handlung noetig ist. "
+    "- kategorie und archiv_kategorie: gleichen Wert waehlen. "
+    "- Bei Unsicherheit: leere Strings statt Erfindungen."
+)
+
+
+def slugify(text: str) -> str:
+    normalized = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+    normalized = normalized.lower()
+    normalized = re.sub(r"[^a-z0-9]+", "-", normalized).strip("-")
+    return normalized[:80] or "dokument"
+
+
+def yaml_escape(value: str) -> str:
+    if not value:
+        return '""'
+    escaped = value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ").strip()
+    return f'"{escaped}"'
+
+
+def yaml_list(items: list[str]) -> str:
+    if not items:
+        return "[]"
+    return "[" + ", ".join(yaml_escape(i) for i in items) + "]"
+
+
+def run_capture(cmd: list[str]) -> str:
+    result = subprocess.run(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        text=True, check=False, timeout=60,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip() or "Kommando fehlgeschlagen")
+    return result.stdout
+
+
+def post_json(url: str, payload: dict, timeout: int) -> dict:
+    cmd = ["curl", "-s"]
+    if timeout > 0:
+        cmd.extend(["--max-time", str(timeout)])
+    cmd.extend([url, "-H", "Content-Type: application/json", "-d", json.dumps(payload)])
+    result = subprocess.run(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        text=True, check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip() or "curl fehlgeschlagen")
+    return json.loads(result.stdout)
+
+
+def extract_text(source: Path) -> str:
+    suffix = source.suffix.lower()
+    text = ""
+    if suffix in TEXT_EXTS:
+        text = source.read_text(encoding="utf-8", errors="replace")
+    elif suffix in PDF_EXTS:
+        text = run_capture(["/opt/homebrew/bin/pdftotext", "-layout", "-nopgbrk", str(source), "-"])
+    elif suffix in OFFICE_EXTS:
+        text = run_capture(["/usr/bin/textutil", "-convert", "txt", "-stdout", str(source)])
+    if not text.strip():
+        try:
+            out = run_capture(["/usr/bin/mdls", "-raw", "-name", "kMDItemTextContent", str(source)])
+            if out.strip() and out.strip() != "(null)":
+                text = out
+        except Exception:
+            pass
+    cleaned = text.replace("\r\n", "\n").replace("\r", "\n").strip()
+    if not cleaned:
+        raise RuntimeError("Kein extrahierbarer Text. Bei gescannten PDFs erst OCR pruefen.")
+    return cleaned
+
+
+def analyze_document(text: str, filename: str) -> DocIntakeResult:
+    truncated = text[:MAX_TEXT_CHARS] if len(text) > MAX_TEXT_CHARS else text
+    schema = DocIntakeResult.model_json_schema()
+    payload = {
+        "model": MODEL,
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"Dateiname: {filename}\n\nDokument-Text:\n---\n{truncated}\n---"},
+        ],
+        "format": schema,
+        "stream": False,
+    }
+    data = post_json(OLLAMA_CHAT_URL, payload, timeout=MODEL_TIMEOUT)
+    content = data.get("message", {}).get("content", "")
+    if not content:
+        raise RuntimeError("Leere Antwort von Ollama")
+    return DocIntakeResult.model_validate_json(content)
+
+
+def build_archiv_url(kategorie: str, filename: str) -> str:
+    archiv_path = ARCHIV_VOLUME / kategorie / "00_Eingang" / filename
+    return f"file://{archiv_path}"
+
+
+def build_note(result: DocIntakeResult, source: Path, kategorie_override: str | None) -> str:
+    now = datetime.now()
+    created = now.strftime("%Y-%m-%d")
+    kat = kategorie_override or result.kategorie.value
+    archiv_url = build_archiv_url(kat, source.name)
+
+    lines = [
+        "---",
+        f"title: {yaml_escape(result.betreff_kurz)}",
+        f"created: {created}",
+        "type: dokument",
+        f"kategorie: {yaml_escape(kat)}",
+        f"betreff_kurz: {yaml_escape(result.betreff_kurz)}",
+        f"absender: {yaml_escape(result.absender)}",
+        f"empfaenger: {yaml_list(result.empfaenger)}",
+        f"archiv_pfad: {yaml_escape(archiv_url)}",
+        'antwort_pfad: ""',
+        "state: Eingang",
+        f"state_changed: {created}",
+        f"due_date: {yaml_escape(result.antwortfrist or '')}",
+        f"empfangsdatum: {created}",
+        'dokument_datum: ""',
+        f"eingepflegt_am: {created}",
+        f"antwortfrist: {yaml_escape(result.antwortfrist or '')}",
+        f"uebermittlung_art: {yaml_escape(result.uebermittlung_art)}",
+        'aufbewahrung_bis: ""',
+        'email_ref: ""',
+        'email_betreff: ""',
+        'ansprechperson: ""',
+        f"personen: {yaml_list(result.personen_erkannt)}",
+        f"abhaengigkeiten: {yaml_list(result.abhaengigkeiten)}",
+        f"steuer_relevant: {str(result.steuer_relevant).lower()}",
+        f"kv_relevant: {str(result.kv_relevant).lower()}",
+        f"kv_details: {yaml_escape(result.kv_details)}",
+        f"rente_relevant: {str(result.rente_relevant).lower()}",
+        f"rente_details: {yaml_escape(result.rente_details)}",
+        f"finanzen_relevant: {str(result.finanzen_relevant).lower()}",
+        f"finanzen_betrag: {yaml_escape(result.finanzen_betrag or '')}",
+        f"finanzen_faelligkeit: {yaml_escape(result.finanzen_faelligkeit or '')}",
+        f"finanzen_budgetiert: {str(result.finanzen_budgetiert).lower()}",
+        f"finanzen_details: {yaml_escape(result.finanzen_details)}",
+        f"ki_zusammenfassung: {yaml_escape(result.zusammenfassung)}",
+        "tags: [dokument, ki-intake]",
+        f"ki_init_at: {yaml_escape(now.isoformat())}",
+        "ki_init_version: 1",
+        f'ki_model: "{MODEL}"',
+        'ki_aktualitaet: ""',
+        'ki_relevanz: ""',
+        "---",
+        "",
+        f"# {result.betreff_kurz}",
+        "",
+        f'> **Status**: `VIEW[{{state}}]` | `BUTTON[doc-gespeichert, doc-bearbeitung, doc-antwort, doc-uebermittelt, doc-warten, doc-rueckmeldung, doc-erledigt, doc-archiviert]`',
+        f"> **Betreff**: `VIEW[{{betreff_kurz}}]`",
+        f"> **Absender**: `VIEW[{{absender}}]` | **Empfaenger**: `VIEW[{{empfaenger}}]`",
+        f"> **Frist**: `VIEW[{{due_date}}]` | **Antwort bis**: `VIEW[{{antwortfrist}}]`",
+        "",
+        "**Kategorie**: `VIEW[{kategorie}]`",
+        f"**Archiv-Datei**: [{source.name}]({archiv_url})",
+        "**Antwort-Entwurf**: `VIEW[{antwort_pfad}]`",
+        "**Uebermittlung**: `VIEW[{uebermittlung_art}]`",
+        "",
+        "## Zusammenfassung",
+        "",
+        result.zusammenfassung,
+        "",
+        "## Relevanz-Bewertung",
+        "",
+        "| Bereich | Relevant | Details |",
+        "|---------|----------|---------|",
+        f"| Krankenversicherung | `VIEW[{{kv_relevant}}]` | `VIEW[{{kv_details}}]` |",
+        f"| Rente | `VIEW[{{rente_relevant}}]` | `VIEW[{{rente_details}}]` |",
+        f"| Finanzen/Budget | `VIEW[{{finanzen_relevant}}]` | `VIEW[{{finanzen_details}}]` |",
+        f"| Steuer | `VIEW[{{steuer_relevant}}]` | |",
+        "",
+        f"**Finanzen**: Betrag `VIEW[{{finanzen_betrag}}]` | Faellig `VIEW[{{finanzen_faelligkeit}}]` | Budgetiert `VIEW[{{finanzen_budgetiert}}]`",
+        "",
+    ]
+
+    if not result.finanzen_budgetiert and result.finanzen_relevant:
+        lines.extend([
+            "> [!warning] Budget-Warnung",
+            f"> Ungeplante Ausgabe: {result.finanzen_betrag or 'Betrag unbekannt'}",
+            "> Bitte Budget pruefen!",
+            "",
+        ])
+
+    lines.append("## Erkannte Personen")
+    lines.append("")
+    if result.personen_erkannt:
+        lines.extend(f"- {p}" for p in result.personen_erkannt)
+    else:
+        lines.append("_(keine erkannt)_")
+    lines.append("")
+    lines.append("## Abhaengige Dokumente")
+    lines.append("")
+    if result.abhaengigkeiten:
+        lines.extend(f"- {d}" for d in result.abhaengigkeiten)
+    else:
+        lines.append("_(keine erkannt)_")
+
+    lines.extend([
+        "",
+        "## Handlungsempfehlungen",
+        "",
+        "_(KI: konkrete naechste Schritte)_",
+        "",
+        "## Antwortvorlage (Entwurf)",
+        "",
+        "_(Entwurf liegt unter `VIEW[{antwort_pfad}]`)_",
+        "",
+        "## Verknuepfte Notizen",
+        "",
+        "_(automatisch erkannte Abhaengigkeiten)_",
+    ])
+    return "\n".join(lines) + "\n"
+
+
+def build_target_path(result: DocIntakeResult, target_dir: Path) -> Path:
+    target_dir.mkdir(parents=True, exist_ok=True)
+    date_prefix = datetime.now().strftime("%Y-%m-%d")
+    stem = slugify(result.betreff_kurz)
+    candidate = target_dir / f"{date_prefix}-{stem}.md"
+    counter = 2
+    while candidate.exists():
+        candidate = target_dir / f"{date_prefix}-{stem}-{counter}.md"
+        counter += 1
+    return candidate
+
+
+def resolve_target_dir(target_arg: str | None, kategorie: str) -> Path:
+    if target_arg:
+        p = Path(target_arg)
+        if not p.is_absolute():
+            p = TOM_VAULT / p
+        return p
+    kat_folder = DOKUMENTE_DIR
+    for sub in DOKUMENTE_DIR.iterdir():
+        if sub.is_dir() and kategorie.split("_", 1)[0] in sub.name:
+            kat_folder = sub
+            break
+    return kat_folder
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(
+        description="KI-gestuetzte Dokument-Aufnahme fuer Obsidian."
+    )
+    ap.add_argument("source", help="Pfad zur Quelldatei (PDF, DOCX, MD, TXT)")
+    ap.add_argument("--target", help="Zielordner fuer die Note (relativ zu $TOM_VAULT oder absolut)")
+    ap.add_argument("--kategorie", help="Archiv-Kategorie Override (z.B. 14_Betreuung)")
+    ap.add_argument("--dry-run", action="store_true", help="JSON-Output ohne Note-Erstellung")
+    ap.add_argument("--json", action="store_true", help="Nur KI-Ergebnis als JSON ausgeben")
+    args = ap.parse_args()
+
+    source = Path(args.source).expanduser().resolve()
+    if not source.exists():
+        print(f"Quelldatei nicht gefunden: {source}", file=sys.stderr)
+        return 1
+
+    print(f"… Text extrahieren: {source.name}", file=sys.stderr)
+    try:
+        text = extract_text(source)
+    except Exception as exc:
+        print(f"Text-Extraktion fehlgeschlagen: {exc}", file=sys.stderr)
+        return 2
+
+    print(f"… KI-Analyse mit {MODEL} ({len(text)} Zeichen)", file=sys.stderr)
+    try:
+        result = analyze_document(text, source.name)
+    except Exception as exc:
+        print(f"KI-Analyse fehlgeschlagen: {exc}", file=sys.stderr)
+        return 3
+
+    if args.json:
+        print(result.model_dump_json(indent=2))
+        return 0
+
+    kategorie = args.kategorie or result.kategorie.value
+    note_text = build_note(result, source, args.kategorie)
+
+    if args.dry_run:
+        print(note_text)
+        print(f"\n--- KI-Ergebnis (JSON) ---", file=sys.stderr)
+        print(result.model_dump_json(indent=2), file=sys.stderr)
+        return 0
+
+    target_dir = resolve_target_dir(args.target, kategorie)
+    target_path = build_target_path(result, target_dir)
+    target_path.write_text(note_text, encoding="utf-8")
+    print(f"Note erstellt: {target_path}", file=sys.stderr)
+    print(str(target_path))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

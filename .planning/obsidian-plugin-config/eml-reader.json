@@ -1,0 +1,45 @@
+{
+  "_meta": {
+    "description": "Email Reader Plugin Config-Backup (Tom v1.4.1 Phase 34)",
+    "plugin_version": "1.1.2",
+    "vault_path": "$TOM_VAULT",
+    "backup_created": "2026-04-10",
+    "status": "prepared-pending-maxim-activation",
+    "rationale": "Preview-only Plugin für .eml-Dateien (Outlook-Export). Direkt relevant für Eltern-Betreuung: Amtsbriefe kommen oft als .eml, sollen in 20_Dokumente/13_Betreuung/ abgelegt und im Vault lesbar sein."
+  },
+
+  "plugin_id": "eml-reader",
+  "author": "Pulsovi",
+  "enabled_in_community_plugins_json": false,
+
+  "privacy_assessment": {
+    "reads_files": true,
+    "read_scope": ".eml Files im Vault (inkl. eingebettete Attachments)",
+    "writes_files": "nur plugin-interner State in .obsidian/plugins/eml-reader/",
+    "network_access": "keine (lokaler Renderer)",
+    "external_service": "keiner",
+    "privacy_rating": "low-risk"
+  },
+
+  "recommended_settings": {
+    "render_mode": "preview",
+    "embed_attachments": true,
+    "default_encoding": "UTF-8"
+  },
+
+  "activation_steps": [
+    "1. Obsidian → Settings → Community Plugins → Browse/Install list suchen",
+    "2. 'Email Reader' in der Installierten-Liste → Toggle ON",
+    "3. Kein weiterer Setup nötig — Plugin rendert .eml-Files automatisch beim Öffnen",
+    "4. Smoke-Test: Test-.eml in $TOM_VAULT/20_Dokumente/13_Betreuung/test.eml ablegen, öffnen → Preview sollte Betreff/From/To/Body zeigen",
+    "5. Wenn Preview funktioniert: Test-File wieder löschen, Plugin bleibt aktiv"
+  ],
+
+  "tom_integration": {
+    "workflow": "eml-reader ist passiver Renderer — kein aktives Tom-Tool-Integration nötig. tom-doc kann .eml-Files NICHT indizieren (braucht .txt/.pdf). Für Volltext-Suche müssen .eml-Inhalte weiter in .md oder .pdf konvertiert werden.",
+    "conflicts": "keine",
+    "coexistence": "eml-reader für Preview im Editor, tom-doc für Volltext-Suche über konvertierte Dokumente"
+  },
+
+  "next_review": "Nach 2 Wochen aktiver Nutzung: prüfen ob Preview für Ämterbriefe ausreicht oder ob zusätzlich taskrobin/messager nötig ist."
+}

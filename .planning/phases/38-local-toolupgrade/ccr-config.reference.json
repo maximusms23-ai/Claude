@@ -1,0 +1,18 @@
+{
+  "LOG": false,
+  "API_TIMEOUT_MS": 600000,
+  "Providers": [
+    {
+      "name": "ollama",
+      "api_base_url": "http://localhost:11434/v1/chat/completions",
+      "api_key": "ollama",
+      "models": [
+        "qwen2.5:3b"
+      ]
+    }
+  ],
+  "Router": {
+    "default": "ollama,qwen2.5:3b",
+    "background": "ollama,qwen2.5:3b"
+  }
+}

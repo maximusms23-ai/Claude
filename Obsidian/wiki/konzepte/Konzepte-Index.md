@@ -19,6 +19,8 @@ Zentrale Begriffe und Konzepte der Wissensbasis.
 - [[Ollama]] — Lokale LLM-Laufzeitumgebung (CLI, REST API, Modellverwaltung)
 - [[GGUF-Quantisierung]] — Modellgewichts-Kompression fuer lokale Inferenz
 
+- [[Website-als-API]] — Frontend-Requests einer Website lernen und direkt als HTTP-Operation aufrufen
+
 ## Optimierungsverfahren
 
 - [[TurboQuant]] — KV-Cache-Quantisierung zur Laufzeit (Google Research, ICLR 2026)

@@ -16,6 +16,10 @@ tags:
 - [Web Clipper Templates](https://github.com/obsidian-community/web-clipper-templates) - Community-Templates
 - [Kepano Clipper Templates](https://github.com/kepano/clipper-templates) - Vorlagen von Kepano
 
+## Agenten-Werkzeuge
+
+- [API Anything](https://github.com/goodnight000/api-anything) - Websites ohne API für Agenten aufrufbar machen (MCP-Server, CLI) → [[api-anything|API Anything]]
+
 ## Praesentationen
 
 - [Marp](https://github.com/marp-team/marp) - Markdown-basierte Praesentationen

@@ -13,6 +13,10 @@ tags:
 
 | Datum | Seite | Aktion |
 |-------|-------|--------|
+| 2026-10-31 | [[api-anything|API Anything]] | Neu erstellt (Lernen/Aufrufen/Reparieren, MCP-Tools, CLI, Sicherheit, Integrationsstatus) |
+| 2026-10-31 | [[Website-als-API]] | Neu erstellt |
+| 2026-10-31 | [[api-anything-github]] | Quelle erfasst (GitHub-Repo goodnight000/api-anything) |
+| 2026-10-31 | [[Werkzeuge]] | Abschnitt „Agenten-Werkzeuge“ ergänzt |
 | 2026-10-28 | [[Releasemanagement]] | 4 weitere Illustrationen eingebunden (Zahlenschloss, Kanarienvogel, Rollback, Waage) |
 | 2026-10-28 | [[Releasemanagement]] | Illustration „Schleusen“ eingebunden |
 | 2026-10-28 | [[Incident-Management]] | Neu erstellt (Ablauf, Schweregrade, Postmortem, Illustrations-Prompts) |
@@ -49,10 +53,10 @@ tags:
 ## Statistiken
 
 - Themen: 3
-- Konzepte: 6
+- Konzepte: 7
 - Personen: 0
-- Projekte: 3
-- Quellen: 3
+- Projekte: 4
+- Quellen: 4
 
 ## Navigation
 

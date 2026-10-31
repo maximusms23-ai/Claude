@@ -12,6 +12,7 @@ tags:
 
 Projekte, Repositories und technische Vorhaben.
 
+- [[api-anything|API Anything]] — Websites ohne API als aufrufbare Operationen für Agenten (MCP, CLI, Katalog)
 - [[Gemme Training|Gemme Training]] — Fine-Tuning eines lokalen LLM auf Wiki-Inhalte
 - [[Ollama Projekt|Ollama]] — Lokale LLM-Laufzeitumgebung
 - [[PaperclipAI]] — Orchestrierungsplattform für autonome KI-Agenten

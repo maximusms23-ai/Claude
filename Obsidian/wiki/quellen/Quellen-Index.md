@@ -26,3 +26,4 @@ Alle erfassten Quellen mit Verweisen auf Rohdaten und Wiki-Seiten.
 | [[Mannheim-Wikipedia|Mannheim – Wikipedia]] | Artikel | [[Mannheim]] |
 | [[Gemma-4-Google-AI-Docs|Gemma 4-Modelle - Google AI Docs]] | Artikel | [[Gemma-4-Modelle]] |
 | [[gemma4-ollama|Gemma 4 – Ollama Library]] | Artikel | [[Gemma 4]] |
+| [[api-anything-github|API Anything – GitHub]] | Repo | [[api-anything|API Anything]] |

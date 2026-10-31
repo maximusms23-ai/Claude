@@ -15,6 +15,15 @@ A git repo containing an Obsidian vault (`Obsidian/`) that serves as an LLM-main
 - **Personal tracking**: `Obsidian/TODOS.md` and `Obsidian/PROJEKTE.md` — not in git, not on website. When user asks "was steht an?" or "woran arbeite ich?" → read these files
 - **Output formats**: Marp (slides), matplotlib (plots), Markdown (reports), JSON Canvas (canvas)
 
+## Claude Code Plugin: ECC (everything-claude-code)
+
+[ECC](https://github.com/affaan-m/ECC) is enabled for every Claude Code session in this repo via `.claude/settings.json` (`extraKnownMarketplaces` + `enabledPlugins: ecc@ecc`). Claude Code installs it automatically on first start (cloud and local) — agents, skills, slash commands and hooks are available under the `ecc:` namespace.
+
+- Hook profile: `ECC_HOOK_PROFILE=standard` (options: `minimal`, `standard`, `strict`)
+- `ECC_GATEGUARD=off`: GateGuard would block the first edit of every file — too much friction for wiki work
+- Update manually: `claude plugin marketplace update ecc && claude plugin update ecc@ecc`
+- Disable: set `"ecc@ecc": false` in `.claude/settings.json`
+
 ## Commands
 
 ```bash

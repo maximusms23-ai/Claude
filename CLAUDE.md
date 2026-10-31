@@ -15,6 +15,13 @@ A git repo containing an Obsidian vault (`Obsidian/`) that serves as an LLM-main
 - **Personal tracking**: `Obsidian/TODOS.md` and `Obsidian/PROJEKTE.md` — not in git, not on website. When user asks "was steht an?" or "woran arbeite ich?" → read these files
 - **Output formats**: Marp (slides), matplotlib (plots), Markdown (reports), JSON Canvas (canvas)
 
+## Skills
+
+Project skills live in `.claude/skills/` and load automatically in every Claude Code session on this repo (local and cloud).
+
+- `find-skills` (from [vercel-labs/skills](https://github.com/vercel-labs/skills)): when the user asks "how do I do X", "gibt es einen Skill für X" or wants to extend capabilities, use it to search the open skills ecosystem (`npx skills find <query>`, https://skills.sh/) before building something from scratch. Install new skills project-local into `.claude/skills/` so they are versioned with the repo.
+- `007`: Xiaohei-style hand-drawn article illustrations.
+
 ## Commands
 
 ```bash

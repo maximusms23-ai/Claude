@@ -15,6 +15,16 @@ A git repo containing an Obsidian vault (`Obsidian/`) that serves as an LLM-main
 - **Personal tracking**: `Obsidian/TODOS.md` and `Obsidian/PROJEKTE.md` — not in git, not on website. When user asks "was steht an?" or "woran arbeite ich?" → read these files
 - **Output formats**: Marp (slides), matplotlib (plots), Markdown (reports), JSON Canvas (canvas)
 
+## Plugin: claude-obsidian
+
+Das Plugin [AgriciDaniel/claude-obsidian](https://github.com/AgriciDaniel/claude-obsidian) (15 Skills, 3 Agents) ist projektweit in `.claude/settings.json` aktiviert und wird beim Start von Claude Code automatisch aus dem Marketplace `agricidaniel-claude-obsidian` installiert (Ordner einmal als vertrauenswürdig bestätigen).
+
+Wichtige Befehle: `/claude-obsidian:wiki-query`, `/claude-obsidian:wiki-lint`, `/claude-obsidian:save`, `/claude-obsidian:canvas`, `/claude-obsidian:obsidian-markdown`, `/claude-obsidian:obsidian-bases`.
+
+Regeln bei der Nutzung:
+- Die Konventionen dieses Repos haben Vorrang: Quellen liegen in `Obsidian/raw/` und `Obsidian/Clippings/` (nicht `inbox/`), Inhalte in `Obsidian/wiki/` mit deutscher Sprache und den hier definierten Index-Dateien.
+- `/claude-obsidian:wiki` (Adoption des bestehenden Vaults) nur mit Vorschau ausführen und erst nach Freigabe durch den User anwenden; Vault-Pfad ist `Obsidian/`.
+
 ## Commands
 
 ```bash
